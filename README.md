@@ -57,3 +57,21 @@ pytest
 - Avoid survivorship bias when defining tradable universes.
 - Include realistic transaction costs and document assumptions.
 - Treat backtest results as research output, not evidence of guaranteed future performance.
+
+## Market Data
+
+Phase 2 adds a reusable OHLCV data layer in `samquant/data/market_data.py`.
+
+```python
+from samquant.data.market_data import get_ohlcv
+
+prices = get_ohlcv("AAPL", start="2020-01-01", end="2024-01-01")
+```
+
+The data layer:
+
+- downloads historical OHLCV data with `yfinance`;
+- validates required price and volume columns before use;
+- rejects empty, unsorted, duplicated, missing, or internally inconsistent data;
+- stores CSV files under `data/raw/ohlcv/`;
+- keeps live downloads out of unit tests so tests stay deterministic.
