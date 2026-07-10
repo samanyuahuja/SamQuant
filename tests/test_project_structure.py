@@ -8,17 +8,16 @@ import importlib
 def test_core_modules_are_importable() -> None:
     """The Phase 1 scaffold should expose importable Python modules."""
     modules = [
-        "quantlab",
-        "quantlab.data.market_data",
-        "quantlab.engine.backtester",
-        "quantlab.engine.order",
-        "quantlab.engine.portfolio",
-        "quantlab.strategies.moving_average",
-        "quantlab.strategies.momentum",
-        "quantlab.strategies.mean_reversion",
-        "quantlab.analytics.metrics",
+        "samquant",
+        "samquant.data.market_data",
+        "samquant.engine.backtester",
+        "samquant.engine.order",
+        "samquant.engine.portfolio",
+        "samquant.strategies.moving_average",
+        "samquant.strategies.momentum",
+        "samquant.strategies.mean_reversion",
+        "samquant.analytics.metrics",
     ]
 
     for module in modules:
         importlib.import_module(module)
-

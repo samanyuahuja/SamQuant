@@ -15,7 +15,7 @@ The project prioritizes correctness, readable architecture, and realistic backte
 ## Architecture
 
 ```text
-quantlab/
+samquant/
 ├── data/
 │   └── market_data.py
 ├── engine/
@@ -57,4 +57,3 @@ pytest
 - Avoid survivorship bias when defining tradable universes.
 - Include realistic transaction costs and document assumptions.
 - Treat backtest results as research output, not evidence of guaranteed future performance.
-
