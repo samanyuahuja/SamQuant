@@ -1,8 +1,12 @@
 # Project Instructions
 
-Always tell Samanyu the usage limit left when responding. If the runtime cannot report it, say that it is not available from the current runtime.
+Do not report usage limits in responses.
 
-Start every sentence addressed to the user with "Samanyu,".
+Start every response addressed to the user with "Samanyu,".
+
+Do not start every sentence with "Samanyu,".
+
+End every response with a confidence rating from 1 to 10 that all user instructions were followed.
 
 Before writing code, explain the implementation plan, including the intended approach, files likely to change, and important risks or trade-offs.
 
