@@ -75,3 +75,31 @@ The data layer:
 - rejects empty, unsorted, duplicated, missing, or internally inconsistent data;
 - stores CSV files under `data/raw/ohlcv/`;
 - keeps live downloads out of unit tests so tests stay deterministic.
+
+## Trading Engine
+
+Phase 3 adds validated orders, portfolio accounting, transaction costs, and a
+long-only historical backtester in `samquant/engine/`.
+
+```python
+import pandas as pd
+
+from samquant.engine import Backtester
+
+targets = pd.DataFrame({"AAPL": [0.0, 1.0, 1.0, 0.0]}, index=prices.index)
+result = Backtester(
+    initial_cash=100_000,
+    commission_rate=0.001,
+    slippage_bps=5,
+).run({"AAPL": prices}, targets)
+```
+
+Each target row represents information available after that day's bar. The
+backtester shifts targets by one bar and trades at the next opening price, which
+prevents same-bar look-ahead bias. It executes sales before purchases, limits
+buys to available cash, records every fee, and marks positions at closing prices.
+
+The first engine version intentionally uses aligned daily data, fractional
+quantities, and long-only weights whose total cannot exceed 100%. These explicit
+constraints keep the accounting testable while leaving room for later execution
+models, short selling, and partial fills.
