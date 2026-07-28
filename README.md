@@ -144,6 +144,37 @@ flowchart LR
     D --> E[Next-open backtester]
     E --> F[Orders, cash, positions, and fees]
     F --> G[Equity, cash, positions, and trades]
-    G -. Phase 5 .-> H[Risk and performance analytics]
+    G --> H[Risk and performance analytics]
     H -. Phase 6 .-> I[Streamlit dashboard]
 ```
+
+## Performance Analytics
+
+Phase 5 converts a `BacktestResult` into one immutable performance summary.
+
+![SamQuant Phase 5 analytics flow](output/images/samquant-phase-5-analytics.png)
+
+```python
+from samquant.analytics import calculate_metrics
+
+metrics = calculate_metrics(
+    result,
+    periods_per_year=252,
+    risk_free_rate=0.0,
+)
+
+print(metrics.total_return)
+print(metrics.sharpe_ratio)
+print(metrics.maximum_drawdown)
+```
+
+The analytics layer reports total return, annualized return, annualized
+volatility, Sharpe ratio, maximum drawdown, and realized trade win rate. Daily
+annualization assumes 252 observations per year by default and can be changed
+for other data frequencies.
+
+Maximum drawdown is returned as a positive peak-to-trough loss. Win rate uses
+FIFO cost basis, includes transaction fees, counts completed sell executions,
+and excludes unrealized open positions. Sharpe ratio and win rate return `NaN`
+when they are mathematically undefined rather than presenting a misleading
+zero.
