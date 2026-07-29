@@ -10,6 +10,7 @@ import pytest
 from samquant.data.market_data import (
     MarketDataError,
     build_data_path,
+    download_ohlcv,
     load_ohlcv,
     normalize_symbol,
     save_ohlcv,
@@ -62,6 +63,28 @@ def test_validate_ohlcv_rejects_negative_volume() -> None:
 
     with pytest.raises(MarketDataError, match="Volume cannot be negative"):
         validate_ohlcv(data)
+
+
+def test_download_ohlcv_drops_incomplete_provider_rows(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    provider_data = _valid_ohlcv()
+    provider_data["Adj Close"] = [100.5, 102.5, float("nan")]
+    provider_data.loc[pd.Timestamp("2024-01-03"), "Close"] = float("nan")
+
+    monkeypatch.setattr(
+        "samquant.data.market_data.yf.download",
+        lambda *args, **kwargs: provider_data,
+    )
+
+    downloaded = download_ohlcv("RELIANCE.NS", "2024-01-01", "2024-02-01")
+
+    assert downloaded.index.tolist() == [
+        pd.Timestamp("2024-01-02"),
+        pd.Timestamp("2024-01-04"),
+    ]
+    assert pd.isna(downloaded.loc[pd.Timestamp("2024-01-04"), "Adj Close"])
+    validate_ohlcv(downloaded)
 
 
 def test_save_and_load_ohlcv_round_trip(tmp_path: Path) -> None:

@@ -46,6 +46,7 @@ def download_ohlcv(
     )
 
     normalized = normalize_ohlcv_frame(data)
+    normalized = _drop_incomplete_provider_rows(normalized)
     validate_ohlcv(normalized)
     return normalized
 
@@ -186,3 +187,13 @@ def _flatten_yfinance_columns(columns: pd.MultiIndex) -> list[str]:
         flattened.append(known_parts[0] if known_parts else fallback_name)
 
     return flattened
+
+
+def _drop_incomplete_provider_rows(data: pd.DataFrame) -> pd.DataFrame:
+    """Remove Yahoo rows that do not contain a complete tradable OHLCV bar."""
+    required_columns = [
+        column for column in OHLCV_COLUMNS if column in data.columns
+    ]
+    if not required_columns:
+        return data.copy()
+    return data.dropna(subset=required_columns).copy()

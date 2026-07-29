@@ -71,6 +71,7 @@ prices = get_ohlcv("AAPL", start="2020-01-01", end="2024-01-01")
 The data layer:
 
 - downloads historical OHLCV data with `yfinance`;
+- removes incomplete provider bars instead of inventing missing prices;
 - validates required price and volume columns before use;
 - rejects empty, unsorted, duplicated, missing, or internally inconsistent data;
 - stores CSV files under `data/raw/ohlcv/`;
