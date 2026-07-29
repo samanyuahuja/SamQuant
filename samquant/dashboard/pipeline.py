@@ -23,7 +23,21 @@ MEAN_REVERSION = "Mean reversion"
 MOMENTUM = "Momentum"
 EQUAL_WEIGHT_BENCHMARK = "Equal-weight benchmark"
 STRATEGY_NAMES = (MOVING_AVERAGE, MEAN_REVERSION, MOMENTUM)
-DEFAULT_SYMBOLS = ("AAPL", "MSFT", "NVDA")
+US_MARKET = "US"
+INDIA_NSE = "India (NSE)"
+INDIA_BSE = "India (BSE)"
+MARKET_NAMES = (US_MARKET, INDIA_NSE, INDIA_BSE)
+MARKET_SUFFIXES = {
+    US_MARKET: "",
+    INDIA_NSE: ".NS",
+    INDIA_BSE: ".BO",
+}
+DEFAULT_SYMBOLS_BY_MARKET = {
+    US_MARKET: ("AAPL", "MSFT", "NVDA"),
+    INDIA_NSE: ("RELIANCE", "TCS", "INFY"),
+    INDIA_BSE: ("RELIANCE", "TCS", "INFY"),
+}
+DEFAULT_SYMBOLS = DEFAULT_SYMBOLS_BY_MARKET[US_MARKET]
 
 
 class DashboardError(ValueError):
@@ -62,16 +76,24 @@ class DashboardRun:
     metrics: PerformanceMetrics
 
 
-def parse_symbols(raw_symbols: str) -> tuple[str, ...]:
-    """Parse a comma-separated symbol list into unique normalized tickers."""
+def parse_symbols(
+    raw_symbols: str,
+    market_name: str = US_MARKET,
+) -> tuple[str, ...]:
+    """Parse symbols and add the Yahoo Finance suffix for the chosen market."""
     if not isinstance(raw_symbols, str):
         raise DashboardError("Symbols must be entered as text.")
+    if market_name not in MARKET_SUFFIXES:
+        raise DashboardError(f"Unsupported market: {market_name}.")
 
     symbols: list[str] = []
     for raw_symbol in raw_symbols.split(","):
         if not raw_symbol.strip():
             continue
         symbol = normalize_symbol(raw_symbol)
+        suffix = MARKET_SUFFIXES[market_name]
+        if suffix and "." not in symbol and not symbol.startswith("^"):
+            symbol = f"{symbol}{suffix}"
         if symbol not in symbols:
             symbols.append(symbol)
 

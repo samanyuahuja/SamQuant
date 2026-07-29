@@ -194,8 +194,8 @@ The dashboard includes:
 
 - deterministic demo data for reliable offline exploration;
 - optional historical downloads from Yahoo Finance;
-- controls for symbols, strategy settings, starting cash, fees, slippage, and
-  the risk-free rate;
+- controls for US, Indian NSE, and Indian BSE symbols, strategy settings,
+  starting cash, fees, slippage, and the risk-free rate;
 - portfolio growth and drawdown charts;
 - a complete table of simulated buy and sell executions;
 - moving-average, mean-reversion, momentum, and equal-weight comparisons;
@@ -205,6 +205,11 @@ The dashboard includes:
 `samquant/dashboard/app.py` only renders controls and charts. This boundary keeps
 Streamlit replaceable and prevents the presentation layer from becoming a second
 backtesting engine.
+
+For Indian shares, choose `India (NSE)` or `India (BSE)` and enter ordinary
+exchange symbols such as `RELIANCE, TCS, INFY`. SamQuant automatically converts
+them to Yahoo Finance tickers such as `RELIANCE.NS` or `RELIANCE.BO`. Complete
+tickers and index symbols such as `^NSEI` can also be entered directly.
 
 The demo data is synthetic and deterministic, so it is useful for learning and
 software verification but not for making investment conclusions. Live and demo

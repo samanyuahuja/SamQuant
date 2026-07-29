@@ -11,6 +11,8 @@ from streamlit.testing.v1 import AppTest
 from samquant.data.market_data import validate_ohlcv
 from samquant.dashboard import (
     EQUAL_WEIGHT_BENCHMARK,
+    INDIA_BSE,
+    INDIA_NSE,
     MEAN_REVERSION,
     MOMENTUM,
     MOVING_AVERAGE,
@@ -33,9 +35,32 @@ def test_parse_symbols_normalizes_and_deduplicates_tickers() -> None:
     assert parse_symbols(" aapl, MSFT, aapl ") == ("AAPL", "MSFT")
 
 
+def test_parse_symbols_adds_indian_exchange_suffixes() -> None:
+    assert parse_symbols("reliance, TCS", INDIA_NSE) == (
+        "RELIANCE.NS",
+        "TCS.NS",
+    )
+    assert parse_symbols("reliance, TCS", INDIA_BSE) == (
+        "RELIANCE.BO",
+        "TCS.BO",
+    )
+
+
+def test_parse_symbols_preserves_complete_tickers_and_indices() -> None:
+    assert parse_symbols("RELIANCE.NS, ^NSEI", INDIA_NSE) == (
+        "RELIANCE.NS",
+        "^NSEI",
+    )
+
+
 def test_parse_symbols_rejects_an_empty_list() -> None:
     with pytest.raises(DashboardError, match="at least one"):
         parse_symbols(" , ")
+
+
+def test_parse_symbols_rejects_an_unknown_market() -> None:
+    with pytest.raises(DashboardError, match="Unsupported market"):
+        parse_symbols("AAPL", "Unknown")
 
 
 def test_demo_market_data_is_deterministic_and_valid() -> None:
@@ -128,3 +153,8 @@ def test_streamlit_dashboard_starts_with_demo_data() -> None:
     assert not app.exception
     assert app.title[0].value == "SamQuant"
     assert any(tab.label == "Strategy comparison" for tab in app.tabs)
+
+    app.selectbox[0].select(INDIA_NSE).run(timeout=30)
+
+    assert not app.exception
+    assert app.text_input[0].value == "RELIANCE, TCS, INFY"

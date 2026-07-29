@@ -10,7 +10,10 @@ import plotly.graph_objects as go
 import streamlit as st
 
 from samquant.dashboard.pipeline import (
-    DEFAULT_SYMBOLS,
+    DEFAULT_SYMBOLS_BY_MARKET,
+    INDIA_BSE,
+    INDIA_NSE,
+    MARKET_NAMES,
     MEAN_REVERSION,
     MOMENTUM,
     MOVING_AVERAGE,
@@ -416,14 +419,24 @@ def main() -> None:
         ("Demo data", "Yahoo Finance"),
         help="Demo data is deterministic and works without an internet connection.",
     )
+    market_name = st.sidebar.selectbox(
+        "Market",
+        MARKET_NAMES,
+        help="Indian symbols are converted to Yahoo Finance's NSE or BSE format.",
+    )
     raw_symbols = st.sidebar.text_input(
         "Ticker symbols",
-        value=", ".join(DEFAULT_SYMBOLS),
-        help="Enter one or more comma-separated ticker symbols.",
+        value=", ".join(DEFAULT_SYMBOLS_BY_MARKET[market_name]),
+        help="Enter Yahoo Finance ticker symbols separated by commas.",
+        key=f"symbols_{market_name}",
     )
+    if market_name == INDIA_NSE:
+        st.sidebar.caption("Example: RELIANCE, TCS, INFY becomes .NS tickers.")
+    elif market_name == INDIA_BSE:
+        st.sidebar.caption("Example: RELIANCE, TCS, INFY becomes .BO tickers.")
 
     try:
-        symbols = parse_symbols(raw_symbols)
+        symbols = parse_symbols(raw_symbols, market_name)
     except (DashboardError, ValueError) as error:
         st.error(str(error))
         st.stop()
