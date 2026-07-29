@@ -145,7 +145,7 @@ flowchart LR
     E --> F[Orders, cash, positions, and fees]
     F --> G[Equity, cash, positions, and trades]
     G --> H[Risk and performance analytics]
-    H -. Phase 6 .-> I[Streamlit dashboard]
+    H --> I[Streamlit dashboard]
 ```
 
 ## Performance Analytics
@@ -178,3 +178,35 @@ FIFO cost basis, includes transaction fees, counts completed sell executions,
 and excludes unrealized open positions. Sharpe ratio and win rate return `NaN`
 when they are mathematically undefined rather than presenting a misleading
 zero.
+
+## Interactive Dashboard
+
+Phase 6 turns the research pipeline into a Streamlit application without moving
+strategy, execution, or analytics logic into the user interface.
+
+![SamQuant Phase 6 teaching flow](output/images/samquant-phase-6-teaching-diagram.svg)
+
+```bash
+python -m streamlit run samquant/dashboard/app.py
+```
+
+The dashboard includes:
+
+- deterministic demo data for reliable offline exploration;
+- optional historical downloads from Yahoo Finance;
+- controls for symbols, strategy settings, starting cash, fees, slippage, and
+  the risk-free rate;
+- portfolio growth and drawdown charts;
+- a complete table of simulated buy and sell executions;
+- moving-average, mean-reversion, momentum, and equal-weight comparisons;
+- closing-price and target-weight views for inspecting strategy behavior.
+
+`samquant/dashboard/pipeline.py` prepares testable dashboard results, while
+`samquant/dashboard/app.py` only renders controls and charts. This boundary keeps
+Streamlit replaceable and prevents the presentation layer from becoming a second
+backtesting engine.
+
+The demo data is synthetic and deterministic, so it is useful for learning and
+software verification but not for making investment conclusions. Live and demo
+signals still pass through the same next-open backtester with the selected
+transaction fees and slippage.

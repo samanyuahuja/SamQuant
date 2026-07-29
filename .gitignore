@@ -12,6 +12,10 @@ env/
 data/raw/
 data/processed/
 reports/
+tmp/
+output/images/samquant-phase-6-dashboard-overview.png
+output/images/samquant-phase-6-mobile.png
+output/images/samquant-phase-6-strategy-comparison.png
 *.log
 *.swp
 *.swo

@@ -1,0 +1,118 @@
+SAMQUANT PHASE 5 - VERY SIMPLE EXPLANATION
+
+WHAT DOES PHASE 5 DO?
+
+Phase 5 is SamQuant's report card.
+
+After SamQuant tests a trading strategy, Phase 5 studies the results and answers:
+
+1. Did the strategy make or lose money?
+2. How risky was the strategy?
+3. How bad was its biggest fall?
+4. Were its completed trades usually winners or losers?
+
+
+WHAT DOES PHASE 5 ADD?
+
+1. TOTAL RETURN
+
+This shows the overall percentage gained or lost.
+
+Example:
+The portfolio starts with $100 and ends with $120.
+Total return = 20%.
+
+
+2. ANNUALIZED RETURN
+
+This turns the result into an estimated average return per year.
+
+This helps us compare tests that lasted for different amounts of time.
+
+Example:
+A 6-month test and a 2-year test cannot be compared fairly using only their
+total returns. Annualized return puts both results on a yearly scale.
+
+
+3. VOLATILITY
+
+This measures how much the portfolio value jumps up and down.
+
+Small jumps usually mean a smoother journey.
+Large jumps usually mean more uncertainty and risk.
+
+
+4. SHARPE RATIO
+
+This compares the strategy's extra return with the risk it took.
+
+A larger Sharpe ratio usually means the strategy earned more return for each
+unit of risk. It does not prove that the strategy will succeed in the future.
+
+
+5. MAXIMUM DRAWDOWN
+
+This finds the biggest fall from a previous high point.
+
+Example:
+The portfolio grows to $150 and later falls to $105.
+The fall is $45, which is a 30% maximum drawdown.
+
+It answers: "What was the worst drop an investor had to survive?"
+
+
+6. WIN RATE
+
+This shows the percentage of completed sell trades that made money.
+
+SamQuant matches sold shares with earlier purchases using FIFO:
+"first bought, first sold."
+
+It also includes trading fees, because fees reduce the real profit.
+
+
+WHAT DOES PHASE 5 CHECK?
+
+- The equity history is present and usable.
+- Portfolio values are valid numbers and greater than zero.
+- Dates are in the correct order.
+- There are enough observations for calculations that need multiple values.
+- Settings such as periods per year are valid.
+- Trades are in time order.
+- A sell does not use more shares than were previously bought.
+- Trading fees are included when deciding whether a trade won.
+
+If a metric cannot honestly be calculated, SamQuant returns NaN, meaning
+"not enough valid information." It does not pretend the answer is zero.
+
+
+SMALL EXAMPLE
+
+Suppose a strategy starts with $1,000:
+
+- It finishes with $1,100.
+- It reached $1,200 before falling to $900.
+- It completed 10 sell trades.
+- 6 of those trades made money after fees.
+
+Phase 5 can report:
+
+- Total return: 10%
+- Maximum drawdown: 25% (from $1,200 to $900)
+- Win rate: 60%
+- Plus annualized return, volatility, and Sharpe ratio
+
+
+HOW PHASE 5 FITS INTO SAMQUANT
+
+Market data -> Strategy signals -> Simulated trades -> Portfolio history
+-> Phase 5 analytics -> Clear performance report
+
+Phase 5 does not choose trades and does not promise profits.
+It honestly measures the results produced by the earlier phases.
+
+
+ONE-LINE INTERVIEW ANSWER
+
+"Phase 5 adds a validated analytics layer that converts backtest results into
+standard return, risk, drawdown, and realized-trade performance metrics."

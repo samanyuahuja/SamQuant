@@ -1,0 +1,82 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1600" viewBox="0 0 1600 1600">
+  <rect width="1600" height="1600" fill="#f6f8fa"/>
+  <g transform="translate(0 300)">
+
+  <text x="800" y="72" text-anchor="middle" font-family="Arial, sans-serif"
+        font-size="48" font-weight="700" fill="#17324d">SamQuant Phase 6</text>
+  <text x="800" y="112" text-anchor="middle" font-family="Arial, sans-serif"
+        font-size="24" fill="#52606d">The dashboard turns a backtest into something you can see, change, and understand.</text>
+
+  <rect x="70" y="175" width="420" height="470" rx="8" fill="#ffffff" stroke="#d8dee6" stroke-width="3"/>
+  <rect x="70" y="175" width="420" height="74" rx="8" fill="#17324d"/>
+  <text x="280" y="222" text-anchor="middle" font-family="Arial, sans-serif"
+        font-size="28" font-weight="700" fill="#ffffff">1. You choose</text>
+  <circle cx="120" cy="306" r="17" fill="#147d64"/>
+  <text x="153" y="314" font-family="Arial, sans-serif" font-size="24" fill="#17202a">Demo or real market data</text>
+  <circle cx="120" cy="378" r="17" fill="#147d64"/>
+  <text x="153" y="386" font-family="Arial, sans-serif" font-size="24" fill="#17202a">Ticker symbols</text>
+  <circle cx="120" cy="450" r="17" fill="#147d64"/>
+  <text x="153" y="458" font-family="Arial, sans-serif" font-size="24" fill="#17202a">Trading strategy</text>
+  <circle cx="120" cy="522" r="17" fill="#147d64"/>
+  <text x="153" y="530" font-family="Arial, sans-serif" font-size="24" fill="#17202a">Starting cash</text>
+  <circle cx="120" cy="594" r="17" fill="#147d64"/>
+  <text x="153" y="602" font-family="Arial, sans-serif" font-size="24" fill="#17202a">Fees and slippage</text>
+
+  <path d="M510 410 H565" stroke="#667085" stroke-width="8" stroke-linecap="round"/>
+  <path d="M550 390 L575 410 L550 430" fill="none" stroke="#667085" stroke-width="8"
+        stroke-linecap="round" stroke-linejoin="round"/>
+
+  <rect x="590" y="175" width="420" height="470" rx="8" fill="#ffffff" stroke="#d8dee6" stroke-width="3"/>
+  <rect x="590" y="175" width="420" height="74" rx="8" fill="#147d64"/>
+  <text x="800" y="222" text-anchor="middle" font-family="Arial, sans-serif"
+        font-size="28" font-weight="700" fill="#ffffff">2. SamQuant runs</text>
+
+  <rect x="655" y="288" width="290" height="70" rx="8" fill="#e8f4f0" stroke="#147d64" stroke-width="2"/>
+  <text x="800" y="331" text-anchor="middle" font-family="Arial, sans-serif"
+        font-size="24" font-weight="700" fill="#17324d">Strategy signals</text>
+  <path d="M800 368 V405" stroke="#667085" stroke-width="6" stroke-linecap="round"/>
+  <path d="M785 392 L800 410 L815 392" fill="none" stroke="#667085" stroke-width="6"
+        stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="655" y="420" width="290" height="70" rx="8" fill="#fff6df" stroke="#d99a2b" stroke-width="2"/>
+  <text x="800" y="450" text-anchor="middle" font-family="Arial, sans-serif"
+        font-size="22" font-weight="700" fill="#17324d">Next-open backtest</text>
+  <text x="800" y="478" text-anchor="middle" font-family="Arial, sans-serif"
+        font-size="18" fill="#52606d">cash, positions, trades, costs</text>
+  <path d="M800 500 V537" stroke="#667085" stroke-width="6" stroke-linecap="round"/>
+  <path d="M785 524 L800 542 L815 524" fill="none" stroke="#667085" stroke-width="6"
+        stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="655" y="552" width="290" height="70" rx="8" fill="#fbecec" stroke="#c94c4c" stroke-width="2"/>
+  <text x="800" y="595" text-anchor="middle" font-family="Arial, sans-serif"
+        font-size="24" font-weight="700" fill="#17324d">Risk and returns</text>
+
+  <path d="M1030 410 H1085" stroke="#667085" stroke-width="8" stroke-linecap="round"/>
+  <path d="M1070 390 L1095 410 L1070 430" fill="none" stroke="#667085" stroke-width="8"
+        stroke-linecap="round" stroke-linejoin="round"/>
+
+  <rect x="1110" y="175" width="420" height="470" rx="8" fill="#ffffff" stroke="#d8dee6" stroke-width="3"/>
+  <rect x="1110" y="175" width="420" height="74" rx="8" fill="#d99a2b"/>
+  <text x="1320" y="222" text-anchor="middle" font-family="Arial, sans-serif"
+        font-size="28" font-weight="700" fill="#17202a">3. You learn</text>
+  <circle cx="1160" cy="306" r="17" fill="#d99a2b"/>
+  <text x="1193" y="314" font-family="Arial, sans-serif" font-size="24" fill="#17202a">Did the portfolio grow?</text>
+  <circle cx="1160" cy="378" r="17" fill="#d99a2b"/>
+  <text x="1193" y="386" font-family="Arial, sans-serif" font-size="24" fill="#17202a">What was the worst fall?</text>
+  <circle cx="1160" cy="450" r="17" fill="#d99a2b"/>
+  <text x="1193" y="458" font-family="Arial, sans-serif" font-size="24" fill="#17202a">Which trades happened?</text>
+  <circle cx="1160" cy="522" r="17" fill="#d99a2b"/>
+  <text x="1193" y="530" font-family="Arial, sans-serif" font-size="24" fill="#17202a">Which strategy did better?</text>
+  <circle cx="1160" cy="594" r="17" fill="#d99a2b"/>
+  <text x="1193" y="602" font-family="Arial, sans-serif" font-size="24" fill="#17202a">How much risk was taken?</text>
+
+  <rect x="70" y="710" width="1460" height="125" rx="8" fill="#ffffff" stroke="#d8dee6" stroke-width="3"/>
+  <text x="105" y="760" font-family="Arial, sans-serif" font-size="26" font-weight="700" fill="#17324d">
+    What changed in Phase 6?
+  </text>
+  <text x="105" y="805" font-family="Arial, sans-serif" font-size="24" fill="#52606d">
+    Before: results were Python objects and tables. Now: the same tested system is an interactive screen.
+  </text>
+
+  <text x="800" y="875" text-anchor="middle" font-family="Arial, sans-serif"
+        font-size="18" fill="#667085">Historical simulation only. The dashboard explains results; it does not promise future profit.</text>
+  </g>
+</svg>

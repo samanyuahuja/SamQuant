@@ -1,0 +1,117 @@
+SAMQUANT PHASE 6 - VERY EASY EXPLANATION
+
+WHAT IS PHASE 6?
+
+Phase 6 is the screen of SamQuant.
+
+Earlier phases did the work in the background:
+- get market data
+- create strategy signals
+- simulate trades
+- calculate returns and risk
+
+Phase 6 puts all those results into one interactive dashboard.
+
+
+WHAT CAN YOU CHOOSE?
+
+- Demo data or Yahoo Finance data
+- Stock symbols, such as AAPL, MSFT, and NVDA
+- Moving average, mean reversion, or momentum strategy
+- Starting cash
+- Trading commission
+- Fixed trading fee
+- Slippage
+- Risk-free rate
+
+
+WHAT DOES SAMQUANT DO AFTER THAT?
+
+1. It gets and checks the market data.
+2. The selected strategy creates target weights.
+3. The backtester trades at the next market open.
+4. It tracks cash, shares, fees, and portfolio value.
+5. Phase 5 calculates return and risk measurements.
+6. Phase 6 shows everything clearly on the dashboard.
+
+
+WHAT DOES THE DASHBOARD SHOW?
+
+OVERVIEW
+- portfolio growth chart
+- drawdown chart
+- final portfolio value
+- total return
+- annualized return
+- volatility
+- Sharpe ratio
+- maximum drawdown
+- win rate
+
+TRADES
+- every simulated buy and sell
+- date, stock, quantity, price, value, and fee
+
+STRATEGY COMPARISON
+- moving average
+- mean reversion
+- momentum
+- equal-weight benchmark
+
+The comparison starts every strategy at 100 so their growth can be compared
+fairly on the same chart.
+
+DATA AND SIGNALS
+- historical closing prices
+- target weights created by the strategy
+
+
+WHY IS DEMO DATA INCLUDED?
+
+Demo data lets the dashboard work without internet.
+It is always created in the same way, so tests and examples are repeatable.
+It is for learning, not for making investment decisions.
+
+
+IMPORTANT CORRECTNESS RULE
+
+The dashboard does not perform trades itself.
+
+It sends the strategy signals to the existing backtester. The backtester delays
+each signal and trades at the next opening price. This helps prevent look-ahead
+bias.
+
+The dashboard also includes the selected fees and slippage.
+
+
+SIMPLE FLOW
+
+Your choices
+    ->
+Market data
+    ->
+Strategy signals
+    ->
+Next-open simulated trades
+    ->
+Return and risk calculations
+    ->
+Charts, tables, and comparisons
+
+
+ONE-LINE INTERVIEW ANSWER
+
+"Phase 6 adds a testable Streamlit presentation layer that connects the existing
+data, strategy, backtesting, and analytics modules without duplicating their
+business logic."
+
+
+HOW TO RUN IT
+
+From the SamQuant project folder:
+
+python -m streamlit run samquant/dashboard/app.py
+
+Then open:
+
+http://localhost:8501

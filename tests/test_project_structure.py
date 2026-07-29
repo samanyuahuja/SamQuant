@@ -17,6 +17,8 @@ def test_core_modules_are_importable() -> None:
         "samquant.strategies.momentum",
         "samquant.strategies.mean_reversion",
         "samquant.analytics.metrics",
+        "samquant.dashboard.pipeline",
+        "samquant.dashboard.app",
     ]
 
     for module in modules:
