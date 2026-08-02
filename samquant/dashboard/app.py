@@ -15,7 +15,6 @@ from samquant.dashboard.pipeline import (
     INDIA_NSE,
     MARKET_NAMES,
     MEAN_REVERSION,
-    MOMENTUM,
     MOVING_AVERAGE,
     STRATEGY_NAMES,
     DashboardConfig,
@@ -56,6 +55,7 @@ def _load_live_market_data(
             start=start.isoformat(),
             end=exclusive_end.isoformat(),
             interval="1d",
+            auto_adjust=True,
         )
         for symbol in symbols
     }
@@ -406,7 +406,7 @@ def _render_data(
 
 
 def main() -> None:
-    """Render the complete Phase 6 dashboard."""
+    """Render the complete SamQuant dashboard."""
     st.set_page_config(page_title="SamQuant", page_icon="SQ", layout="wide")
     _apply_dashboard_style()
 

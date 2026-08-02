@@ -1,4 +1,4 @@
-"""Tests for Phase 4 target-weight strategy implementations."""
+"""Tests for target-weight strategy implementations."""
 
 from __future__ import annotations
 
@@ -61,6 +61,38 @@ def test_moving_average_past_weights_ignore_future_price_changes() -> None:
 
     original_weights = strategy.generate_target_weights({"AAPL": original})
     changed_weights = strategy.generate_target_weights({"AAPL": changed_future})
+
+    pd.testing.assert_series_equal(
+        original_weights.iloc[:-1, 0],
+        changed_weights.iloc[:-1, 0],
+    )
+
+
+@pytest.mark.parametrize(
+    "strategy",
+    [
+        MeanReversionStrategy(
+            lookback_window=3,
+            entry_z_score=-1.0,
+            exit_z_score=0.0,
+        ),
+        MomentumStrategy(
+            lookback_window=2,
+            top_n=1,
+            rebalance_frequency=1,
+        ),
+    ],
+)
+def test_past_strategy_weights_ignore_future_price_changes(strategy: object) -> None:
+    original = _ohlcv([10.0, 11.0, 9.0, 12.0, 8.0, 13.0])
+    changed_future = _ohlcv([10.0, 11.0, 9.0, 12.0, 8.0, 1_000.0])
+
+    original_weights = strategy.generate_target_weights(  # type: ignore[attr-defined]
+        {"AAPL": original}
+    )
+    changed_weights = strategy.generate_target_weights(  # type: ignore[attr-defined]
+        {"AAPL": changed_future}
+    )
 
     pd.testing.assert_series_equal(
         original_weights.iloc[:-1, 0],

@@ -6,7 +6,7 @@ import importlib
 
 
 def test_core_modules_are_importable() -> None:
-    """The Phase 1 scaffold should expose importable Python modules."""
+    """The project should expose importable Python modules."""
     modules = [
         "samquant",
         "samquant.data.market_data",

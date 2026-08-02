@@ -1,218 +1,162 @@
 # SamQuant
 
-SamQuant is a modular algorithmic trading system and backtesting engine built for learning, research discipline, and portfolio-quality software engineering.
+[![CI](https://github.com/samanyuahuja/SamQuant/actions/workflows/ci.yml/badge.svg)](https://github.com/samanyuahuja/SamQuant/actions/workflows/ci.yml)
+![Python](https://img.shields.io/badge/python-3.10%2B-3776AB?logo=python&logoColor=white)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
-The project prioritizes correctness, readable architecture, and realistic backtesting assumptions over claims of profitability.
+**A modular algorithmic-trading system and historical backtesting engine built
+with Python, pandas, Plotly, Streamlit, and pytest.**
 
-## Goals
+SamQuant turns validated market data into strategy signals, executes those
+signals with delayed next-open fills, tracks portfolio accounting and trading
+costs, calculates risk metrics, and presents the results in an interactive
+dashboard. It is a research and education project, not a claim of future
+profitability.
 
-- Download, validate, and store historical market data.
-- Run trading strategies on historical OHLCV data.
-- Simulate orders, positions, cash, fees, and portfolio value.
-- Analyze performance and risk metrics.
-- Display results in a Streamlit dashboard.
+![SamQuant dashboard](docs/images/dashboard-overview.png)
+
+## Highlights
+
+- Downloads, validates, and locally caches adjusted daily OHLCV data.
+- Supports US, Indian NSE, and Indian BSE symbols through Yahoo Finance.
+- Implements moving-average crossover, mean-reversion, and momentum strategies.
+- Simulates long-only multi-asset portfolios with fees and adverse slippage.
+- Executes every signal at the following bar's open to avoid same-bar leakage.
+- Reports return, volatility, Sharpe ratio, drawdown, and realized win rate.
+- Compares strategies against an equal-weight benchmark in Streamlit.
+- Runs deterministic tests without depending on live network data.
 
 ## Architecture
 
-```text
-samquant/
-├── data/
-│   └── market_data.py
-├── engine/
-│   ├── backtester.py
-│   ├── order.py
-│   └── portfolio.py
-├── strategies/
-│   ├── mean_reversion.py
-│   ├── momentum.py
-│   └── moving_average.py
-├── analytics/
-│   └── metrics.py
-└── dashboard/
-    └── app.py
+```mermaid
+flowchart LR
+    A["Market Data<br/>download, validate, cache"] --> B["Strategies<br/>generate target weights"]
+    B --> C["Trading Engine<br/>delay, execute, account"]
+    C --> D["Analytics<br/>performance and risk"]
+    D --> E["Dashboard<br/>controls, charts, tables"]
 ```
 
-## Phase Roadmap
+Each layer owns one responsibility. The dashboard orchestrates public APIs but
+does not contain strategy, execution, or analytics logic. See the
+[architecture guide](docs/architecture.md) for module boundaries and the full
+decision-to-execution timeline.
 
-1. Project structure and environment setup.
-2. Market data download, validation, and local storage.
-3. Trading engine with orders, portfolio accounting, transaction fees, and backtesting.
-4. Strategy implementations: moving average crossover, mean reversion, and momentum.
-5. Performance and risk analytics.
-6. Streamlit dashboard for charts, trades, comparisons, and metrics.
-7. Tests, documentation, example results, and polish.
+## Quick Start
 
-## Setup
+SamQuant supports Python 3.10 and newer.
 
 ```bash
+git clone https://github.com/samanyuahuja/SamQuant.git
+cd SamQuant
 python3 -m venv .venv
 source .venv/bin/activate
-pip install -r requirements.txt
-pytest
+python -m pip install -r requirements.txt
+python -m streamlit run samquant/dashboard/app.py
 ```
 
-## Research Standards
+The app starts with deterministic demo data, so it works without downloading
+market data. Choose **Yahoo Finance** in the sidebar to request historical data.
 
-- Avoid look-ahead bias by using only information available at the simulated decision time.
-- Avoid survivorship bias when defining tradable universes.
-- Include realistic transaction costs and document assumptions.
-- Treat backtest results as research output, not evidence of guaranteed future performance.
+Indian symbols can be entered without provider suffixes:
 
-## Market Data
+- NSE: `RELIANCE, TCS, INFY` becomes `RELIANCE.NS, TCS.NS, INFY.NS`.
+- BSE: `RELIANCE, TCS, INFY` becomes `RELIANCE.BO, TCS.BO, INFY.BO`.
 
-Phase 2 adds a reusable OHLCV data layer in `samquant/data/market_data.py`.
+See the [usage guide](docs/usage.md) for every dashboard input and a complete
+Python example.
+
+## Python Example
 
 ```python
+from samquant.analytics import calculate_metrics
 from samquant.data.market_data import get_ohlcv
-
-prices = get_ohlcv("AAPL", start="2020-01-01", end="2024-01-01")
-```
-
-The data layer:
-
-- downloads historical OHLCV data with `yfinance`;
-- removes incomplete provider bars instead of inventing missing prices;
-- validates required price and volume columns before use;
-- rejects empty, unsorted, duplicated, missing, or internally inconsistent data;
-- stores CSV files under `data/raw/ohlcv/`;
-- keeps live downloads out of unit tests so tests stay deterministic.
-
-## Trading Engine
-
-Phase 3 adds validated orders, portfolio accounting, transaction costs, and a
-long-only historical backtester in `samquant/engine/`.
-
-```python
-import pandas as pd
-
 from samquant.engine import Backtester
+from samquant.strategies import MovingAverageCrossoverStrategy
 
-targets = pd.DataFrame({"AAPL": [0.0, 1.0, 1.0, 0.0]}, index=prices.index)
+market_data = {
+    "AAPL": get_ohlcv("AAPL", start="2020-01-01", end="2025-01-01")
+}
+strategy = MovingAverageCrossoverStrategy(short_window=50, long_window=200)
+target_weights = strategy.generate_target_weights(market_data)
+
 result = Backtester(
     initial_cash=100_000,
     commission_rate=0.001,
     slippage_bps=5,
-).run({"AAPL": prices}, targets)
+).run(market_data, target_weights)
+
+metrics = calculate_metrics(result)
+print(metrics.total_return, metrics.sharpe_ratio, metrics.maximum_drawdown)
 ```
 
-Each target row represents information available after that day's bar. The
-backtester shifts targets by one bar and trades at the next opening price, which
-prevents same-bar look-ahead bias. It executes sales before purchases, limits
-buys to available cash, records every fee, and marks positions at closing prices.
+## Research Integrity
 
-The first engine version intentionally uses aligned daily data, fractional
-quantities, and long-only weights whose total cannot exceed 100%. These explicit
-constraints keep the accounting testable while leaving room for later execution
-models, short selling, and partial fills.
+For a signal calculated after bar `t` closes, SamQuant shifts the target by one
+bar and first permits execution at bar `t+1`'s open. Tests also change future
+prices and verify that earlier signals remain unchanged.
 
-## Strategies
+The simulator includes configurable commissions, fixed fees, and adverse
+slippage. Yahoo downloads use adjusted OHLC prices by default so stock splits
+and distributions do not create artificial price jumps. Adjusted and unadjusted
+requests use different cache files.
 
-Phase 4 adds three configurable strategy classes that convert validated market
-data into target weights accepted directly by the backtester.
+Important limitations remain:
 
-```python
-from samquant.engine import Backtester
-from samquant.strategies import MovingAverageCrossoverStrategy
+- The selected asset list is not a point-in-time index universe, so careless
+  universe selection can introduce survivorship bias.
+- Fills do not model volume limits, bid-ask spreads, market impact, latency,
+  taxes, or partial execution.
+- Strategies are examples for testing system design, not validated alpha claims.
+- Results are in-sample unless the researcher creates an out-of-sample process.
 
-market_data = {"AAPL": prices}
-strategy = MovingAverageCrossoverStrategy(short_window=50, long_window=200)
-targets = strategy.generate_target_weights(market_data)
-result = Backtester().run(market_data, targets)
+## Strategies And Metrics
+
+| Component | Current behavior |
+| --- | --- |
+| Moving average | Long when the short rolling mean exceeds the long rolling mean |
+| Mean reversion | Enter below an entry z-score and exit after recovery |
+| Momentum | Rank trailing returns and equal-weight the strongest assets |
+| Benchmark | Buy and hold equal weights across the selected assets |
+| Analytics | Total and annualized return, volatility, Sharpe ratio, maximum drawdown, win rate |
+
+## Repository Structure
+
+```text
+samquant/
+├── data/          # OHLCV download, validation, and caching
+├── strategies/    # Market data to target portfolio weights
+├── engine/        # Orders, portfolio accounting, and backtesting
+├── analytics/     # Performance and risk calculations
+└── dashboard/     # Testable pipeline and Streamlit presentation
+tests/             # Unit, integration, causality, and UI smoke tests
+docs/              # Architecture, API, usage, and portfolio material
 ```
 
-- `MovingAverageCrossoverStrategy` invests when the short moving average is
-  above the long moving average.
-- `MeanReversionStrategy` enters after a sufficiently negative rolling z-score
-  and exits after the price recovers toward its rolling mean.
-- `MomentumStrategy` ranks assets by trailing return, equal-weights the strongest
-  assets, and holds those weights until the next configured rebalance.
-
-All indicators use closing prices available through the current row. The engine
-then delays each target by one bar and trades at the next opening price. This
-keeps signal generation separate from execution and avoids same-bar look-ahead
-bias. Strategy parameters are research assumptions, not profitability claims.
-Mean reversion also assumes the selected price process can revert, which is not
-guaranteed. Momentum research must use a point-in-time asset universe to avoid
-survivorship bias.
-
-## Current System Flow
-
-```mermaid
-flowchart LR
-    A[Download OHLCV] --> B[Validate and cache data]
-    B --> C[MA, mean reversion, or momentum]
-    C --> D[Target weights]
-    D --> E[Next-open backtester]
-    E --> F[Orders, cash, positions, and fees]
-    F --> G[Equity, cash, positions, and trades]
-    G --> H[Risk and performance analytics]
-    H --> I[Streamlit dashboard]
-```
-
-## Performance Analytics
-
-Phase 5 converts a `BacktestResult` into one immutable performance summary.
-
-![SamQuant Phase 5 analytics flow](output/images/samquant-phase-5-analytics.png)
-
-```python
-from samquant.analytics import calculate_metrics
-
-metrics = calculate_metrics(
-    result,
-    periods_per_year=252,
-    risk_free_rate=0.0,
-)
-
-print(metrics.total_return)
-print(metrics.sharpe_ratio)
-print(metrics.maximum_drawdown)
-```
-
-The analytics layer reports total return, annualized return, annualized
-volatility, Sharpe ratio, maximum drawdown, and realized trade win rate. Daily
-annualization assumes 252 observations per year by default and can be changed
-for other data frequencies.
-
-Maximum drawdown is returned as a positive peak-to-trough loss. Win rate uses
-FIFO cost basis, includes transaction fees, counts completed sell executions,
-and excludes unrealized open positions. Sharpe ratio and win rate return `NaN`
-when they are mathematically undefined rather than presenting a misleading
-zero.
-
-## Interactive Dashboard
-
-Phase 6 turns the research pipeline into a Streamlit application without moving
-strategy, execution, or analytics logic into the user interface.
-
-![SamQuant Phase 6 teaching flow](output/images/samquant-phase-6-teaching-diagram.svg)
+## Development
 
 ```bash
-python -m streamlit run samquant/dashboard/app.py
+python -m pip install -r requirements-dev.txt
+ruff check --select E4,E7,E9,F,B --ignore B905 samquant tests
+pytest --cov=samquant --cov-report=term-missing --cov-fail-under=85
 ```
 
-The dashboard includes:
+GitHub Actions runs linting and the full test suite on Python 3.10 and 3.12.
+Live downloads are mocked in unit tests to keep CI deterministic.
 
-- deterministic demo data for reliable offline exploration;
-- optional historical downloads from Yahoo Finance;
-- controls for US, Indian NSE, and Indian BSE symbols, strategy settings,
-  starting cash, fees, slippage, and the risk-free rate;
-- portfolio growth and drawdown charts;
-- a complete table of simulated buy and sell executions;
-- moving-average, mean-reversion, momentum, and equal-weight comparisons;
-- closing-price and target-weight views for inspecting strategy behavior.
+## Documentation
 
-`samquant/dashboard/pipeline.py` prepares testable dashboard results, while
-`samquant/dashboard/app.py` only renders controls and charts. This boundary keeps
-Streamlit replaceable and prevents the presentation layer from becoming a second
-backtesting engine.
+- [Usage and installation](docs/usage.md)
+- [Architecture and design decisions](docs/architecture.md)
+- [Important public APIs](docs/api.md)
+- [Elevator pitch, resume bullets, and interview notes](docs/portfolio.md)
 
-For Indian shares, choose `India (NSE)` or `India (BSE)` and enter ordinary
-exchange symbols such as `RELIANCE, TCS, INFY`. SamQuant automatically converts
-them to Yahoo Finance tickers such as `RELIANCE.NS` or `RELIANCE.BO`. Complete
-tickers and index symbols such as `^NSEI` can also be entered directly.
+## Version 2 Candidates
 
-The demo data is synthetic and deterministic, so it is useful for learning and
-software verification but not for making investment conclusions. Live and demo
-signals still pass through the same next-open backtester with the selected
-transaction fees and slippage.
+Multi-asset optimization, point-in-time universes, walk-forward validation,
+position sizing, stop-loss rules, Monte Carlo analysis, paper trading, and broker
+integration are intentionally deferred until the Version 1 research foundation
+is stable.
+
+## License
+
+SamQuant is available under the [MIT License](LICENSE).

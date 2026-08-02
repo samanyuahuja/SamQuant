@@ -1,4 +1,4 @@
-"""Tests for the Phase 6 dashboard pipeline and Streamlit entry point."""
+"""Tests for the dashboard pipeline and Streamlit entry point."""
 
 from __future__ import annotations
 
@@ -93,6 +93,18 @@ def test_dashboard_pipeline_runs_strategy_engine_and_analytics() -> None:
     assert run.result.final_value > 0.0
     assert run.target_weights.shape == (80, 1)
     assert isinstance(run.metrics.total_return, float)
+
+
+@pytest.mark.parametrize("strategy_name", [MOVING_AVERAGE, MEAN_REVERSION, MOMENTUM])
+def test_indian_symbols_run_every_dashboard_strategy(strategy_name: str) -> None:
+    symbol = parse_symbols("RELIANCE", INDIA_NSE)[0]
+    market_data = generate_demo_market_data((symbol,), periods=260)
+
+    run = run_dashboard_backtest(market_data, strategy_name, DashboardConfig())
+
+    assert run.strategy_name == strategy_name
+    assert run.target_weights.columns.tolist() == ["RELIANCE.NS"]
+    assert run.result.final_value > 0.0
 
 
 def test_dashboard_tables_preserve_trade_and_risk_information() -> None:

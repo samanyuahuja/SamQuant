@@ -56,6 +56,24 @@ def test_backtester_executes_targets_one_bar_later() -> None:
     assert result.final_value == pytest.approx(1_300.0)
 
 
+def test_future_targets_cannot_change_earlier_trades() -> None:
+    prices = _market_data()
+    original_targets = pd.DataFrame(
+        {"AAPL": [1.0, 1.0, 0.0, 0.0]},
+        index=prices.index,
+    )
+    changed_future_targets = original_targets.copy()
+    changed_future_targets.iloc[-1, 0] = 1.0
+
+    backtester = Backtester(initial_cash=1_100.0, commission_rate=0.0)
+    original = backtester.run({"AAPL": prices}, original_targets)
+    changed = backtester.run({"AAPL": prices}, changed_future_targets)
+
+    original_trades = [trade for trade in original.trades if trade.timestamp <= prices.index[-1]]
+    changed_trades = [trade for trade in changed.trades if trade.timestamp <= prices.index[-1]]
+    assert original_trades == changed_trades
+
+
 def test_unchanged_target_does_not_create_daily_rebalancing_trades() -> None:
     prices = _market_data()
     targets = pd.DataFrame({"AAPL": [0.5, 0.5, 0.5, 0.5]}, index=prices.index)

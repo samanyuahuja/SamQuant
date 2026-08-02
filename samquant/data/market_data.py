@@ -26,7 +26,7 @@ def download_ohlcv(
     start: str,
     end: str,
     interval: str = "1d",
-    auto_adjust: bool = False,
+    auto_adjust: bool = True,
 ) -> pd.DataFrame:
     """Download historical OHLCV data for one symbol from Yahoo Finance.
 
@@ -35,6 +35,7 @@ def download_ohlcv(
     exclusive for daily data.
     """
     cleaned_symbol = normalize_symbol(symbol)
+    _validate_auto_adjust(auto_adjust)
     data = yf.download(
         cleaned_symbol,
         start=start,
@@ -58,6 +59,7 @@ def get_ohlcv(
     interval: str = "1d",
     data_dir: Path | str = DEFAULT_DATA_DIR,
     refresh: bool = False,
+    auto_adjust: bool = True,
 ) -> pd.DataFrame:
     """Load OHLCV data from disk, or download and cache it when missing.
 
@@ -65,11 +67,25 @@ def get_ohlcv(
     symbol, start date, end date, and interval so separate research windows do
     not overwrite one another.
     """
-    path = build_data_path(symbol, start, end, interval, data_dir)
+    _validate_auto_adjust(auto_adjust)
+    path = build_data_path(
+        symbol,
+        start,
+        end,
+        interval,
+        data_dir,
+        auto_adjust=auto_adjust,
+    )
     if path.exists() and not refresh:
         return load_ohlcv(path)
 
-    data = download_ohlcv(symbol=symbol, start=start, end=end, interval=interval)
+    data = download_ohlcv(
+        symbol=symbol,
+        start=start,
+        end=end,
+        interval=interval,
+        auto_adjust=auto_adjust,
+    )
     save_ohlcv(data, path)
     return data
 
@@ -161,10 +177,13 @@ def build_data_path(
     end: str,
     interval: str = "1d",
     data_dir: Path | str = DEFAULT_DATA_DIR,
+    auto_adjust: bool = True,
 ) -> Path:
     """Build the deterministic CSV path for a cached OHLCV data request."""
+    _validate_auto_adjust(auto_adjust)
     safe_symbol = normalize_symbol(symbol).replace("/", "-")
-    file_name = f"{safe_symbol}_{start}_{end}_{interval}.csv"
+    adjustment = "adjusted" if auto_adjust else "unadjusted"
+    file_name = f"{safe_symbol}_{start}_{end}_{interval}_{adjustment}.csv"
     return Path(data_dir) / "ohlcv" / file_name
 
 
@@ -174,6 +193,12 @@ def normalize_symbol(symbol: str) -> str:
     if not cleaned:
         raise MarketDataError("Symbol cannot be empty.")
     return cleaned
+
+
+def _validate_auto_adjust(auto_adjust: bool) -> None:
+    """Require an explicit boolean corporate-action adjustment setting."""
+    if not isinstance(auto_adjust, bool):
+        raise MarketDataError("Auto-adjust setting must be boolean.")
 
 
 def _flatten_yfinance_columns(columns: pd.MultiIndex) -> list[str]:

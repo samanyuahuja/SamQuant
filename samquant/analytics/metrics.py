@@ -162,7 +162,7 @@ def calculate_metrics(
     periods_per_year: int = 252,
     risk_free_rate: float = 0.0,
 ) -> PerformanceMetrics:
-    """Calculate the standard Phase 5 summary for a backtest result."""
+    """Calculate the standard performance summary for a backtest result."""
     if not isinstance(result, BacktestResult):
         raise AnalyticsError("Result must be a BacktestResult.")
 

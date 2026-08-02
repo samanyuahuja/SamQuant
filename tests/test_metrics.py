@@ -1,4 +1,4 @@
-"""Tests for Phase 5 performance and risk analytics."""
+"""Tests for performance and risk analytics."""
 
 from __future__ import annotations
 
@@ -65,6 +65,10 @@ def test_annualized_return_uses_observed_return_periods() -> None:
     assert result == pytest.approx(1.0)
 
 
+def test_annualized_return_is_undefined_for_one_observation() -> None:
+    assert isnan(annualized_return(_equity([100.0])))
+
+
 def test_annualized_volatility_uses_sample_standard_deviation() -> None:
     returns = pd.Series([0.01, -0.02, 0.03])
 
@@ -112,6 +116,16 @@ def test_trade_win_rate_rejects_sell_without_fifo_inventory() -> None:
     trades = (_trade(OrderSide.SELL, 1.0, 100.0, 0.0, 1),)
 
     with pytest.raises(AnalyticsError, match="exceeds tracked FIFO inventory"):
+        trade_win_rate(trades)
+
+
+def test_trade_win_rate_rejects_out_of_order_trades() -> None:
+    trades = (
+        _trade(OrderSide.BUY, 1.0, 100.0, 0.0, 2),
+        _trade(OrderSide.SELL, 1.0, 110.0, 0.0, 1),
+    )
+
+    with pytest.raises(AnalyticsError, match="ordered by timestamp"):
         trade_win_rate(trades)
 
 

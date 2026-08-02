@@ -72,10 +72,13 @@ def test_download_ohlcv_drops_incomplete_provider_rows(
     provider_data["Adj Close"] = [100.5, 102.5, float("nan")]
     provider_data.loc[pd.Timestamp("2024-01-03"), "Close"] = float("nan")
 
-    monkeypatch.setattr(
-        "samquant.data.market_data.yf.download",
-        lambda *args, **kwargs: provider_data,
-    )
+    download_arguments: dict[str, object] = {}
+
+    def fake_download(*args: object, **kwargs: object) -> pd.DataFrame:
+        download_arguments.update(kwargs)
+        return provider_data
+
+    monkeypatch.setattr("samquant.data.market_data.yf.download", fake_download)
 
     downloaded = download_ohlcv("RELIANCE.NS", "2024-01-01", "2024-02-01")
 
@@ -84,6 +87,7 @@ def test_download_ohlcv_drops_incomplete_provider_rows(
         pd.Timestamp("2024-01-04"),
     ]
     assert pd.isna(downloaded.loc[pd.Timestamp("2024-01-04"), "Adj Close"])
+    assert download_arguments["auto_adjust"] is True
     validate_ohlcv(downloaded)
 
 
@@ -99,7 +103,35 @@ def test_save_and_load_ohlcv_round_trip(tmp_path: Path) -> None:
 def test_build_data_path_is_deterministic_and_symbol_safe(tmp_path: Path) -> None:
     path = build_data_path(" brk/b ", "2024-01-01", "2024-02-01", data_dir=tmp_path)
 
-    assert path == tmp_path / "ohlcv" / "BRK-B_2024-01-01_2024-02-01_1d.csv"
+    assert path == (
+        tmp_path / "ohlcv" / "BRK-B_2024-01-01_2024-02-01_1d_adjusted.csv"
+    )
+
+
+def test_build_data_path_separates_adjusted_and_unadjusted_data(tmp_path: Path) -> None:
+    adjusted = build_data_path("AAPL", "2024-01-01", "2024-02-01", data_dir=tmp_path)
+    unadjusted = build_data_path(
+        "AAPL",
+        "2024-01-01",
+        "2024-02-01",
+        data_dir=tmp_path,
+        auto_adjust=False,
+    )
+
+    assert adjusted != unadjusted
+    assert adjusted.name.endswith("_adjusted.csv")
+    assert unadjusted.name.endswith("_unadjusted.csv")
+
+
+def test_build_data_path_rejects_non_boolean_adjustment_setting(tmp_path: Path) -> None:
+    with pytest.raises(MarketDataError, match="must be boolean"):
+        build_data_path(
+            "AAPL",
+            "2024-01-01",
+            "2024-02-01",
+            data_dir=tmp_path,
+            auto_adjust=1,  # type: ignore[arg-type]
+        )
 
 
 def test_normalize_symbol_rejects_empty_symbol() -> None:

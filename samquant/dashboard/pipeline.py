@@ -11,7 +11,7 @@ import pandas as pd
 
 from samquant.analytics import PerformanceMetrics, calculate_metrics
 from samquant.data.market_data import normalize_symbol, validate_ohlcv
-from samquant.engine import BacktestResult, Backtester, OrderSide
+from samquant.engine import BacktestResult, Backtester
 from samquant.strategies import (
     MeanReversionStrategy,
     MomentumStrategy,
