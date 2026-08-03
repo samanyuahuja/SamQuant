@@ -36,19 +36,22 @@ test("visualizations rise and zoom into place while scrolling", async ({ page },
 test("research terminal runs the primary backtest journey", async ({ page }) => {
   await page.goto("/research");
   await expect(page.locator("main[data-ready='true']")).toBeVisible();
+  await page.getByRole("button", { name: "Edit setup" }).click();
   await page.getByLabel("Tickers").fill("AAPL, MSFT");
   await page.getByLabel("Short window").fill("10");
   await page.getByLabel("Long window").fill("40");
   const responsePromise = page.waitForResponse((response) => response.url().includes("/api/backtests") && response.request().method() === "POST");
   await page.getByRole("button", { name: "Run backtest" }).click();
   await expect((await responsePromise).status()).toBe(200);
-  await expect(page.getByText("AAPL + MSFT")).toBeVisible();
-  await expect(page.getByRole("button", { name: "Trades CSV" })).toBeEnabled();
+  await expect(page.getByText("Backtest research / AAPL + MSFT", { exact: true })).toBeVisible();
+  await page.getByTitle("Export results").click();
+  await expect(page.getByRole("button", { name: "Trades CSV" })).toBeVisible();
 });
 
 test("invalid inputs stay understandable", async ({ page }) => {
   await page.goto("/research");
   await expect(page.locator("main[data-ready='true']")).toBeVisible();
+  await page.getByRole("button", { name: "Edit setup" }).click();
   await page.getByLabel("Start", { exact: true }).fill("2024-02-01");
   await page.getByLabel("End", { exact: true }).fill("2024-01-01");
   await page.getByRole("button", { name: "Run backtest" }).click();
@@ -58,6 +61,7 @@ test("invalid inputs stay understandable", async ({ page }) => {
 test("empty tickers are rejected before a request is sent", async ({ page }) => {
   await page.goto("/research");
   await expect(page.locator("main[data-ready='true']")).toBeVisible();
+  await page.getByRole("button", { name: "Edit setup" }).click();
   await page.getByLabel("Tickers").fill("");
   await page.getByRole("button", { name: "Run backtest" }).click();
   await expect(page.getByRole("alert").filter({ hasText: "Backtest not run" })).toContainText("Enter at least one ticker symbol");
@@ -178,8 +182,10 @@ test("desktop visual baselines remain stable", async ({ page }, testInfo) => {
   test.skip(Boolean(process.env.CI) || testInfo.project.name !== "desktop", "Local desktop baselines cover the main visual system.");
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/");
+  await page.addStyleTag({ content: "nextjs-portal { display: none !important; }" });
   await expect(page).toHaveScreenshot("landing-desktop.png", { fullPage: true, animations: "disabled", maxDiffPixels: 5_000 });
   await page.goto("/research");
+  await page.addStyleTag({ content: "nextjs-portal { display: none !important; }" });
   await expect(page.locator("main[data-ready='true']")).toBeVisible();
   await expect(page.getByRole("figure", { name: /daily candlesticks/ })).toBeVisible();
   await expect(page).toHaveScreenshot("research-desktop.png", { fullPage: true, animations: "disabled", maxDiffPixels: 5_000 });

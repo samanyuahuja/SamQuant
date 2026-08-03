@@ -1,14 +1,14 @@
 .figure {
-  --chart-background: #171a18;
-  --chart-text: #9ca29e;
-  --chart-grid: #303630;
-  --chart-crosshair: #727a76;
-  --chart-crosshair-label: #303630;
-  --chart-border: #3c423d;
-  --chart-accent: #86a6ad;
-  --chart-accent-secondary: #d1c8a2;
-  --chart-positive: #3d9b72;
-  --chart-negative: #c9635c;
+  --chart-background: #fffdf8;
+  --chart-text: #657069;
+  --chart-grid: #e8e2d6;
+  --chart-crosshair: #7f8983;
+  --chart-crosshair-label: #315f69;
+  --chart-border: #cbc7bd;
+  --chart-accent: #315f69;
+  --chart-accent-secondary: #92713a;
+  --chart-positive: #21674c;
+  --chart-negative: #a8473d;
   position: relative;
   width: 100%;
   height: 100%;

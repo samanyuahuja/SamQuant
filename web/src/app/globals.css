@@ -46,9 +46,9 @@ body {
 }
 
 body:has(main[data-route="research"]) {
-  background: #151816;
-  color: var(--paper);
-  color-scheme: dark;
+  background: #f4f1e9;
+  color: var(--ink);
+  color-scheme: light;
 }
 
 body:has(main[data-route="research"]) footer { display: none; }
@@ -92,8 +92,6 @@ summary { outline-offset: 4px; }
   line-height: 1.5;
   text-transform: uppercase;
 }
-
-body:has(main[data-route="research"]) .eyebrow { color: #86a6ad; }
 
 .text-link {
   display: inline-flex;

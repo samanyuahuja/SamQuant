@@ -2,7 +2,7 @@
 
 ## Direction
 
-SamQuant uses a split register. Public explanations sit on warm research paper. The working terminal uses graphite surfaces built for dense financial data. One steel-blue market line links data, strategy, execution, portfolio state, and risk.
+SamQuant uses one warm research-paper system across its explanations and working interface. The Research page borrows its hierarchy from an analyst's notebook: define the experiment, inspect price and fills, read the metrics, then examine supporting results. Real market charts provide the visual identity.
 
 ## Visual Hierarchy
 
@@ -21,10 +21,11 @@ All three font families are self-hosted from Fontsource packages licensed under 
 | Token | Value | Purpose |
 | --- | --- | --- |
 | Paper | `#f1efe8` | Public narrative background |
+| Research paper | `#f4f1e9` | Backtest workspace background |
+| Research surface | `#fffdf8` | Financial chart canvas |
 | Ink | `#111310` | Primary type and strongest contrast |
-| Graphite | `#202421` | Research and analytics surfaces |
-| Steel | `#727a76` | Secondary information |
-| Interaction | `#486a73` | Links, focus, and the continuous line |
+| Muted ink | `#525e57` | Secondary research information |
+| Interaction | `#315f69` | Links, focus, and chart series |
 | Gain | `#247653` | Purchases and positive states only |
 | Loss | `#b64a43` | Sales, drawdown, and errors only |
 
@@ -45,9 +46,9 @@ The landing page has four motion sequences: raw line reveal, strategy interpreta
 
 ## Responsive Rules
 
-- `1440px`: full editorial measure and persistent terminal rail
-- `1024px`: reduced gutters and compact metrics
-- `768px`: controls move above the terminal and become collapsible
-- `375px`: two-column metrics, stacked execution, and simplified charts
+- `1440px`: wide analysis canvas and three-column experiment setup
+- `1024px`: two-column setup and compact metric wrapping
+- `768px`: single-column setup behind an explicit disclosure
+- `375px`: two-column metrics, touch-sized inputs, and simplified chart tabs
 
-Touch controls remain at least 40 pixels tall. Dense tables scroll within their own labeled region without widening the page.
+Touch controls remain at least 44 pixels tall. Dense tables scroll within their own labeled region without widening the page.

@@ -57,11 +57,13 @@ describe("ResearchTerminal", () => {
     expect(screen.getByRole("alert")).not.toHaveTextContent("ECONNREFUSED");
   });
 
-  it("lets small screens collapse the control flow", () => {
+  it("keeps the setup collapsed until the researcher edits it", () => {
     render(<ResearchTerminal initialReport={demoReport as BacktestResponse} />);
-    const toggle = screen.getByRole("button", { name: /Hide/ });
-    fireEvent.click(toggle);
+    const toggle = screen.getByRole("button", { name: "Edit setup" });
     expect(toggle).toHaveAttribute("aria-expanded", "false");
+    fireEvent.click(toggle);
+    expect(toggle).toHaveAttribute("aria-expanded", "true");
+    expect(toggle).toHaveTextContent("Close setup");
   });
 
   it("opens the executed trade table", () => {

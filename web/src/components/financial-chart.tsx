@@ -74,16 +74,16 @@ function readTheme(container: HTMLDivElement): ChartTheme {
   const computed = getComputedStyle(container);
   const read = (name: string, fallback: string) => computed.getPropertyValue(name).trim() || fallback;
   return {
-    background: read("--chart-background", "#171a18"),
-    text: read("--chart-text", "#9ca29e"),
-    grid: read("--chart-grid", "#303630"),
-    crosshair: read("--chart-crosshair", "#727a76"),
-    crosshairLabel: read("--chart-crosshair-label", "#303630"),
-    border: read("--chart-border", "#3c423d"),
-    accent: read("--chart-accent", "#86a6ad"),
-    accentSecondary: read("--chart-accent-secondary", "#d1c8a2"),
-    positive: read("--chart-positive", "#3d9b72"),
-    negative: read("--chart-negative", "#c9635c"),
+    background: read("--chart-background", "#fffdf8"),
+    text: read("--chart-text", "#657069"),
+    grid: read("--chart-grid", "#e8e2d6"),
+    crosshair: read("--chart-crosshair", "#7f8983"),
+    crosshairLabel: read("--chart-crosshair-label", "#315f69"),
+    border: read("--chart-border", "#cbc7bd"),
+    accent: read("--chart-accent", "#315f69"),
+    accentSecondary: read("--chart-accent-secondary", "#92713a"),
+    positive: read("--chart-positive", "#21674c"),
+    negative: read("--chart-negative", "#a8473d"),
   };
 }
 
@@ -163,8 +163,8 @@ function addPriceSeries(chart: IChartApi, report: BacktestResponse, theme: Chart
 function addEquitySeries(chart: IChartApi, values: TimeValue[], theme: ChartTheme) {
   const series = chart.addSeries(AreaSeries, {
     lineColor: theme.accent,
-    topColor: "rgba(134, 166, 173, 0.18)",
-    bottomColor: "rgba(134, 166, 173, 0.01)",
+    topColor: "rgba(49, 95, 105, 0.20)",
+    bottomColor: "rgba(49, 95, 105, 0.02)",
     lineWidth: 2,
     priceFormat: { type: "price", precision: 0, minMove: 1 },
   });
@@ -174,8 +174,8 @@ function addEquitySeries(chart: IChartApi, values: TimeValue[], theme: ChartThem
 function addDrawdownSeries(chart: IChartApi, values: TimeValue[], theme: ChartTheme) {
   const series = chart.addSeries(AreaSeries, {
     lineColor: theme.negative,
-    topColor: "rgba(201, 99, 92, 0.02)",
-    bottomColor: "rgba(201, 99, 92, 0.24)",
+    topColor: "rgba(168, 71, 61, 0.02)",
+    bottomColor: "rgba(168, 71, 61, 0.20)",
     lineWidth: 2,
     priceFormat: { type: "percent", precision: 1, minMove: 0.1 },
   });
