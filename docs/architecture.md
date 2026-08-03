@@ -108,6 +108,11 @@ all chunks exceed 900 KB, or bundled demonstration data exceeds 400 KB. Browser
 tests cover WCAG violations, responsive overflow, reduced motion, and the main
 backtest journey.
 
+The public website uses a small token system and self-hosted fonts. GSAP owns
+four explanatory sequences on the landing page, while Lightweight Charts owns
+interactive financial canvases in the terminal. Neither library receives
+responsibility for strategy, execution, or analytics calculations.
+
 ## Current Boundaries
 
 Version 1 assumes aligned daily bars, a user-selected universe, complete fills,

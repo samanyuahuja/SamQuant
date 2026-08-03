@@ -1,4 +1,20 @@
-.figure { position: relative; width: 100%; height: 100%; min-height: inherit; margin: 0; }
+.figure {
+  --chart-background: #171a18;
+  --chart-text: #9ca29e;
+  --chart-grid: #303630;
+  --chart-crosshair: #727a76;
+  --chart-crosshair-label: #303630;
+  --chart-border: #3c423d;
+  --chart-accent: #86a6ad;
+  --chart-accent-secondary: #d1c8a2;
+  --chart-positive: #3d9b72;
+  --chart-negative: #c9635c;
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: inherit;
+  margin: 0;
+}
 .chart { width: 100%; height: 100%; min-height: inherit; }
 .caption {
   position: absolute;

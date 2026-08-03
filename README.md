@@ -14,6 +14,8 @@ dashboard. A FastAPI boundary serves the Next.js research terminal without
 duplicating financial logic in TypeScript. It is an education project, not a
 claim of future profitability.
 
+![SamQuant public research story](docs/images/samquant-home-web.png)
+
 ![SamQuant web research terminal](docs/images/research-terminal-web.png)
 
 ## Highlights
@@ -166,7 +168,7 @@ npm run test:budget && npm run test:e2e
 ```
 
 GitHub Actions checks Python 3.10 and 3.12, the production web build, bundle
-budgets, accessibility, and desktop, tablet, and mobile browser journeys.
+budgets, accessibility, and 1440, 1024, 768, and 375 pixel browser journeys.
 
 ## Documentation
 
@@ -174,6 +176,8 @@ budgets, accessibility, and desktop, tablet, and mobile browser journeys.
 - [Architecture and design decisions](docs/architecture.md)
 - [Important public APIs](docs/api.md)
 - [Elevator pitch, resume bullets, and interview notes](docs/portfolio.md)
+- [Web design system and asset plan](docs/web-design-system.md)
+- [Web quality, accessibility, and performance report](docs/web-quality-report.md)
 
 ## Version 2 Candidates
 

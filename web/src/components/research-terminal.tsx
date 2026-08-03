@@ -11,11 +11,12 @@ import {
   LineChart,
   Play,
   RotateCcw,
+  SlidersHorizontal,
   Table2,
   Waves,
 } from "lucide-react";
 
-import { runBacktest } from "@/lib/api";
+import { ResearchApiError, runBacktest } from "@/lib/api";
 import { formatMoney, formatNumber, formatPercent } from "@/lib/format";
 import {
   DEFAULT_REQUEST,
@@ -61,6 +62,7 @@ export function ResearchTerminal({ initialReport }: { initialReport: BacktestRes
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [errorFields, setErrorFields] = useState<string[]>([]);
+  const [controlsOpen, setControlsOpen] = useState(true);
   const ready = useSyncExternalStore(subscribeToHydration, () => true, () => false);
   const activeRequest = useRef<AbortController | null>(null);
 
@@ -72,6 +74,7 @@ export function ResearchTerminal({ initialReport }: { initialReport: BacktestRes
     if (validation) {
       setError(validation.message);
       setErrorFields(validation.fields);
+      focusFirstField(validation.fields);
       return;
     }
     activeRequest.current?.abort();
@@ -83,9 +86,14 @@ export function ResearchTerminal({ initialReport }: { initialReport: BacktestRes
     try {
       const nextReport = await runBacktest(request, controller.signal);
       setReport(nextReport);
+      setControlsOpen(false);
     } catch (caught) {
       if (controller.signal.aborted) return;
       setError(caught instanceof Error ? caught.message : "The backtest could not be completed.");
+      if (caught instanceof ResearchApiError) {
+        setErrorFields(caught.fields);
+        if (caught.fields.length) focusFirstField(caught.fields);
+      }
     } finally {
       if (!controller.signal.aborted) setLoading(false);
     }
@@ -109,6 +117,7 @@ export function ResearchTerminal({ initialReport }: { initialReport: BacktestRes
     setError(null);
     setErrorFields([]);
     setLoading(false);
+    setControlsOpen(true);
   }
 
   const inputCurrency = request.market === "US" ? "USD" : "INR";
@@ -122,10 +131,14 @@ export function ResearchTerminal({ initialReport }: { initialReport: BacktestRes
             <p className="eyebrow">Research setup</p>
             <h1>Backtest controls</h1>
           </div>
-          <button className={styles.iconButton} type="button" onClick={reset} title="Reset controls" aria-label="Reset controls">
-            <RotateCcw aria-hidden="true" size={16} />
-          </button>
+          <div className={styles.controlHeaderActions}>
+            <button className={styles.mobileControlButton} type="button" aria-expanded={controlsOpen} aria-controls="backtest-control-body" onClick={() => setControlsOpen((current) => !current)}>
+              <SlidersHorizontal aria-hidden="true" size={15} />{controlsOpen ? "Hide" : "Show"}
+            </button>
+            <button className={styles.iconButton} type="button" onClick={reset} title="Reset controls" aria-label="Reset controls"><RotateCcw aria-hidden="true" size={16} /></button>
+          </div>
         </div>
+        <div id="backtest-control-body" className={styles.controlBody} data-open={controlsOpen}>
         <form onSubmit={handleSubmit} noValidate>
           <fieldset>
             <legend><span>01</span> Market data</legend>
@@ -207,6 +220,7 @@ export function ResearchTerminal({ initialReport }: { initialReport: BacktestRes
           </button>
         </form>
         <p className={styles.railNote}>Signals execute at the next bar&apos;s open.</p>
+        </div>
       </aside>
 
       <section className={styles.workspace} aria-live="polite" aria-busy={loading}>
@@ -236,9 +250,9 @@ export function ResearchTerminal({ initialReport }: { initialReport: BacktestRes
           </div>
         )}
 
-        <div className={styles.disclaimer}>
+        <div className={styles.disclaimer} role="note">
           <Info aria-hidden="true" size={15} />
-          <span>Hypothetical research result. Not investment advice.</span>
+          <span>SamQuant is an educational research tool. Backtested results are hypothetical, depend on historical data and stated assumptions, and do not represent actual trading or guarantee future results. Nothing presented constitutes investment advice.</span>
           <Link href="/disclaimer">Read disclaimer</Link>
         </div>
 
@@ -250,6 +264,8 @@ export function ResearchTerminal({ initialReport }: { initialReport: BacktestRes
           <div className={styles.priceChart}><FinancialChart report={report} mode="price" /></div>
           {loading && <LoadingOverlay />}
         </section>
+
+        <PriceDataTable report={report} />
 
         <section className={styles.metrics} aria-label="Performance metrics">
           <Metric label="Total return" value={formatPercent(report.metrics.totalReturn)} />
@@ -267,6 +283,8 @@ export function ResearchTerminal({ initialReport }: { initialReport: BacktestRes
               key={tab.id}
               type="button"
               role="tab"
+              id={`tab-${tab.id}`}
+              aria-controls={`panel-${tab.id}`}
               aria-selected={activeTab === tab.id}
               onClick={() => setActiveTab(tab.id)}
             >
@@ -275,7 +293,7 @@ export function ResearchTerminal({ initialReport }: { initialReport: BacktestRes
           ))}
         </div>
 
-        <section className={styles.resultPanel} role="tabpanel">
+        <section className={styles.resultPanel} id={`panel-${activeTab}`} role="tabpanel" aria-labelledby={`tab-${activeTab}`}>
           {activeTab === "trades" ? (
             <TradeTable report={report} currency={resultCurrency} />
           ) : (
@@ -365,6 +383,32 @@ function ChartSkeleton() {
 
 function LoadingOverlay() {
   return <div className={styles.loadingOverlay} role="status"><span /><strong>Running the Python research engine</strong></div>;
+}
+
+function PriceDataTable({ report }: { report: BacktestResponse }) {
+  const symbol = report.metadata.symbols[0];
+  const bars = report.market[symbol].slice(-20);
+  return (
+    <details className={styles.chartData}>
+      <summary>View recent chart data</summary>
+      <div className={styles.tableWrap}>
+        <table>
+          <caption>Twenty most recent price bars shown in the chart</caption>
+          <thead><tr><th>Date</th><th>Open</th><th>High</th><th>Low</th><th>Close</th><th>Volume</th></tr></thead>
+          <tbody>{bars.map((bar) => <tr key={bar.time}><td>{bar.time}</td><td>{formatNumber(bar.open)}</td><td>{formatNumber(bar.high)}</td><td>{formatNumber(bar.low)}</td><td>{formatNumber(bar.close)}</td><td>{formatNumber(bar.volume, 0)}</td></tr>)}</tbody>
+        </table>
+      </div>
+    </details>
+  );
+}
+
+function focusFirstField(fields: string[]) {
+  const ids: Record<string, string> = {
+    symbols: "symbols", start: "start", end: "end", short_window: "short-window",
+    long_window: "long-window", entry_z_score: "entry-z", exit_z_score: "exit-z",
+    top_n: "top-assets",
+  };
+  requestAnimationFrame(() => document.getElementById(ids[fields[0]] ?? fields[0])?.focus());
 }
 
 function validateRequest(request: BacktestRequest): { message: string; fields: string[] } | null {

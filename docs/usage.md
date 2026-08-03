@@ -86,6 +86,40 @@ curve, drawdown, benchmark comparison, trade history, and the assumptions used.
 The Streamlit prototype remains available with
 `python -m streamlit run samquant/dashboard/app.py`.
 
+## Brand Assets And Screenshots
+
+The web app generates every icon and social image from reviewed local code and the deterministic demo report.
+
+```bash
+cd web
+npm run assets:brand
+```
+
+With the API and web server running, regenerate the real screenshot set with:
+
+```bash
+npm run screenshots
+```
+
+The output covers the homepage, research terminal, and architecture page at 375, 768, 1024, and 1440 pixels.
+
+## Deployment Notes
+
+Deploy the Python API and Next.js frontend as separate services. Set `SAMQUANT_API_URL` on the frontend service to the private API origin. Set `NEXT_PUBLIC_SITE_URL` to the final public address before building so metadata, robots, and the sitemap use the correct origin.
+
+The Next.js build uses standalone output:
+
+```bash
+cd web
+npm ci
+npm run build
+cp -R public .next/standalone/
+cp -R .next/static .next/standalone/.next/
+HOSTNAME=0.0.0.0 PORT=3000 node .next/standalone/server.js
+```
+
+Keep `SAMQUANT_ENABLE_YAHOO` disabled on a public demonstration unless the deployment has an appropriate data agreement. The bundled deterministic source needs no network access.
+
 Total return measures start-to-finish growth. Annualized return estimates a
 one-year compounded rate. Volatility measures variability. Sharpe compares
 average excess return with volatility. Maximum drawdown measures the deepest

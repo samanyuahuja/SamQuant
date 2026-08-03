@@ -4,7 +4,7 @@ import { expect, test } from "@playwright/test";
 test("landing page tells the complete system story", async ({ page }) => {
   await page.goto("/");
   await expect(page.getByRole("heading", { name: /Test the strategy/ })).toBeVisible();
-  await expect(page.getByRole("heading", { name: "The decision layer." })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Indicators analyze. Strategies decide." })).toBeVisible();
   await expect(page.getByRole("heading", { name: /The strategy decides/ })).toBeVisible();
   await expect(page.getByRole("heading", { name: /Return without risk/ })).toBeVisible();
   await expect(page.getByRole("link", { name: /Open research terminal/ }).first()).toBeVisible();
@@ -32,8 +32,43 @@ test("invalid inputs stay understandable", async ({ page }) => {
   await expect(page.locator("[role='alert']").filter({ hasText: "Backtest not run" })).toContainText("End date must be later than start date");
 });
 
+test("empty tickers are rejected before a request is sent", async ({ page }) => {
+  await page.goto("/research");
+  await expect(page.locator("main[data-ready='true']")).toBeVisible();
+  await page.getByLabel("Tickers").fill("");
+  await page.getByRole("button", { name: "Run backtest" }).click();
+  await expect(page.getByRole("alert").filter({ hasText: "Backtest not run" })).toContainText("Enter at least one ticker symbol");
+  await expect(page.getByLabel("Tickers")).toBeFocused();
+});
+
+test("loading state names the work in progress", async ({ page }) => {
+  await page.route("**/api/backtests", async (route) => {
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    await route.continue();
+  });
+  await page.goto("/research");
+  await expect(page.locator("main[data-ready='true']")).toBeVisible();
+  await page.getByRole("button", { name: "Run backtest" }).click();
+  await expect(page.getByRole("button", { name: "Running backtest" })).toBeDisabled();
+  await expect(page.getByText("Running the Python research engine")).toBeVisible();
+});
+
+test("backend failures stay useful and do not expose internals", async ({ page }) => {
+  await page.route("**/api/backtests", (route) => route.fulfill({
+    status: 503,
+    contentType: "application/json",
+    body: JSON.stringify({ error: { code: "API_UNAVAILABLE", message: "The research engine is unavailable. Check the Python API and try again.", fields: [], requestId: "browser-test" } }),
+  }));
+  await page.goto("/research");
+  await expect(page.locator("main[data-ready='true']")).toBeVisible();
+  await page.getByRole("button", { name: "Run backtest" }).click();
+  const alert = page.getByRole("alert").filter({ hasText: "Backtest not run" });
+  await expect(alert).toContainText("research engine is unavailable");
+  await expect(alert).not.toContainText("ECONNREFUSED");
+});
+
 test("pages fit the active viewport", async ({ page }) => {
-  for (const path of ["/", "/research", "/methodology"]) {
+  for (const path of ["/", "/research", "/methodology", "/docs", "/architecture", "/about", "/privacy", "/terms", "/disclaimer", "/data-and-attribution", "/accessibility", "/changelog"]) {
     await page.goto(path);
     if (path === "/research") {
       await expect(page.getByRole("figure", { name: /daily candlesticks/ })).toBeVisible();
@@ -47,7 +82,21 @@ test("reduced motion keeps the story readable", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/");
   await expect(page.getByRole("heading", { name: /Test the strategy/ })).toBeVisible();
-  await expect(page.getByRole("heading", { name: /Now run the system/ })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Run the complete system." })).toBeVisible();
+});
+
+test("brand metadata and professional routes are complete", async ({ page }) => {
+  await page.goto("/");
+  await expect(page).toHaveTitle(/SamQuant/);
+  await expect(page.locator("link[rel='manifest']")).toHaveAttribute("href", /manifest/);
+  for (const path of ["/methodology", "/docs", "/architecture", "/about", "/privacy", "/terms", "/disclaimer", "/data-and-attribution", "/accessibility", "/changelog"]) {
+    const response = await page.goto(path);
+    expect(response?.status()).toBe(200);
+    await expect(page.locator("main#main-content")).toBeVisible();
+  }
+  const missing = await page.goto("/not-a-real-samquant-route");
+  expect(missing?.status()).toBe(404);
+  await expect(page.getByRole("heading", { name: "No data exists at this route." })).toBeVisible();
 });
 
 test("local web vitals stay within product budgets", async ({ page }, testInfo) => {

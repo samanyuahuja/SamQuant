@@ -5,20 +5,22 @@
 SamQuant is a modular Python backtesting platform that downloads and validates
 market data, converts three strategy models into portfolio targets, and simulates
 next-open execution with fees and slippage. It tracks positions and cash, reports
-risk-adjusted performance, and presents results in Streamlit. I designed the
-layers so strategies, execution, analytics, and the UI can be tested and extended
-independently, with explicit protections against same-bar look-ahead bias.
+risk-adjusted performance, and presents typed results through FastAPI, Next.js,
+and Streamlit. I designed each layer so research logic, execution, analytics,
+and interfaces can be tested independently, with explicit protection against
+same-bar look-ahead bias.
 
 ## Technical Project Description
 
 SamQuant is an event-ordered historical trading simulator built with Python,
-pandas, NumPy, Plotly, and Streamlit. Its market-data boundary validates adjusted
-OHLCV data and deterministic caches. Strategy classes generate aligned target
+pandas, NumPy, FastAPI, Next.js, and Streamlit. Its market-data boundary validates
+adjusted OHLCV data and deterministic caches. Strategy classes generate aligned target
 weights, while a long-only engine delays targets to the next market open,
 calculates affordable orders, applies trading costs, and maintains auditable
 portfolio state. A separate analytics layer calculates return, volatility,
-Sharpe ratio, drawdown, and fee-aware FIFO win rate. Pytest causality tests,
-coverage enforcement, linting, and GitHub Actions support release quality.
+Sharpe ratio, drawdown, and fee-aware FIFO win rate. A typed API serves a
+responsive research terminal without duplicating financial formulas in the
+browser. Pytest, Playwright, coverage gates, and GitHub Actions support release quality.
 
 ## Resume-Ready Bullet Points
 
@@ -32,6 +34,9 @@ coverage enforcement, linting, and GitHub Actions support release quality.
   momentum strategies using pandas and NumPy with reusable target-weight APIs.
 - Added automated GitHub Actions checks across Python versions with Ruff, pytest,
   deterministic UI smoke tests, and an enforced coverage threshold.
+- Built a Next.js research terminal with typed FastAPI results, interactive
+  financial charts, responsive controls, accessible data alternatives, and
+  deterministic visual regression coverage.
 
 Use only bullets you can explain line by line. Do not claim profitability,
 production trading, or live execution.
@@ -43,8 +48,9 @@ production trading, or live execution.
 3. Why portfolio accounting lives in one mutable object while trades are immutable.
 4. Why adjusted and unadjusted market data require separate cache identities.
 5. Why undefined Sharpe ratios and win rates return `NaN` instead of zero.
-6. Why the Streamlit pipeline is separate from rendering code.
-7. What Version 1 intentionally does not model and how Version 2 could add it.
+6. Why FastAPI, Next.js, and Streamlit all depend on one application service.
+7. Why the browser renders results instead of recalculating financial metrics.
+8. What Version 1 intentionally does not model and how Version 2 could add it.
 
 ## Screenshots And GIFs To Include
 

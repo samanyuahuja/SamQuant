@@ -7,6 +7,7 @@ import {
   ColorType,
   createChart,
   createSeriesMarkers,
+  LineStyle,
   LineSeries,
   type IChartApi,
   type SeriesMarker,
@@ -29,11 +30,12 @@ export function FinancialChart({
 
   useEffect(() => {
     if (!container.current) return;
-    const chart = createBaseChart(container.current);
-    if (mode === "price") addPriceSeries(chart, report);
-    if (mode === "performance") addEquitySeries(chart, report.portfolio.equity);
-    if (mode === "drawdown") addDrawdownSeries(chart, report.portfolio.drawdown);
-    if (mode === "comparison") addComparisonSeries(chart, report);
+    const theme = readTheme(container.current);
+    const chart = createBaseChart(container.current, theme);
+    if (mode === "price") addPriceSeries(chart, report, theme);
+    if (mode === "performance") addEquitySeries(chart, report.portfolio.equity, theme);
+    if (mode === "drawdown") addDrawdownSeries(chart, report.portfolio.drawdown, theme);
+    if (mode === "comparison") addComparisonSeries(chart, report, theme);
     chart.timeScale().fitContent();
 
     const observer = new ResizeObserver(([entry]) => {
@@ -55,42 +57,72 @@ export function FinancialChart({
   );
 }
 
-function createBaseChart(container: HTMLDivElement): IChartApi {
+interface ChartTheme {
+  background: string;
+  text: string;
+  grid: string;
+  crosshair: string;
+  crosshairLabel: string;
+  border: string;
+  accent: string;
+  accentSecondary: string;
+  positive: string;
+  negative: string;
+}
+
+function readTheme(container: HTMLDivElement): ChartTheme {
+  const computed = getComputedStyle(container);
+  const read = (name: string, fallback: string) => computed.getPropertyValue(name).trim() || fallback;
+  return {
+    background: read("--chart-background", "#171a18"),
+    text: read("--chart-text", "#9ca29e"),
+    grid: read("--chart-grid", "#303630"),
+    crosshair: read("--chart-crosshair", "#727a76"),
+    crosshairLabel: read("--chart-crosshair-label", "#303630"),
+    border: read("--chart-border", "#3c423d"),
+    accent: read("--chart-accent", "#86a6ad"),
+    accentSecondary: read("--chart-accent-secondary", "#d1c8a2"),
+    positive: read("--chart-positive", "#3d9b72"),
+    negative: read("--chart-negative", "#c9635c"),
+  };
+}
+
+function createBaseChart(container: HTMLDivElement, theme: ChartTheme): IChartApi {
   return createChart(container, {
     width: container.clientWidth,
     height: container.clientHeight,
     autoSize: false,
     layout: {
-      background: { type: ColorType.Solid, color: "#10100f" },
-      textColor: "#92938f",
-      fontFamily: "SFMono-Regular, Consolas, monospace",
+      background: { type: ColorType.Solid, color: theme.background },
+      textColor: theme.text,
+      fontFamily: "IBM Plex Mono, monospace",
       fontSize: 11,
       attributionLogo: true,
     },
     grid: {
-      vertLines: { color: "#222320" },
-      horzLines: { color: "#222320" },
+      vertLines: { color: theme.grid },
+      horzLines: { color: theme.grid },
     },
     crosshair: {
-      vertLine: { color: "#646561", labelBackgroundColor: "#292a27" },
-      horzLine: { color: "#646561", labelBackgroundColor: "#292a27" },
+      vertLine: { color: theme.crosshair, labelBackgroundColor: theme.crosshairLabel },
+      horzLine: { color: theme.crosshair, labelBackgroundColor: theme.crosshairLabel },
     },
-    rightPriceScale: { borderColor: "#292a27" },
-    timeScale: { borderColor: "#292a27", timeVisible: false },
+    rightPriceScale: { borderColor: theme.border },
+    timeScale: { borderColor: theme.border, timeVisible: false },
     handleScale: true,
     handleScroll: true,
   });
 }
 
-function addPriceSeries(chart: IChartApi, report: BacktestResponse) {
+function addPriceSeries(chart: IChartApi, report: BacktestResponse, theme: ChartTheme) {
   const symbol = report.metadata.symbols[0];
   const bars = report.market[symbol];
   const candles = chart.addSeries(CandlestickSeries, {
-    upColor: "#5bc28a",
-    downColor: "#e16d64",
+    upColor: theme.positive,
+    downColor: theme.negative,
     borderVisible: false,
-    wickUpColor: "#5bc28a",
-    wickDownColor: "#e16d64",
+    wickUpColor: theme.positive,
+    wickDownColor: theme.negative,
   });
   candles.setData(bars.map((bar) => ({
     time: bar.time as Time,
@@ -100,7 +132,7 @@ function addPriceSeries(chart: IChartApi, report: BacktestResponse) {
     close: bar.close,
   })));
 
-  const colors = ["#b9d66b", "#e3b75e", "#8faaa8"];
+  const colors = [theme.accent, theme.accentSecondary, theme.text];
   Object.entries(report.indicators).forEach(([name, symbols], index) => {
     if (name === "z_score" || name === "trailing_return") return;
     const series = chart.addSeries(LineSeries, {
@@ -121,45 +153,45 @@ function addPriceSeries(chart: IChartApi, report: BacktestResponse) {
     .map((trade) => ({
       time: trade.time as Time,
       position: trade.side === "BUY" ? "belowBar" : "aboveBar",
-      color: trade.side === "BUY" ? "#5bc28a" : "#e16d64",
+      color: trade.side === "BUY" ? theme.positive : theme.negative,
       shape: trade.side === "BUY" ? "arrowUp" : "arrowDown",
       text: trade.side,
     }));
   createSeriesMarkers(candles, markers);
 }
 
-function addEquitySeries(chart: IChartApi, values: TimeValue[]) {
+function addEquitySeries(chart: IChartApi, values: TimeValue[], theme: ChartTheme) {
   const series = chart.addSeries(AreaSeries, {
-    lineColor: "#b9d66b",
-    topColor: "rgba(185, 214, 107, 0.22)",
-    bottomColor: "rgba(185, 214, 107, 0.01)",
+    lineColor: theme.accent,
+    topColor: "rgba(134, 166, 173, 0.18)",
+    bottomColor: "rgba(134, 166, 173, 0.01)",
     lineWidth: 2,
     priceFormat: { type: "price", precision: 0, minMove: 1 },
   });
   series.setData(toLineData(values));
 }
 
-function addDrawdownSeries(chart: IChartApi, values: TimeValue[]) {
+function addDrawdownSeries(chart: IChartApi, values: TimeValue[], theme: ChartTheme) {
   const series = chart.addSeries(AreaSeries, {
-    lineColor: "#e16d64",
-    topColor: "rgba(225, 109, 100, 0.02)",
-    bottomColor: "rgba(225, 109, 100, 0.28)",
+    lineColor: theme.negative,
+    topColor: "rgba(201, 99, 92, 0.02)",
+    bottomColor: "rgba(201, 99, 92, 0.24)",
     lineWidth: 2,
     priceFormat: { type: "percent", precision: 1, minMove: 0.1 },
   });
   series.setData(toLineData(values, 100));
 }
 
-function addComparisonSeries(chart: IChartApi, report: BacktestResponse) {
+function addComparisonSeries(chart: IChartApi, report: BacktestResponse, theme: ChartTheme) {
   const strategy = chart.addSeries(LineSeries, {
-    color: "#b9d66b",
+    color: theme.accent,
     lineWidth: 2,
     title: report.metadata.strategyLabel,
   });
   const benchmark = chart.addSeries(LineSeries, {
-    color: "#92938f",
+    color: theme.text,
     lineWidth: 2,
-    lineStyle: 2,
+    lineStyle: LineStyle.Dashed,
     title: "Equal-weight benchmark",
   });
   strategy.setData(normalize(report.portfolio.equity));

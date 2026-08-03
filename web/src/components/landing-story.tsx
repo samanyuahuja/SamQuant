@@ -1,19 +1,13 @@
 "use client";
 
-import { useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { ArrowRight, Check, Code2, ShieldCheck } from "lucide-react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 import { formatMoney, formatNumber, formatPercent, humanizeKey } from "@/lib/format";
-import type {
-  BacktestResponse,
-  MetricValues,
-  SignalRecord,
-  StrategyId,
-  TimeValue,
-} from "@/lib/types";
+import type { BacktestResponse, MetricValues, SignalRecord, StrategyId, TimeValue } from "@/lib/types";
 import styles from "./landing-story.module.css";
 
 gsap.registerPlugin(ScrollTrigger);
@@ -28,28 +22,26 @@ interface StrategyDemo {
 type StrategyDemos = Record<StrategyId, StrategyDemo>;
 
 const STRATEGY_COPY: Record<StrategyId, string> = {
-  moving_average: "A fast average crossing a slower one changes the target weight.",
-  mean_reversion: "A rolling z-score marks prices that sit unusually far below their recent mean.",
-  momentum: "Trailing returns rank the assets before the portfolio selects its leaders.",
+  moving_average: "Two price averages cross. The target position changes.",
+  mean_reversion: "A z-score finds prices far below their recent mean.",
+  momentum: "Trailing returns rank assets before the leaders are selected.",
 };
 
-const SYSTEM_TRACE = "M76,0 C76,38 31,42 31,88 S77,132 77,176 S24,224 24,284 S74,334 74,395 S38,451 38,514 S79,567 79,632 S28,692 28,754 S73,817 73,875 S46,939 46,1000";
+const STRATEGY_SHORT_LABEL: Record<StrategyId, string> = {
+  moving_average: "Moving average",
+  mean_reversion: "Mean reversion",
+  momentum: "Momentum",
+};
 
-export function LandingStory({
-  report,
-  strategyDemos,
-}: {
-  report: BacktestResponse;
-  strategyDemos: StrategyDemos;
-}) {
+export function LandingStory({ report, strategyDemos }: { report: BacktestResponse; strategyDemos: StrategyDemos }) {
   const root = useRef<HTMLElement>(null);
   const [strategy, setStrategy] = useState<StrategyId>("moving_average");
   const symbol = report.metadata.symbols[0];
   const market = report.market[symbol];
   const closes = market.map((bar) => bar.close);
   const activeDemo = strategyDemos[strategy];
-  const pricePath = useMemo(() => buildPath(closes, 1200, 480, 20), [closes]);
   const priceRange = range(closes);
+  const pricePath = buildPath(closes, 1200, 480, 20);
   const activeIndicators = Object.entries(activeDemo.indicators).map(([name, symbols]) => ({
     name,
     values: symbols[symbol] ?? [],
@@ -64,58 +56,29 @@ export function LandingStory({
     const context = gsap.context(() => {
       media.add("(prefers-reduced-motion: no-preference) and (min-width: 721px)", () => {
         gsap.timeline()
-          .fromTo(`.${styles.heroLine}`, { strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: 1.7, ease: "power2.out" })
-          .fromTo(`.${styles.heroReadout}`, { y: 10, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5 }, "-=0.35");
-
-        gsap.fromTo(
-          `.${styles.traceActive}`,
-          { strokeDashoffset: 1 },
-          {
-            strokeDashoffset: 0,
-            ease: "none",
-            scrollTrigger: { trigger: root.current, start: "top top", end: "bottom bottom", scrub: 0.25 },
-          },
-        );
+          .fromTo(`.${styles.heroLine}`, { strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: 1.55, ease: "power2.out" })
+          .fromTo(`.${styles.heroReadout}`, { y: 8, opacity: 0 }, { y: 0, opacity: 1, duration: 0.45 }, "-=0.3");
 
         gsap.timeline({
-          scrollTrigger: {
-            trigger: `.${styles.strategyChapter}`,
-            start: "top top",
-            end: "+=1250",
-            scrub: 0.55,
-            pin: `.${styles.strategyStage}`,
-          },
+          scrollTrigger: { trigger: `.${styles.strategy}`, start: "top 66%", end: "center 48%", scrub: 0.45 },
         })
           .fromTo(`.${styles.strategyPrice}`, { strokeDashoffset: 1 }, { strokeDashoffset: 0 })
-          .fromTo(`.${styles.indicatorLine}`, { strokeDashoffset: 1 }, { strokeDashoffset: 0, stagger: 0.1 })
-          .fromTo(`.${styles.signalMarker}`, { scale: 0, opacity: 0 }, { scale: 1, opacity: 1 });
-
-        gsap.fromTo(
-          `.${styles.executionProgress}`,
-          { scaleX: 0 },
-          {
-            scaleX: 1,
-            ease: "none",
-            scrollTrigger: {
-              trigger: `.${styles.executionChapter}`,
-              start: "top 68%",
-              end: "bottom 42%",
-              scrub: true,
-            },
-          },
-        );
+          .fromTo(`.${styles.indicatorLine}`, { strokeDashoffset: 1 }, { strokeDashoffset: 0, stagger: 0.08 }, "<18%")
+          .fromTo(`.${styles.signalOutput}`, { scale: 0.86, opacity: 0 }, { scale: 1, opacity: 1 }, "<55%");
 
         gsap.timeline({
-          scrollTrigger: {
-            trigger: `.${styles.analyticsChapter}`,
-            start: "top 62%",
-            end: "bottom 48%",
-            scrub: 0.45,
-          },
+          scrollTrigger: { trigger: `.${styles.execution}`, start: "top 68%", end: "center 44%", scrub: 0.4 },
+        })
+          .fromTo(`.${styles.executionProgress}`, { scaleX: 0 }, { scaleX: 1, ease: "none" })
+          .fromTo(`.${styles.executionStep}`, { y: 14, opacity: 0 }, { y: 0, opacity: 1, stagger: 0.08 }, "<20%");
+
+        gsap.timeline({
+          scrollTrigger: { trigger: `.${styles.analytics}`, start: "top 62%", end: "center 42%", scrub: 0.4 },
         })
           .fromTo(`.${styles.benchmarkLine}`, { strokeDashoffset: 1 }, { strokeDashoffset: 0 })
-          .fromTo(`.${styles.equityLine}`, { strokeDashoffset: 1 }, { strokeDashoffset: 0 }, "<20%")
-          .fromTo(`.${styles.drawdownArea}`, { opacity: 0 }, { opacity: 1 }, "<35%");
+          .fromTo(`.${styles.equityLine}`, { strokeDashoffset: 1 }, { strokeDashoffset: 0 }, "<12%")
+          .fromTo(`.${styles.drawdownArea}`, { opacity: 0 }, { opacity: 1 }, "<45%")
+          .fromTo(`.${styles.metricStrip} > div`, { y: 10, opacity: 0 }, { y: 0, opacity: 1, stagger: 0.04 }, "<55%");
       });
     }, root);
     return () => {
@@ -125,59 +88,46 @@ export function LandingStory({
   }, []);
 
   return (
-    <main id="main-content" ref={root} className={styles.main}>
-      <div className={styles.systemTrace} aria-hidden="true">
-        <svg viewBox="0 0 100 1000" preserveAspectRatio="none">
-          <path className={styles.traceGhost} d={SYSTEM_TRACE} />
-          <path className={styles.traceActive} pathLength="1" d={SYSTEM_TRACE} />
-        </svg>
-      </div>
+    <main id="main-content" ref={root} className={styles.main} data-route="home">
+      <div className={styles.continuousLine} aria-hidden="true"><i /><span>DATA</span><span>SIGNAL</span><span>ORDER</span><span>RISK</span></div>
 
       <section className={styles.hero} aria-labelledby="hero-title">
         <div className={styles.heroGrid} aria-hidden="true" />
         <div className={styles.heroMeta}>
-          <span>SamQuant / research system</span>
-          <span>{symbol} · daily · {market.length} bars</span>
+          <span>SamQuant / transparent research system</span>
+          <span>{symbol} / daily / {market.length} bars</span>
         </div>
-        <svg className={styles.heroChart} viewBox="0 0 1200 480" preserveAspectRatio="none" role="img" aria-label="A deterministic SamQuant demonstration price series">
+        <svg className={styles.heroChart} viewBox="0 0 1200 480" preserveAspectRatio="none" role="img" aria-label="Deterministic SamQuant demonstration price series">
           <path className={styles.heroLineGhost} d={pricePath} />
           <path className={styles.heroLine} pathLength="1" d={pricePath} />
         </svg>
-        <div className={styles.heroReadout} aria-hidden="true">
-          <span>Last close</span>
-          <strong>{formatNumber(lastClose)}</strong>
-          <small>synthetic demo</small>
+        <div className={styles.heroReadout}>
+          <span>Last close</span><strong>{formatNumber(lastClose)}</strong><small>Synthetic demo</small>
         </div>
         <div className={styles.heroContent}>
-          <p className="eyebrow">Historical simulation, without hidden steps</p>
+          <p className="eyebrow">Historical simulation with visible assumptions</p>
           <h1 id="hero-title">Test the strategy.<br />Not your luck.</h1>
-          <p className={styles.heroCopy}>SamQuant keeps the data, signal, order, portfolio, and risk record in one inspectable run.</p>
+          <p className={styles.heroCopy}>Follow one market line from raw prices to measured risk.</p>
           <div className={styles.heroActions}>
-            <Link className={styles.primaryAction} href="/research">
-              Open research terminal <ArrowRight aria-hidden="true" size={16} />
-            </Link>
-            <Link href="/methodology">Methodology</Link>
-            <a href="https://github.com/samanyuahuja/SamQuant">Source code</a>
+            <Link className={styles.primaryAction} href="/research">Open research terminal <ArrowRight aria-hidden="true" size={16} /></Link>
+            <Link href="/methodology">Read methodology</Link>
           </div>
         </div>
         <div className={styles.heroFoot}>
-          <span>One price line</span>
-          <span>Five accountable layers</span>
-          <span>Scroll to follow the run ↓</span>
+          <span><b>01</b> Data</span><span><b>02</b> Strategy</span><span><b>03</b> Execution</span><span><b>04</b> Risk</span>
         </div>
       </section>
 
-      <section className={`${styles.chapter} ${styles.paperChapter} ${styles.dataChapter}`} aria-labelledby="data-title">
-        <ChapterLabel number="01" label="Market data" detail="Input before opinion" />
-        <div className={styles.chapterLead}>
-          <p className={styles.kicker}>RAW BARS / VALIDATION GATE</p>
-          <h2 id="data-title">First, make the data boring.</h2>
-          <p>Dates are sorted, duplicates are removed, required prices are checked, and only then can a strategy read the series.</p>
+      <section className={`${styles.band} ${styles.data}`} aria-labelledby="data-title">
+        <StageLabel state="DATA / VALIDATED" label="Market data" />
+        <div className={styles.sectionLead}>
+          <h2 id="data-title">Clean data before asking it questions.</h2>
+          <p>Each daily bar passes the same checks before strategy code sees it.</p>
         </div>
         <div className={styles.dataAudit}>
           <div className={styles.auditHeader}>
-            <div><span>INPUT</span><strong>{symbol}.daily.csv</strong></div>
-            <div><span>OUTPUT</span><strong>{market.length} validated bars</strong></div>
+            <div><span>Input</span><strong>{symbol}.daily.csv</strong></div>
+            <div><span>Output</span><strong>{market.length} valid bars</strong></div>
             <div className={styles.auditStatus}><Check aria-hidden="true" size={14} /><strong>Passed</strong></div>
           </div>
           <div className={styles.dataRows} role="table" aria-label="Validated sample market bars">
@@ -186,128 +136,92 @@ export function LandingStory({
             </div>
             {market.slice(72, 77).map((bar) => (
               <div role="row" key={bar.time}>
-                <span role="cell">{bar.time}</span>
-                <span role="cell">{formatNumber(bar.open)}</span>
-                <span role="cell">{formatNumber(bar.high)}</span>
-                <span role="cell">{formatNumber(bar.low)}</span>
-                <span role="cell">{formatNumber(bar.close)}</span>
-                <span role="cell">{formatNumber(bar.volume, 0)}</span>
+                <span role="cell">{bar.time}</span><span role="cell">{formatNumber(bar.open)}</span><span role="cell">{formatNumber(bar.high)}</span><span role="cell">{formatNumber(bar.low)}</span><span role="cell">{formatNumber(bar.close)}</span><span role="cell">{formatNumber(bar.volume, 0)}</span>
               </div>
             ))}
           </div>
           <div className={styles.validationRail}>
-            <span><b>01</b> OHLC present <strong>Yes</strong></span>
-            <span><b>02</b> Missing values <strong>0</strong></span>
-            <span><b>03</b> Duplicate dates <strong>0</strong></span>
-            <span><b>04</b> Chronology <strong>Ascending</strong></span>
+            <span><b>OHLCV</b><strong>Present</strong></span>
+            <span><b>Missing</b><strong>0</strong></span>
+            <span><b>Duplicates</b><strong>0</strong></span>
+            <span><b>Dates</b><strong>Ascending</strong></span>
+            <span><b>Cache</b><strong>Deterministic</strong></span>
           </div>
         </div>
       </section>
 
-      <section className={styles.strategyChapter} aria-labelledby="strategy-title">
-        <div className={styles.strategyStage}>
-          <ChapterLabel number="02" label="Strategy" detail="Decision, not execution" />
-          <div className={styles.strategyHeading}>
-            <div>
-              <p className={styles.kicker}>TARGET WEIGHT / {activeDemo.strategyLabel.toUpperCase()}</p>
-              <h2 id="strategy-title">The decision layer.</h2>
-            </div>
-            <p>{STRATEGY_COPY[strategy]}</p>
+      <section className={`${styles.band} ${styles.darkBand} ${styles.strategy}`} aria-labelledby="strategy-title">
+        <StageLabel state="DATA / INTERPRETED" label="Strategy" inverse />
+        <div className={styles.strategyHeading}>
+          <div><h2 id="strategy-title">Indicators analyze. Strategies decide.</h2></div>
+          <p>{STRATEGY_COPY[strategy]}</p>
+        </div>
+        <div className={styles.strategyBody}>
+          <div className={styles.strategyControls} aria-label="Strategy demonstration">
+            {(Object.keys(STRATEGY_COPY) as StrategyId[]).map((id) => (
+              <button key={id} type="button" data-active={strategy === id} aria-pressed={strategy === id} onClick={() => setStrategy(id)}>{STRATEGY_SHORT_LABEL[id]}</button>
+            ))}
+            <p>Output: target weights. No cash changes here.</p>
           </div>
-          <div className={styles.strategyBody}>
-            <div className={styles.strategyControls} aria-label="Strategy demonstration">
-              {(Object.keys(STRATEGY_COPY) as StrategyId[]).map((id, index) => (
-                <button key={id} type="button" data-active={strategy === id} onClick={() => setStrategy(id)}>
-                  <span>0{index + 1}</span>
-                  {strategyDemos[id].strategyLabel.replace(" crossover", "")}
-                </button>
-              ))}
-              <p>Strategies return target weights. They never alter cash or positions directly.</p>
+          <div className={styles.strategyCanvas}>
+            <div className={styles.chartMeta}><span>{symbol} / close</span><span>{report.metadata.start} to {report.metadata.end}</span></div>
+            <svg viewBox="0 0 1200 480" preserveAspectRatio="none" role="img" aria-label={`${activeDemo.strategyLabel} indicators over the demonstration price series`}>
+              <path className={styles.strategyGrid} d="M0 120H1200M0 240H1200M0 360H1200" />
+              <path className={styles.strategyPrice} pathLength="1" d={buildPath(closes, 1200, 480, 24, priceRange)} />
+              {activeIndicators.map((indicator, index) => <path key={indicator.name} className={`${styles.indicatorLine} ${index === 1 ? styles.indicatorSecondary : ""}`} pathLength="1" d={buildTimedPath(indicator.values, 1200, 480, 24, priceRange)} />)}
+            </svg>
+            <div className={styles.chartLegend}>
+              <span><i className={styles.priceKey} />Price</span>
+              {activeIndicators.map((indicator, index) => <span key={indicator.name}><i data-secondary={index === 1} />{humanizeKey(indicator.name)}</span>)}
             </div>
-            <div className={styles.strategyCanvas}>
-              <div className={styles.chartMeta}><span>{symbol} / close</span><span>{report.metadata.start} → {report.metadata.end}</span></div>
-              <svg viewBox="0 0 1200 480" preserveAspectRatio="none" role="img" aria-label={`${activeDemo.strategyLabel} indicators over the demonstration price series`}>
-                <path className={styles.strategyPrice} pathLength="1" d={buildPath(closes, 1200, 480, 24, priceRange)} />
-                {activeIndicators.map((indicator, index) => (
-                  <path
-                    key={indicator.name}
-                    className={`${styles.indicatorLine} ${index === 1 ? styles.indicatorSecondary : ""}`}
-                    pathLength="1"
-                    d={buildTimedPath(indicator.values, 1200, 480, 24, priceRange)}
-                  />
-                ))}
-              </svg>
-              <div className={styles.chartLegend}>
-                <span><i className={styles.priceKey} /> Price</span>
-                {activeIndicators.map((indicator, index) => (
-                  <span key={indicator.name}><i data-secondary={index === 1} />{humanizeKey(indicator.name)}</span>
-                ))}
-              </div>
-              <div className={styles.signalMarker}>
-                <span>OUTPUT</span>
-                <strong>{activeDemo.signals.length}</strong>
-                <small>target changes</small>
-              </div>
-            </div>
-          </div>
-          <div className={styles.strategyRule}>
-            <span>Reads</span><b>Bars through today&apos;s close</b>
-            <span>Returns</span><b>Target portfolio weights</b>
-            <span>Cannot touch</span><b>Cash, fills, or metrics</b>
+            <div className={styles.signalOutput}><span>Target changes</span><strong>{activeDemo.signals.length}</strong></div>
           </div>
         </div>
+        <div className={styles.responsibilityLine}><span>Reads completed bars</span><span>Returns target weights</span><span>Never executes orders</span></div>
       </section>
 
-      <section className={`${styles.chapter} ${styles.paperChapter} ${styles.executionChapter}`} aria-labelledby="execution-title">
-        <ChapterLabel number="03" label="Execution engine" detail="Signal becomes state" />
-        <div className={styles.chapterLead}>
-          <p className={styles.kicker}>NEXT BAR / OPEN PRICE</p>
+      <section className={`${styles.band} ${styles.execution}`} aria-labelledby="execution-title">
+        <StageLabel state="SIGNAL / QUEUED" label="Execution engine" />
+        <div className={styles.sectionLead}>
           <h2 id="execution-title">The strategy decides.<br />The engine executes.</h2>
-          <p>A target waits until the following bar, passes portfolio checks, pays its modeled costs, and becomes an immutable trade record.</p>
+          <p>Every target waits for the next bar before it can become a trade.</p>
         </div>
-        <div className={styles.orderTape}>
+        <div className={styles.executionFlow}>
           <div className={styles.executionTrack}><i className={styles.executionProgress} /></div>
-          <ExecutionStep number="01" label="Signal" value={firstTrade ? `${firstTrade.side} ${firstTrade.symbol}` : "Hold cash"} />
-          <ExecutionStep number="02" label="Validate" value="Cash + position" />
-          <ExecutionStep number="03" label="Fill" value={firstTrade ? `${formatNumber(firstTrade.quantity, 3)} @ ${formatMoney(firstTrade.price)}` : "No order"} />
-          <ExecutionStep number="04" label="Record" value={firstTrade ? `${formatMoney(firstTrade.fee)} fee` : "No fee"} />
+          <ExecutionStep label="Signal" value={firstTrade ? `${firstTrade.side} ${firstTrade.symbol}` : "Hold cash"} />
+          <ExecutionStep label="Validate" value="Cash and position" />
+          <ExecutionStep label="Order" value={firstTrade ? `${formatNumber(firstTrade.quantity, 3)} shares` : "No order"} />
+          <ExecutionStep label="Fill" value={firstTrade ? `Next open + ${formatMoney(firstTrade.fee)} fee` : "No fill"} />
+          <ExecutionStep label="Portfolio" value="Ledger updated" />
         </div>
         <div className={styles.executionRecord}>
           <div className={styles.portfolioEquation}>
-            <span><small>Cash</small><strong>{formatMoney(finalCash)}</strong></span>
-            <b>+</b>
-            <span><small>{symbol} position</small><strong>{formatNumber(finalPosition, 3)} shares</strong></span>
-            <b>=</b>
-            <span><small>Portfolio value</small><strong>{formatMoney(report.metrics.finalValue)}</strong></span>
+            <span><small>Cash</small><strong>{formatMoney(finalCash)}</strong></span><b>+</b>
+            <span><small>{symbol} shares</small><strong>{formatNumber(finalPosition, 3)}</strong></span><b>=</b>
+            <span><small>Final value</small><strong>{formatMoney(report.metrics.finalValue)}</strong></span>
           </div>
           <div className={styles.guardrails}>
-            <div><ShieldCheck aria-hidden="true" size={16} /><span>Insufficient cash</span><strong>Reject before fill</strong></div>
-            <div><ShieldCheck aria-hidden="true" size={16} /><span>Sell above position</span><strong>Reject before fill</strong></div>
+            <span><ShieldCheck aria-hidden="true" size={16} />Reject unaffordable buys</span>
+            <span><ShieldCheck aria-hidden="true" size={16} />Reject oversized sells</span>
           </div>
         </div>
       </section>
 
-      <section className={`${styles.chapter} ${styles.analyticsChapter}`} aria-labelledby="analytics-title">
-        <ChapterLabel number="04" label="Portfolio + analytics" detail="Outcome with context" />
+      <section className={`${styles.band} ${styles.darkBand} ${styles.analytics}`} aria-labelledby="analytics-title">
+        <StageLabel state="PORTFOLIO / MEASURED" label="Analytics" inverse />
         <div className={styles.analyticsLead}>
-          <p className={styles.kicker}>EQUITY / BENCHMARK / DRAWDOWN</p>
-          <h2 id="analytics-title">Return without risk is only half the result.</h2>
-          <p>Every fill changes cash and positions. That ledger becomes the equity curve, the benchmark comparison, and the drawdown record.</p>
+          <h2 id="analytics-title">Return without risk is half a result.</h2>
+          <p>The portfolio record becomes equity, benchmark, and drawdown curves.</p>
         </div>
-        <div className={styles.analyticsGrid}>
-          <div className={styles.analyticsHeadline}>
-            <span>Final portfolio</span>
-            <strong>{formatMoney(report.metrics.finalValue)}</strong>
-            <small>{report.trades.length} executed trades</small>
-          </div>
-          <div className={styles.analyticsChart}>
-            <div className={styles.chartMeta}><span>Strategy</span><span>Equal-weight benchmark</span></div>
-            <svg viewBox="0 0 1200 500" preserveAspectRatio="none" role="img" aria-label="Portfolio equity, benchmark, and drawdown from the deterministic SamQuant run">
-              <path className={styles.benchmarkLine} pathLength="1" d={buildTimedPath(report.portfolio.benchmark, 1200, 315, 20)} />
-              <path className={styles.equityLine} pathLength="1" d={buildTimedPath(report.portfolio.equity, 1200, 315, 20)} />
-              <path className={styles.drawdownArea} d={buildAreaPath(report.portfolio.drawdown, 1200, 130, 355)} />
-            </svg>
-          </div>
+        <div className={styles.analyticsChart}>
+          <div className={styles.analyticsReadout}><span>Final portfolio</span><strong>{formatMoney(report.metrics.finalValue)}</strong><small>{report.trades.length} trades</small></div>
+          <svg viewBox="0 0 1200 500" preserveAspectRatio="none" role="img" aria-label="Portfolio equity, benchmark, and drawdown from the deterministic SamQuant run">
+            <path className={styles.analyticsGrid} d="M0 100H1200M0 200H1200M0 300H1200M0 370H1200" />
+            <path className={styles.benchmarkLine} pathLength="1" d={buildTimedPath(report.portfolio.benchmark, 1200, 300, 18)} />
+            <path className={styles.equityLine} pathLength="1" d={buildTimedPath(report.portfolio.equity, 1200, 300, 18)} />
+            <path className={styles.drawdownArea} d={buildAreaPath(report.portfolio.drawdown, 1200, 110, 382)} />
+          </svg>
+          <div className={styles.chartLegend}><span><i />Portfolio</span><span><i data-secondary="true" />Benchmark</span><span><i className={styles.lossKey} />Drawdown</span></div>
         </div>
         <div className={styles.metricStrip}>
           <Metric label="Total return" value={formatPercent(report.metrics.totalReturn)} />
@@ -317,75 +231,63 @@ export function LandingStory({
           <Metric label="Max drawdown" value={formatPercent(report.metrics.maximumDrawdown)} />
           <Metric label="Win rate" value={formatPercent(report.metrics.winRate)} />
         </div>
-        <p className={styles.disclosure}>Hypothetical research result. Real fees, liquidity, slippage, taxes, and fills may differ.</p>
+        <p className={styles.disclosure}>This deterministic result demonstrates the software. It does not claim profitability.</p>
       </section>
 
-      <section className={`${styles.chapter} ${styles.paperChapter} ${styles.productReveal}`} aria-labelledby="product-title">
-        <ChapterLabel number="05" label="Research terminal" detail="The complete run" />
+      <section className={`${styles.band} ${styles.productReveal}`} aria-labelledby="product-title">
+        <StageLabel state="SYSTEM / INTERACTIVE" label="Research terminal" />
         <div className={styles.revealCopy}>
-          <p className={styles.kicker}>REAL INTERFACE / REAL ENGINE OUTPUT</p>
-          <h2 id="product-title">Now run the system yourself.</h2>
-          <p>Change the market, dates, strategy, capital, fees, and slippage. The Python engine recalculates the complete record.</p>
-          <Link className={styles.primaryAction} href="/research">Open the research terminal <ArrowRight aria-hidden="true" size={16} /></Link>
+          <h2 id="product-title">Run the complete system.</h2>
+          <p>Choose the market, dates, strategy, costs, and starting capital.</p>
+          <Link className={styles.primaryAction} href="/research">Open research terminal <ArrowRight aria-hidden="true" size={16} /></Link>
         </div>
-        <div className={styles.terminalReveal} aria-label="A terminal excerpt made from the real demonstration result">
+        <div className={styles.terminalReveal} aria-label="Research terminal preview using real demonstration output">
           <div className={styles.terminalTop}><span>RESEARCH / {symbol}</span><span>RUN COMPLETE</span></div>
-          <svg viewBox="0 0 800 270" preserveAspectRatio="none" role="img" aria-label="Actual demonstration equity curve preview">
-            <path d={buildTimedPath(report.portfolio.equity, 800, 270, 18)} />
-          </svg>
+          <svg viewBox="0 0 800 270" preserveAspectRatio="none" role="img" aria-label="Actual demonstration equity curve preview"><path d={buildTimedPath(report.portfolio.equity, 800, 270, 18)} /></svg>
           <div className={styles.terminalMetrics}>
-            <span>Final value <b>{formatMoney(report.metrics.finalValue)}</b></span>
-            <span>Trades <b>{report.metrics.tradeCount}</b></span>
-            <span>Drawdown <b>{formatPercent(report.metrics.maximumDrawdown)}</b></span>
+            <span>Final value <b>{formatMoney(report.metrics.finalValue)}</b></span><span>Trades <b>{report.metrics.tradeCount}</b></span><span>Drawdown <b>{formatPercent(report.metrics.maximumDrawdown)}</b></span>
           </div>
         </div>
       </section>
 
-      <section className={`${styles.chapter} ${styles.trustChapter}`} aria-labelledby="trust-title">
-        <ChapterLabel number="06" label="Methodology" detail="What the result assumes" />
-        <div className={styles.trustLead}>
-          <p className={styles.kicker}>NO HIDDEN FOOTNOTES</p>
-          <h2 id="trust-title">The assumptions stay beside the result.</h2>
-        </div>
+      <section className={`${styles.band} ${styles.trust}`} aria-labelledby="trust-title">
+        <StageLabel state="METHOD / EXPOSED" label="Trust record" />
+        <div className={styles.trustLead}><h2 id="trust-title">The assumptions stay beside the result.</h2></div>
         <div className={styles.trustList}>
-          <span><b>Signal timing</b> Today&apos;s close, next bar&apos;s open</span>
-          <span><b>Trading costs</b> Commission, fixed fees, adverse slippage</span>
-          <span><b>Bias control</b> One-bar delay and causality tests</span>
+          <span><b>Signal timing</b> Close today, next open tomorrow</span>
+          <span><b>Trading costs</b> Fees and adverse slippage</span>
+          <span><b>Bias control</b> Delayed signals and causality tests</span>
           <span><b>Public data</b> Deterministic synthetic OHLCV</span>
           <span><b>Current version</b> SamQuant {report.metadata.version}</span>
-          <Link href="/methodology">Inspect every assumption <ArrowRight aria-hidden="true" size={15} /></Link>
+          <Link href="/methodology">Inspect the method <ArrowRight aria-hidden="true" size={15} /></Link>
         </div>
+        <p className={styles.fullDisclaimer}>SamQuant is an educational research tool. Backtested results are hypothetical, depend on historical data and stated assumptions, and do not represent actual trading or guarantee future results. Nothing presented constitutes investment advice.</p>
       </section>
 
-      <section className={`${styles.chapter} ${styles.projectChapter}`} aria-labelledby="project-title">
-        <ChapterLabel number="07" label="Open project" detail="Python remains authoritative" />
+      <section className={`${styles.band} ${styles.project}`} aria-labelledby="project-title">
+        <StageLabel state="PROJECT / OPEN" label="Architecture" inverse />
         <div className={styles.projectLead}>
-          <p className={styles.kicker}>SOURCE / TESTS / DOCUMENTATION</p>
           <h2 id="project-title">Built to be inspected.</h2>
-          <p>The interface renders typed results. Market logic, orders, portfolio accounting, and metrics stay in the Python package.</p>
+          <p>Python owns the financial logic. Interfaces render typed results.</p>
         </div>
         <div className={styles.architectureFlow} aria-label="SamQuant architecture flow">
-          {["Market data", "Strategy", "Execution", "Portfolio", "Analytics", "Interfaces"].map((layer, index) => (
-            <span key={layer}><b>{String(index + 1).padStart(2, "0")}</b>{layer}<i aria-hidden="true">→</i></span>
-          ))}
+          {["Market data", "Strategies", "Trading engine", "Analytics", "Interfaces"].map((layer) => <span key={layer}>{layer}<i aria-hidden="true">→</i></span>)}
         </div>
         <div className={styles.projectLinks}>
-          <Link href="/architecture">Architecture</Link>
-          <Link href="/docs">Documentation</Link>
-          <Link href="/changelog">Changelog</Link>
-          <a href="https://github.com/samanyuahuja/SamQuant"><Code2 aria-hidden="true" size={15} /> GitHub repository</a>
+          <Link href="/architecture">Architecture</Link><Link href="/docs">Documentation</Link><Link href="/changelog">Changelog</Link>
+          <a href="https://github.com/samanyuahuja/SamQuant"><Code2 aria-hidden="true" size={15} />GitHub repository</a>
         </div>
       </section>
     </main>
   );
 }
 
-function ChapterLabel({ number, label, detail }: { number: string; label: string; detail: string }) {
-  return <div className={styles.chapterLabel}><span>{number}</span><strong>{label}</strong><small>{detail}</small></div>;
+function StageLabel({ state, label, inverse = false }: { state: string; label: string; inverse?: boolean }) {
+  return <div className={styles.stageLabel} data-inverse={inverse}><span>{state}</span><strong>{label}</strong></div>;
 }
 
-function ExecutionStep({ number, label, value }: { number: string; label: string; value: string }) {
-  return <div className={styles.executionStep}><span>{number}</span><small>{label}</small><strong>{value}</strong></div>;
+function ExecutionStep({ label, value }: { label: string; value: string }) {
+  return <div className={styles.executionStep}><small>{label}</small><strong>{value}</strong></div>;
 }
 
 function Metric({ label, value }: { label: string; value: string }) {
@@ -396,13 +298,7 @@ function range(values: number[]): [number, number] {
   return [Math.min(...values), Math.max(...values)];
 }
 
-function buildPath(
-  values: number[],
-  width: number,
-  height: number,
-  padding: number,
-  suppliedRange?: [number, number],
-): string {
+function buildPath(values: number[], width: number, height: number, padding: number, suppliedRange?: [number, number]): string {
   if (values.length < 2) return "";
   const [minimum, maximum] = suppliedRange ?? range(values);
   const spread = maximum - minimum || 1;
@@ -413,13 +309,7 @@ function buildPath(
   }).join(" ");
 }
 
-function buildTimedPath(
-  values: TimeValue[],
-  width: number,
-  height: number,
-  padding: number,
-  suppliedRange?: [number, number],
-): string {
+function buildTimedPath(values: TimeValue[], width: number, height: number, padding: number, suppliedRange?: [number, number]): string {
   const finite = values.flatMap((point) => point.value === null ? [] : [point.value]);
   if (finite.length < 2) return "";
   const [minimum, maximum] = suppliedRange ?? range(finite);

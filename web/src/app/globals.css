@@ -1,44 +1,54 @@
 :root {
-  --ink: #0a0a09;
-  --ink-soft: #111210;
-  --panel: #171815;
-  --panel-2: #1d1f1c;
-  --paper: #f2efe6;
-  --paper-dim: #d7d4cc;
-  --muted: #999a95;
-  --muted-2: #858681;
-  --line: #2a2c29;
-  --line-strong: #41433e;
-  --accent: #e3b85e;
-  --accent-strong: #f0c970;
-  --positive: #4fbd82;
-  --negative: #df6a61;
-  --warning: #e3b85e;
-  --content: 1120px;
-  --content-wide: 1440px;
-  --radius-sm: 4px;
-  --radius-md: 7px;
-  --shadow-deep: 0 24px 80px rgb(0 0 0 / 45%);
-  --font-sans: "Helvetica Neue", "Neue Haas Grotesk Text Pro", Arial, sans-serif;
-  --font-mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  --paper: #f1efe8;
+  --paper-deep: #e6e3da;
+  --paper-bright: #faf9f5;
+  --ink: #111310;
+  --ink-soft: #202421;
+  --panel: #262b27;
+  --panel-2: #303630;
+  --muted: #555d58;
+  --muted-2: #9ca29e;
+  --line: #d0cdc4;
+  --line-strong: #a9aaa3;
+  --line-dark: #3c423d;
+  --accent: #486a73;
+  --accent-strong: #315760;
+  --positive: #247653;
+  --negative: #b64a43;
+  --warning: #9b7127;
+  --content: 1180px;
+  --content-wide: 1480px;
+  --radius-sm: 2px;
+  --radius-md: 6px;
+  --shadow-deep: 0 28px 80px rgb(17 19 16 / 16%);
+  --font-display: "Barlow Condensed", "Arial Narrow", sans-serif;
+  --font-sans: "IBM Plex Sans Variable", Arial, sans-serif;
+  --font-mono: "IBM Plex Mono", monospace;
 }
 
 * { box-sizing: border-box; }
 
 html {
-  background: var(--ink);
-  color-scheme: dark;
+  overflow-x: clip;
+  background: var(--paper);
+  color-scheme: light;
   scroll-behavior: smooth;
 }
 
 body {
-  min-width: 320px;
   margin: 0;
-  background: var(--ink);
-  color: var(--paper);
+  overflow-x: clip;
+  background: var(--paper);
+  color: var(--ink);
   font-family: var(--font-sans);
   letter-spacing: 0;
   text-rendering: optimizeLegibility;
+}
+
+body:has(main[data-route="research"]) {
+  background: #151816;
+  color: var(--paper);
+  color-scheme: dark;
 }
 
 body:has(main[data-route="research"]) footer { display: none; }
@@ -55,20 +65,21 @@ input,
 select,
 summary { outline-offset: 4px; }
 
-:focus-visible { outline: 2px solid var(--accent-strong); }
+:focus-visible { outline: 2px solid var(--accent); }
 
-::selection { background: var(--accent); color: var(--ink); }
+::selection { background: var(--accent); color: var(--paper-bright); }
 
 .skip-link {
   position: fixed;
   z-index: 1000;
   top: 12px;
   left: 12px;
-  transform: translateY(-160%);
-  padding: 12px 16px;
-  background: var(--paper);
+  transform: translateY(-180%);
+  padding: 11px 15px;
+  border: 1px solid var(--ink);
+  background: var(--paper-bright);
   color: var(--ink);
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .skip-link:focus { transform: translateY(0); }
@@ -78,37 +89,56 @@ summary { outline-offset: 4px; }
   color: var(--accent);
   font-family: var(--font-mono);
   font-size: 0.68rem;
-  line-height: 1.4;
+  line-height: 1.5;
   text-transform: uppercase;
 }
+
+body:has(main[data-route="research"]) .eyebrow { color: #86a6ad; }
 
 .text-link {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  color: var(--accent);
+  color: var(--accent-strong);
   font-size: 0.82rem;
-  font-weight: 650;
+  font-weight: 600;
 }
 
 .message-page {
-  width: min(100% - 40px, 760px);
-  min-height: 80vh;
+  width: min(100% - 40px, 840px);
+  min-height: 82vh;
   margin: 0 auto;
-  padding: 190px 0 80px;
+  padding: 180px 0 90px;
 }
 
 .message-page h1 {
-  max-width: 12ch;
+  max-width: 11ch;
   margin: 20px 0;
-  font-size: 6.5rem;
-  line-height: 0.98;
+  font-family: var(--font-display);
+  font-size: clamp(4rem, 9vw, 7rem);
+  font-weight: 500;
+  line-height: 0.9;
 }
 
-.message-page > p:not(.eyebrow) { color: var(--muted); }
+.message-page > p:not(.eyebrow) {
+  max-width: 58ch;
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+.message-page button {
+  min-height: 44px;
+  margin-top: 18px;
+  padding: 0 18px;
+  border: 1px solid var(--ink);
+  border-radius: var(--radius-sm);
+  background: var(--ink);
+  color: var(--paper);
+  cursor: pointer;
+}
 
 @media (max-width: 640px) {
-  .message-page h1 { font-size: 3.5rem; }
+  .message-page { width: min(100% - 28px, 840px); padding-top: 132px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
