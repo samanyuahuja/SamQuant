@@ -26,6 +26,7 @@ claim of future profitability.
 - Simulates long-only multi-asset portfolios with fees and adverse slippage.
 - Executes every signal at the following bar's open to avoid same-bar leakage.
 - Reports return, volatility, Sharpe ratio, drawdown, and realized win rate.
+- Explains each result in plain language without turning old signals into trading advice.
 - Compares strategies against an equal-weight benchmark in Streamlit.
 - Presents a responsive Next.js terminal with real SamQuant charts and exports.
 - Keeps deterministic public demos separate from opt-in local Yahoo downloads.

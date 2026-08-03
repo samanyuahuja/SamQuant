@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 
 import { ResearchApiError, runBacktest } from "@/lib/api";
+import { explainResults } from "@/lib/explain-results";
 import { formatMoney, formatNumber, formatPercent } from "@/lib/format";
 import {
   DEFAULT_REQUEST,
@@ -298,6 +299,8 @@ export function ResearchTerminal({ initialReport }: { initialReport: BacktestRes
           <Metric label="Final value" value={formatMoney(report.metrics.finalValue, resultCurrency)} />
         </section>
 
+        <PlainEnglishResult report={report} currency={resultCurrency} />
+
         <div className={styles.tabs} role="tablist" aria-label="Research results">
           {TABS.map((tab) => (
             <button
@@ -437,6 +440,54 @@ function StrategyFields({
 
 function Metric({ label, value }: { label: string; value: string }) {
   return <div><span>{label}<Link href="/methodology" title={`${label} methodology`} aria-label={`Read ${label} methodology`}><Info size={12} /></Link></span><strong>{value}</strong></div>;
+}
+
+function PlainEnglishResult({ report, currency }: { report: BacktestResponse; currency: string }) {
+  const explanation = explainResults(report, currency);
+  return (
+    <section className={styles.explanation} aria-labelledby="result-explanation-heading">
+      <header className={styles.explanationHeader}>
+        <div>
+          <span>Plain-English result</span>
+          <h2 id="result-explanation-heading">What happened in this backtest?</h2>
+        </div>
+        <strong data-tone={explanation.tone}>{explanation.status}</strong>
+      </header>
+
+      <p className={styles.explanationLead}>{explanation.outcome}</p>
+
+      <div className={styles.explanationLessons}>
+        <article>
+          <span>Compared with holding</span>
+          <h3>Did the rules help?</h3>
+          <p>{explanation.comparison}</p>
+        </article>
+        <article>
+          <span>Risk</span>
+          <h3>How rough was the ride?</h3>
+          <p>{explanation.risk}</p>
+        </article>
+        <article>
+          <span>Evidence</span>
+          <h3>How much can we learn?</h3>
+          <p>{explanation.evidence}</p>
+        </article>
+      </div>
+
+      <div className={styles.explanationAnswers}>
+        <article>
+          <span>Buy or sell?</span>
+          <h3>{explanation.decisionTitle}</h3>
+          <p>{explanation.decisionBody}</p>
+        </article>
+        <article>
+          <span>Future prediction</span>
+          <h3>{explanation.futureTitle}</h3>
+          <p>{explanation.futureBody}</p>
+        </article>
+      </div>
+    </section>
+  );
 }
 
 function TradeTable({ report, currency }: { report: BacktestResponse; currency: string }) {

@@ -36,6 +36,8 @@ test("visualizations rise and zoom into place while scrolling", async ({ page },
 test("research terminal runs the primary backtest journey", async ({ page }) => {
   await page.goto("/research");
   await expect(page.locator("main[data-ready='true']")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "What happened in this backtest?" })).toBeVisible();
+  await expect(page.getByText("The old test ended holding AAPL.")).toBeVisible();
   await page.getByRole("button", { name: "Edit setup" }).click();
   await page.getByLabel("Tickers").fill("AAPL, MSFT");
   const shortWindow = page.getByLabel("Short window");

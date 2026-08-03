@@ -16,6 +16,9 @@ describe("ResearchTerminal", () => {
     render(<ResearchTerminal initialReport={demoReport as BacktestResponse} />);
 
     expect(screen.getByRole("heading", { name: "Moving average crossover" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "What happened in this backtest?" })).toBeInTheDocument();
+    expect(screen.getByText("Loss in this test")).toBeInTheDocument();
+    expect(screen.getByText("The old test ended holding AAPL.")).toBeInTheDocument();
     expect(screen.getByRole("tab", { name: /Performance/ })).toHaveAttribute("aria-selected", "true");
     expect(screen.getByRole("tab", { name: /Trades/ })).toBeInTheDocument();
     expect(await screen.findByTestId("chart-price")).toBeInTheDocument();

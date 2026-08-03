@@ -73,6 +73,8 @@ exclusive internally; the dashboard includes the date selected by the user.
 
 ## Reading Results
 
+- **Plain-English result:** Explains the account outcome, benchmark comparison,
+  risk, amount of evidence, and the model's position at the end of the test.
 - **Overview:** Equity growth, drawdown, final value, trade count, and holdings.
 - **Trades:** Every simulated buy and sell, including quantity, fill, and fee.
 - **Strategy comparison:** All three strategies and an equal-weight benchmark,
@@ -82,6 +84,8 @@ exclusive internally; the dashboard includes the date selected by the user.
 
 The web terminal shows price and indicator charts, execution markers, an equity
 curve, drawdown, benchmark comparison, trade history, and the assumptions used.
+Its buy-or-sell explanation describes only the final state of the historical
+simulation. It does not recommend a trade or predict the next price move.
 The Streamlit prototype remains available with
 `python -m streamlit run samquant/dashboard/app.py`.
 
