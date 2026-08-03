@@ -1,19 +1,19 @@
 :root {
   --ink: #0a0a09;
-  --ink-soft: #10100f;
-  --panel: #151513;
-  --panel-2: #1b1b18;
-  --paper: #f1f0ea;
-  --paper-dim: #d2d1cb;
-  --muted: #92938f;
-  --muted-2: #858680;
-  --line: #292a27;
-  --line-strong: #3a3b37;
-  --accent: #b9d66b;
-  --accent-strong: #d1ef7a;
-  --positive: #5bc28a;
-  --negative: #e16d64;
-  --warning: #e3b75e;
+  --ink-soft: #111210;
+  --panel: #171815;
+  --panel-2: #1d1f1c;
+  --paper: #f2efe6;
+  --paper-dim: #d7d4cc;
+  --muted: #999a95;
+  --muted-2: #858681;
+  --line: #2a2c29;
+  --line-strong: #41433e;
+  --accent: #e3b85e;
+  --accent-strong: #f0c970;
+  --positive: #4fbd82;
+  --negative: #df6a61;
+  --warning: #e3b85e;
   --content: 1120px;
   --content-wide: 1440px;
   --radius-sm: 4px;
@@ -40,6 +40,8 @@ body {
   letter-spacing: 0;
   text-rendering: optimizeLegibility;
 }
+
+body:has(main[data-route="research"]) footer { display: none; }
 
 button,
 input,

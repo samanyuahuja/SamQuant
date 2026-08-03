@@ -5,6 +5,7 @@ const python = process.env.SAMQUANT_PYTHON ?? "../.venv/bin/python";
 export default defineConfig({
   testDir: "./e2e",
   fullyParallel: true,
+  workers: process.env.CI ? 4 : 1,
   forbidOnly: Boolean(process.env.CI),
   retries: process.env.CI ? 2 : 0,
   reporter: "html",

@@ -15,11 +15,7 @@ export function SiteHeader() {
     <header className={styles.header}>
       <div className={styles.inner}>
         <Link className={styles.brand} href="/" aria-label="SamQuant home">
-          <span className={styles.mark} aria-hidden="true">
-            <i />
-            <i />
-            <i />
-          </span>
+          <span className={styles.mark} aria-hidden="true">S/Q</span>
           <span>SamQuant</span>
         </Link>
         <nav className={styles.desktopNav} aria-label="Main navigation">
@@ -30,7 +26,7 @@ export function SiteHeader() {
           ))}
         </nav>
         <div className={styles.actions}>
-          <span className={styles.status}>Simulation only</span>
+          <span className={styles.status}>No live orders</span>
           <a
             className={styles.github}
             href="https://github.com/samanyuahuja/SamQuant"

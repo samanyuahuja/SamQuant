@@ -115,7 +115,7 @@ export function ResearchTerminal({ initialReport }: { initialReport: BacktestRes
   const resultCurrency = report.metadata.market === "US" ? "USD" : "INR";
   const symbol = report.metadata.symbols[0];
   return (
-    <main id="main-content" className={styles.main} data-ready={ready}>
+    <main id="main-content" className={styles.main} data-ready={ready} data-route="research">
       <aside className={styles.controlRail} aria-label="Backtest controls">
         <div className={styles.controlHeader}>
           <div>
@@ -128,7 +128,7 @@ export function ResearchTerminal({ initialReport }: { initialReport: BacktestRes
         </div>
         <form onSubmit={handleSubmit} noValidate>
           <fieldset>
-            <legend>Market data</legend>
+            <legend><span>01</span> Market data</legend>
             <FormField label="Source" htmlFor="data-source">
               <select id="data-source" value={request.data_source} onChange={(event) => updateRequest("data_source", event.target.value as BacktestRequest["data_source"])}>
                 <option value="demo">Deterministic demo</option>
@@ -167,7 +167,7 @@ export function ResearchTerminal({ initialReport }: { initialReport: BacktestRes
           </fieldset>
 
           <fieldset>
-            <legend>Strategy</legend>
+            <legend><span>02</span> Strategy</legend>
             <FormField label="Model" htmlFor="strategy">
               <select id="strategy" value={request.strategy} onChange={(event) => updateRequest("strategy", event.target.value as StrategyId)}>
                 {STRATEGIES.map((strategy) => <option key={strategy.id} value={strategy.id}>{strategy.label}</option>)}
@@ -177,7 +177,7 @@ export function ResearchTerminal({ initialReport }: { initialReport: BacktestRes
           </fieldset>
 
           <fieldset>
-            <legend>Execution</legend>
+            <legend><span>03</span> Execution</legend>
             <FormField label={`Starting cash (${inputCurrency})`} htmlFor="initial-cash">
               <input id="initial-cash" type="number" min="1" step="1000" value={request.initial_cash} onChange={(event) => updateRequest("initial_cash", Number(event.target.value))} />
             </FormField>
@@ -221,6 +221,13 @@ export function ResearchTerminal({ initialReport }: { initialReport: BacktestRes
             <button type="button" onClick={() => downloadTrades(report)}><Download aria-hidden="true" size={15} />Trades CSV</button>
           </div>
         </header>
+
+        <div className={styles.sessionBar} aria-label="Current research session">
+          <span><i aria-hidden="true" /> Engine ready</span>
+          <span>Execution / next open</span>
+          <span>Source / {report.metadata.dataSource}</span>
+          <span>Run / {report.metadata.requestId.slice(0, 8)}</span>
+        </div>
 
         {error && (
           <div className={styles.errorBanner} role="alert">

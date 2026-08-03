@@ -4,9 +4,8 @@
   top: 0;
   left: 0;
   width: 100%;
-  border-bottom: 1px solid color-mix(in srgb, var(--line) 74%, transparent);
-  background: color-mix(in srgb, var(--ink) 88%, transparent);
-  backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--line);
+  background: #090908;
 }
 
 .inner {
@@ -30,27 +29,20 @@
   gap: 10px;
   width: max-content;
   color: var(--paper);
-  font-size: 0.88rem;
-  font-weight: 700;
+  font-size: 0.82rem;
+  font-weight: 650;
 }
 
 .mark {
-  display: flex;
+  display: grid;
   align-items: center;
-  gap: 2px;
-  width: 21px;
-  height: 18px;
+  width: 31px;
+  height: 24px;
+  border-right: 1px solid var(--accent);
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
 }
-
-.mark i {
-  display: block;
-  width: 5px;
-  background: var(--accent);
-}
-
-.mark i:nth-child(1) { height: 7px; }
-.mark i:nth-child(2) { height: 15px; }
-.mark i:nth-child(3) { height: 10px; }
 
 .desktopNav {
   gap: 28px;
@@ -59,7 +51,7 @@
 .desktopNav a,
 .github {
   color: var(--muted);
-  font-size: 0.78rem;
+  font-size: 0.72rem;
   transition: color 180ms ease;
 }
 

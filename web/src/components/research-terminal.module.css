@@ -1,9 +1,9 @@
 .main {
   display: grid;
-  grid-template-columns: 320px minmax(0, 1fr);
+  grid-template-columns: 304px minmax(0, 1fr);
   min-height: 100vh;
   padding-top: 64px;
-  background: var(--ink-soft);
+  background: #0f100e;
 }
 
 .controlRail {
@@ -12,7 +12,7 @@
   height: calc(100vh - 64px);
   overflow-y: auto;
   border-right: 1px solid var(--line);
-  background: var(--ink);
+  background: #0b0c0a;
   scrollbar-width: thin;
 }
 
@@ -67,6 +67,14 @@
   font-weight: 650;
 }
 
+.controlRail legend span {
+  margin-right: 8px;
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  font-weight: 500;
+}
+
 .formField {
   display: grid;
   gap: 7px;
@@ -86,7 +94,7 @@
   height: 40px;
   padding: 0 10px;
   border: 1px solid var(--line-strong);
-  border-radius: var(--radius-sm);
+  border-radius: 1px;
   background: var(--panel);
   color: var(--paper);
   font-family: var(--font-mono);
@@ -138,7 +146,7 @@
   width: 100%;
   min-height: 46px;
   border: 1px solid var(--accent);
-  border-radius: var(--radius-sm);
+  border-radius: 1px;
   background: var(--accent);
   color: var(--ink);
   font-size: 0.78rem;
@@ -158,6 +166,35 @@
 .workspace {
   min-width: 0;
   padding: 34px 34px 80px;
+}
+
+.sessionBar {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  margin-bottom: 16px;
+  border-block: 1px solid var(--line-strong);
+}
+
+.sessionBar span {
+  display: flex;
+  align-items: center;
+  min-height: 34px;
+  padding: 0 11px;
+  border-right: 1px solid var(--line);
+  color: var(--muted-2);
+  font-family: var(--font-mono);
+  font-size: 0.54rem;
+  text-transform: uppercase;
+}
+
+.sessionBar span:last-child { border-right: 0; }
+
+.sessionBar i {
+  width: 6px;
+  height: 6px;
+  margin-right: 7px;
+  border-radius: 50%;
+  background: var(--positive);
 }
 
 .workspaceHeader {
@@ -191,7 +228,7 @@
   min-height: 40px;
   padding: 0 12px;
   border: 1px solid var(--line-strong);
-  border-radius: var(--radius-sm);
+  border-radius: 1px;
   background: var(--panel);
   color: var(--paper-dim);
   font-size: 0.68rem;
@@ -208,7 +245,7 @@
   margin-bottom: 14px;
   padding: 13px 15px;
   border: 1px solid var(--line-strong);
-  border-radius: var(--radius-sm);
+  border-radius: 1px;
   font-size: 0.72rem;
 }
 
@@ -223,8 +260,7 @@
 .pricePanel {
   position: relative;
   overflow: hidden;
-  border: 1px solid var(--line-strong);
-  border-radius: var(--radius-sm);
+  border-block: 1px solid var(--line-strong);
   background: var(--ink-soft);
 }
 
@@ -256,7 +292,7 @@
   grid-template-columns: repeat(7, minmax(110px, 1fr));
   margin-top: 14px;
   border: 1px solid var(--line-strong);
-  border-radius: var(--radius-sm);
+  border-radius: 0;
   background: var(--line);
   gap: 1px;
   overflow-x: auto;
@@ -460,6 +496,9 @@
   .runButton { grid-column: 1 / -1; margin-bottom: 20px; }
   .workspace { padding: 28px 14px 60px; }
   .workspaceHeader { align-items: flex-start; flex-direction: column; }
+  .sessionBar { grid-template-columns: 1fr 1fr; }
+  .sessionBar span:nth-child(2) { border-right: 0; }
+  .sessionBar span:nth-child(-n + 2) { border-bottom: 1px solid var(--line); }
   .priceChart { height: 350px; }
   .assumptions { grid-template-columns: 1fr; gap: 24px; }
 }
