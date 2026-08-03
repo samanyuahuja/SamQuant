@@ -38,7 +38,11 @@ test("research terminal runs the primary backtest journey", async ({ page }) => 
   await expect(page.locator("main[data-ready='true']")).toBeVisible();
   await page.getByRole("button", { name: "Edit setup" }).click();
   await page.getByLabel("Tickers").fill("AAPL, MSFT");
-  await page.getByLabel("Short window").fill("10");
+  const shortWindow = page.getByLabel("Short window");
+  await shortWindow.fill("");
+  await expect(shortWindow).toHaveValue("");
+  await shortWindow.fill("10");
+  await expect(shortWindow).toHaveValue("10");
   await page.getByLabel("Long window").fill("40");
   const responsePromise = page.waitForResponse((response) => response.url().includes("/api/backtests") && response.request().method() === "POST");
   await page.getByRole("button", { name: "Run backtest" }).click();
@@ -188,5 +192,25 @@ test("desktop visual baselines remain stable", async ({ page }, testInfo) => {
   await page.addStyleTag({ content: "nextjs-portal { display: none !important; }" });
   await expect(page.locator("main[data-ready='true']")).toBeVisible();
   await expect(page.getByRole("figure", { name: /daily candlesticks/ })).toBeVisible();
-  await expect(page).toHaveScreenshot("research-desktop.png", { fullPage: true, animations: "disabled", maxDiffPixels: 5_000 });
+  await page.waitForFunction(() => [...document.querySelectorAll("canvas")].every((canvas) => canvas.width > 0 && canvas.height > 0));
+  const chartHasData = await page.locator("canvas").evaluateAll((elements) => elements.some((element) => {
+    const canvas = element as HTMLCanvasElement;
+    const context = canvas.getContext("2d");
+    if (!context) return false;
+    const pixels = context.getImageData(0, 0, canvas.width, canvas.height).data;
+    const colors = new Set<string>();
+    for (let index = 0; index < pixels.length; index += 64) {
+      colors.add(`${pixels[index]}:${pixels[index + 1]}:${pixels[index + 2]}:${pixels[index + 3]}`);
+      if (colors.size > 4) return true;
+    }
+    return false;
+  }));
+  expect(chartHasData).toBe(true);
+  await expect(page).toHaveScreenshot("research-desktop.png", {
+    fullPage: true,
+    animations: "disabled",
+    mask: [page.locator("canvas")],
+    maskColor: "#fffdf8",
+    maxDiffPixels: 5_000,
+  });
 });

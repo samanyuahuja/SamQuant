@@ -45,6 +45,43 @@ describe("ResearchTerminal", () => {
     expect(fetchSpy).not.toHaveBeenCalled();
   });
 
+  it("preserves commas while entering a multi-asset universe", async () => {
+    const fetchSpy = vi.spyOn(global, "fetch").mockResolvedValue(new Response(JSON.stringify(demoReport), {
+      status: 200,
+      headers: { "content-type": "application/json" },
+    }));
+    render(<ResearchTerminal initialReport={demoReport as BacktestResponse} />);
+    const tickerInput = screen.getByLabelText("Tickers");
+
+    fireEvent.change(tickerInput, { target: { value: "AAPL," } });
+    expect(tickerInput).toHaveValue("AAPL,");
+    fireEvent.change(tickerInput, { target: { value: "AAPL, MSFT" } });
+    fireEvent.click(screen.getByRole("button", { name: "Run backtest" }));
+
+    await waitFor(() => expect(fetchSpy).toHaveBeenCalledOnce());
+    const body = JSON.parse(String(fetchSpy.mock.calls[0][1]?.body));
+    expect(body.symbols).toEqual(["AAPL", "MSFT"]);
+  });
+
+  it("lets a number stay empty while it is being replaced", () => {
+    render(<ResearchTerminal initialReport={demoReport as BacktestResponse} />);
+    const shortWindow = screen.getByLabelText("Short window");
+
+    fireEvent.change(shortWindow, { target: { value: "" } });
+    expect(shortWindow).toHaveValue(null);
+    fireEvent.change(shortWindow, { target: { value: "24" } });
+    expect(shortWindow).toHaveValue(24);
+  });
+
+  it("does not carry a draft number into another strategy", () => {
+    render(<ResearchTerminal initialReport={demoReport as BacktestResponse} />);
+
+    fireEvent.change(screen.getByLabelText("Short window"), { target: { value: "24" } });
+    fireEvent.change(screen.getByLabelText("Model"), { target: { value: "mean_reversion" } });
+
+    expect(screen.getByLabelText("Lookback window")).toHaveValue(20);
+  });
+
   it("shows a useful backend failure without leaking server details", async () => {
     vi.spyOn(global, "fetch").mockResolvedValue(new Response(JSON.stringify({
       error: { code: "API_UNAVAILABLE", message: "The research engine is unavailable. Check the Python API and try again.", fields: [], requestId: "test" },

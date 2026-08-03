@@ -66,7 +66,7 @@ Start the Python API and public web app in separate terminals:
 
 ```bash
 source .venv/bin/activate
-python -m uvicorn samquant.api.app:app --reload
+SAMQUANT_ENABLE_YAHOO=true python -m uvicorn samquant.api.app:app --reload
 ```
 
 ```bash
@@ -75,7 +75,9 @@ npm run dev
 ```
 
 Open `http://localhost:3000`. The terminal starts with deterministic SamQuant
-results. The Streamlit prototype remains available with
+results, while the local API command above also enables Yahoo Finance downloads.
+Keep `SAMQUANT_ENABLE_YAHOO` unset on a public deployment unless its data policy
+allows provider access. The Streamlit prototype remains available with
 `python -m streamlit run samquant/dashboard/app.py`.
 
 Indian symbols can be entered without provider suffixes:

@@ -91,7 +91,10 @@ def test_disabled_yahoo_source_returns_a_natural_error() -> None:
 
     assert response.status_code == 400
     assert response.json()["error"]["code"] == "BACKTEST_INPUT_ERROR"
-    assert "disabled" in response.json()["error"]["message"]
+    assert response.json()["error"]["message"] == (
+        "Yahoo Finance is not available on this server. "
+        "Use demo data, or enable it in your local API."
+    )
 
 
 def test_unexpected_backend_failure_does_not_expose_a_traceback(monkeypatch) -> None:

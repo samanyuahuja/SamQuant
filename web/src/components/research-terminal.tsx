@@ -59,6 +59,8 @@ const subscribeToHydration = () => () => undefined;
 
 export function ResearchTerminal({ initialReport }: { initialReport: BacktestResponse }) {
   const [request, setRequest] = useState<BacktestRequest>(DEFAULT_REQUEST);
+  const [symbolsInput, setSymbolsInput] = useState(DEFAULT_REQUEST.symbols.join(", "));
+  const [inputRevision, setInputRevision] = useState(0);
   const [report, setReport] = useState<BacktestResponse>(initialReport);
   const [activeTab, setActiveTab] = useState<ResultTab>("performance");
   const [loading, setLoading] = useState(false);
@@ -72,6 +74,10 @@ export function ResearchTerminal({ initialReport }: { initialReport: BacktestRes
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (!event.currentTarget.checkValidity()) {
+      event.currentTarget.reportValidity();
+      return;
+    }
     const validation = validateRequest(request);
     if (validation) {
       setError(validation.message);
@@ -115,6 +121,8 @@ export function ResearchTerminal({ initialReport }: { initialReport: BacktestRes
   function reset() {
     activeRequest.current?.abort();
     setRequest(DEFAULT_REQUEST);
+    setSymbolsInput(DEFAULT_REQUEST.symbols.join(", "));
+    setInputRevision((current) => current + 1);
     setReport(initialReport);
     setError(null);
     setErrorFields([]);
@@ -132,7 +140,7 @@ export function ResearchTerminal({ initialReport }: { initialReport: BacktestRes
           <div>
             <p className={styles.contextLine}>Backtest research / {report.metadata.symbols.join(" + ")}</p>
             <h1>{report.metadata.strategyLabel}</h1>
-            <p>{report.metadata.start} to {report.metadata.end} · {report.metadata.market} · {report.metadata.dataSource} data</p>
+            <p>{formatDate(report.metadata.start)} to {formatDate(report.metadata.end)} · {report.metadata.market} · {sourceLabel(report.metadata.dataSource)}</p>
           </div>
           <details className={styles.exportMenu}>
             <summary title="Export results">
@@ -178,7 +186,7 @@ export function ResearchTerminal({ initialReport }: { initialReport: BacktestRes
           )}
 
           <div id="backtest-control-body" className={styles.controlBody} data-open={controlsOpen}>
-            <form id="backtest-form" onSubmit={handleSubmit} noValidate>
+            <form key={inputRevision} id="backtest-form" onSubmit={handleSubmit}>
               <div className={styles.controlGrid}>
                 <fieldset>
                   <legend>Market</legend>
@@ -194,18 +202,24 @@ export function ResearchTerminal({ initialReport }: { initialReport: BacktestRes
                       value={request.market}
                       onChange={(event) => {
                         const market = event.target.value as Market;
-                        setRequest((current) => ({ ...current, market, symbols: MARKET_DEFAULTS[market] }));
+                        const symbols = MARKET_DEFAULTS[market];
+                        setSymbolsInput(symbols.join(", "));
+                        setRequest((current) => ({ ...current, market, symbols }));
                       }}
                     >
                       {Object.keys(MARKET_DEFAULTS).map((market) => <option key={market}>{market}</option>)}
                     </select>
                   </FormField>
-                  <FormField label="Tickers" htmlFor="symbols">
+                  <FormField label="Tickers" htmlFor="symbols" hint="Separate up to six tickers with commas.">
                     <input
                       id="symbols"
                       aria-invalid={errorFields.includes("symbols")}
-                      value={request.symbols.join(", ")}
-                      onChange={(event) => updateRequest("symbols", event.target.value.split(",").map((symbol) => symbol.trim()).filter(Boolean))}
+                      aria-describedby="symbols-hint"
+                      value={symbolsInput}
+                      onChange={(event) => {
+                        setSymbolsInput(event.target.value);
+                        updateRequest("symbols", parseTickerInput(event.target.value));
+                      }}
                       placeholder="AAPL, MSFT"
                     />
                   </FormField>
@@ -226,29 +240,29 @@ export function ResearchTerminal({ initialReport }: { initialReport: BacktestRes
                       {STRATEGIES.map((strategy) => <option key={strategy.id} value={strategy.id}>{strategy.label}</option>)}
                     </select>
                   </FormField>
-                  <StrategyFields request={request} update={updateParameter} errorFields={errorFields} />
+                  <StrategyFields key={request.strategy} request={request} update={updateParameter} errorFields={errorFields} />
                 </fieldset>
 
                 <fieldset>
                   <legend>Execution</legend>
                   <FormField label={`Starting cash (${inputCurrency})`} htmlFor="initial-cash">
-                    <input id="initial-cash" type="number" min="1" step="1000" value={request.initial_cash} onChange={(event) => updateRequest("initial_cash", Number(event.target.value))} />
+                    <NumberInput id="initial-cash" min={1} step={1} value={request.initial_cash} onValueChange={(value) => updateRequest("initial_cash", value)} />
                   </FormField>
                   <div className={styles.twoColumns}>
                     <FormField label="Commission (%)" htmlFor="commission">
-                      <input id="commission" type="number" min="0" max="5" step="0.01" value={request.commission_rate * 100} onChange={(event) => updateRequest("commission_rate", Number(event.target.value) / 100)} />
+                      <NumberInput id="commission" min={0} max={5} step={0.01} value={request.commission_rate * 100} onValueChange={(value) => updateRequest("commission_rate", value / 100)} />
                     </FormField>
                     <FormField label="Slippage (bps)" htmlFor="slippage">
-                      <input id="slippage" type="number" min="0" max="9999" step="1" value={request.slippage_bps} onChange={(event) => updateRequest("slippage_bps", Number(event.target.value))} />
+                      <NumberInput id="slippage" min={0} max={9999} step={1} value={request.slippage_bps} onValueChange={(value) => updateRequest("slippage_bps", value)} />
                     </FormField>
                   </div>
                   <FormField label={`Fixed fee (${inputCurrency})`} htmlFor="fixed-fee">
-                    <input id="fixed-fee" type="number" min="0" step="0.01" value={request.fixed_fee} onChange={(event) => updateRequest("fixed_fee", Number(event.target.value))} />
+                    <NumberInput id="fixed-fee" min={0} step={0.01} value={request.fixed_fee} onValueChange={(value) => updateRequest("fixed_fee", value)} />
                   </FormField>
                   <details className={styles.advanced}>
                     <summary>Analytics setting</summary>
                     <FormField label="Risk-free rate (%)" htmlFor="risk-free-rate">
-                      <input id="risk-free-rate" type="number" min="-99" max="100" step="0.1" value={request.risk_free_rate * 100} onChange={(event) => updateRequest("risk_free_rate", Number(event.target.value) / 100)} />
+                      <NumberInput id="risk-free-rate" min={-99} max={100} step={0.1} value={request.risk_free_rate * 100} onValueChange={(value) => updateRequest("risk_free_rate", value / 100)} />
                     </FormField>
                   </details>
                 </fieldset>
@@ -326,8 +340,64 @@ export function ResearchTerminal({ initialReport }: { initialReport: BacktestRes
   );
 }
 
-function FormField({ label, htmlFor, children }: { label: string; htmlFor: string; children: React.ReactNode }) {
-  return <label className={styles.formField} htmlFor={htmlFor}><span>{label}</span>{children}</label>;
+function FormField({
+  label,
+  htmlFor,
+  hint,
+  children,
+}: {
+  label: string;
+  htmlFor: string;
+  hint?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className={styles.formField}>
+      <label htmlFor={htmlFor}>{label}</label>
+      {children}
+      {hint && <small id={`${htmlFor}-hint`}>{hint}</small>}
+    </div>
+  );
+}
+
+function NumberInput({
+  id,
+  value,
+  onValueChange,
+  ariaInvalid = false,
+  min,
+  max,
+  step,
+}: {
+  id: string;
+  value: number;
+  onValueChange: (value: number) => void;
+  ariaInvalid?: boolean;
+  min?: number;
+  max?: number;
+  step?: number;
+}) {
+  const [draft, setDraft] = useState(String(value));
+
+  return (
+    <input
+      id={id}
+      type="number"
+      required
+      min={min}
+      max={max}
+      step={step}
+      value={draft}
+      aria-invalid={ariaInvalid || undefined}
+      onChange={(event) => {
+        const nextDraft = event.target.value;
+        setDraft(nextDraft);
+        if (nextDraft === "") return;
+        const nextValue = Number(nextDraft);
+        if (Number.isFinite(nextValue)) onValueChange(nextValue);
+      }}
+    />
+  );
 }
 
 function StrategyFields({
@@ -342,25 +412,25 @@ function StrategyFields({
   const parameters = request.parameters;
   if (request.strategy === "moving_average") {
     return <div className={styles.twoColumns}>
-      <FormField label="Short window" htmlFor="short-window"><input id="short-window" aria-invalid={errorFields.includes("short_window")} type="number" min="2" max="500" value={parameters.short_window} onChange={(event) => update("short_window", Number(event.target.value))} /></FormField>
-      <FormField label="Long window" htmlFor="long-window"><input id="long-window" aria-invalid={errorFields.includes("long_window")} type="number" min="3" max="750" value={parameters.long_window} onChange={(event) => update("long_window", Number(event.target.value))} /></FormField>
+      <FormField label="Short window" htmlFor="short-window"><NumberInput id="short-window" ariaInvalid={errorFields.includes("short_window")} min={2} max={500} value={parameters.short_window} onValueChange={(value) => update("short_window", value)} /></FormField>
+      <FormField label="Long window" htmlFor="long-window"><NumberInput id="long-window" ariaInvalid={errorFields.includes("long_window")} min={3} max={750} value={parameters.long_window} onValueChange={(value) => update("long_window", value)} /></FormField>
     </div>;
   }
   if (request.strategy === "mean_reversion") {
     return <>
-      <FormField label="Lookback window" htmlFor="lookback-window"><input id="lookback-window" type="number" min="2" max="750" value={parameters.lookback_window} onChange={(event) => update("lookback_window", Number(event.target.value))} /></FormField>
+      <FormField label="Lookback window" htmlFor="lookback-window"><NumberInput id="lookback-window" min={2} max={750} value={parameters.lookback_window} onValueChange={(value) => update("lookback_window", value)} /></FormField>
       <div className={styles.twoColumns}>
-        <FormField label="Entry z-score" htmlFor="entry-z"><input id="entry-z" type="number" min="-10" max="0" step="0.1" value={parameters.entry_z_score} onChange={(event) => update("entry_z_score", Number(event.target.value))} /></FormField>
-        <FormField label="Exit z-score" htmlFor="exit-z"><input id="exit-z" type="number" min="-5" max="10" step="0.1" value={parameters.exit_z_score} onChange={(event) => update("exit_z_score", Number(event.target.value))} /></FormField>
+        <FormField label="Entry z-score" htmlFor="entry-z"><NumberInput id="entry-z" min={-10} max={0} step={0.1} value={parameters.entry_z_score} onValueChange={(value) => update("entry_z_score", value)} /></FormField>
+        <FormField label="Exit z-score" htmlFor="exit-z"><NumberInput id="exit-z" min={-5} max={10} step={0.1} value={parameters.exit_z_score} onValueChange={(value) => update("exit_z_score", value)} /></FormField>
       </div>
     </>;
   }
   return <>
     <div className={styles.twoColumns}>
-      <FormField label="Lookback" htmlFor="momentum-lookback"><input id="momentum-lookback" type="number" min="2" max="750" value={parameters.lookback_window} onChange={(event) => update("lookback_window", Number(event.target.value))} /></FormField>
-      <FormField label="Top assets" htmlFor="top-assets"><input id="top-assets" type="number" min="1" max="6" value={parameters.top_n} onChange={(event) => update("top_n", Number(event.target.value))} /></FormField>
+      <FormField label="Lookback" htmlFor="momentum-lookback"><NumberInput id="momentum-lookback" min={2} max={750} value={parameters.lookback_window} onValueChange={(value) => update("lookback_window", value)} /></FormField>
+      <FormField label="Top assets" htmlFor="top-assets"><NumberInput id="top-assets" min={1} max={6} value={parameters.top_n} onValueChange={(value) => update("top_n", value)} /></FormField>
     </div>
-    <FormField label="Rebalance frequency" htmlFor="rebalance-frequency"><input id="rebalance-frequency" type="number" min="1" max="252" value={parameters.rebalance_frequency} onChange={(event) => update("rebalance_frequency", Number(event.target.value))} /></FormField>
+    <FormField label="Rebalance frequency" htmlFor="rebalance-frequency"><NumberInput id="rebalance-frequency" min={1} max={252} value={parameters.rebalance_frequency} onValueChange={(value) => update("rebalance_frequency", value)} /></FormField>
     <label className={styles.checkbox}><input type="checkbox" checked={parameters.require_positive_returns} onChange={(event) => update("require_positive_returns", event.target.checked)} /><span>Require positive trailing returns</span></label>
   </>;
 }
@@ -398,7 +468,19 @@ function LoadingOverlay() {
 function requestSummary(request: BacktestRequest): string {
   const strategy = STRATEGIES.find((item) => item.id === request.strategy)?.label ?? request.strategy;
   const symbols = request.symbols.length ? request.symbols.join(" + ") : "No tickers";
-  return `${symbols} · ${strategy} · ${request.start} to ${request.end}`;
+  return `${symbols} with ${strategy.toLowerCase()}, ${formatDate(request.start)} to ${formatDate(request.end)}`;
+}
+
+function parseTickerInput(value: string): string[] {
+  return value.split(/[,\n]+/).map((symbol) => symbol.trim()).filter(Boolean);
+}
+
+function formatDate(value: string): string {
+  return new Intl.DateTimeFormat("en", { month: "short", day: "numeric", year: "numeric" }).format(new Date(`${value}T00:00:00`));
+}
+
+function sourceLabel(source: BacktestResponse["metadata"]["dataSource"]): string {
+  return source === "demo" ? "Demo data" : "Yahoo Finance";
 }
 
 function PriceDataTable({ report }: { report: BacktestResponse }) {
@@ -429,6 +511,7 @@ function focusFirstField(fields: string[]) {
 
 function validateRequest(request: BacktestRequest): { message: string; fields: string[] } | null {
   if (!request.symbols.length) return { message: "Enter at least one ticker symbol.", fields: ["symbols"] };
+  if (request.symbols.length > 6) return { message: "Enter no more than six ticker symbols.", fields: ["symbols"] };
   if (request.end <= request.start) return { message: "End date must be later than start date.", fields: ["start", "end"] };
   if (request.strategy === "moving_average" && request.parameters.short_window >= request.parameters.long_window) {
     return { message: "Short window must be smaller than long window.", fields: ["short_window", "long_window"] };

@@ -220,7 +220,7 @@ def load_market_data(
         raise ResearchError(f"Unsupported data source: {source}.")
     if not allow_yahoo:
         raise ResearchError(
-            "Yahoo Finance access is disabled for this public research service."
+            "Yahoo Finance is not available on this server. Use demo data, or enable it in your local API."
         )
 
     downloaded = {

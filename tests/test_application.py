@@ -80,7 +80,7 @@ def test_application_bounds_symbols_and_date_ranges() -> None:
 
 
 def test_yahoo_market_data_requires_explicit_server_permission() -> None:
-    with pytest.raises(ResearchError, match="disabled"):
+    with pytest.raises(ResearchError, match="not available"):
         load_market_data(
             source="yahoo",
             symbols=("AAPL",),

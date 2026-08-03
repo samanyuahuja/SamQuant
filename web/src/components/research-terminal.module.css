@@ -55,8 +55,8 @@
 .workspaceHeader p:last-child {
   margin: 12px 0 0;
   color: var(--research-muted);
-  font-family: var(--font-mono);
-  font-size: 0.68rem;
+  font-size: 0.78rem;
+  line-height: 1.5;
 }
 
 .exportMenu { position: relative; }
@@ -116,8 +116,7 @@
 .experimentHeader p {
   margin: 7px 0 0;
   color: var(--research-muted);
-  font-family: var(--font-mono);
-  font-size: 0.64rem;
+  font-size: 0.76rem;
   line-height: 1.5;
 }
 
@@ -220,10 +219,16 @@
   min-width: 0;
 }
 
-.formField > span,
+.formField > label,
 .checkbox span {
   color: var(--research-muted);
   font-size: 0.66rem;
+}
+
+.formField small {
+  color: var(--research-muted);
+  font-size: 0.66rem;
+  line-height: 1.45;
 }
 
 .formField input,
@@ -314,7 +319,7 @@
 }
 .panelHeader span { color: var(--research-muted); font-size: 0.64rem; }
 .panelHeader h2 { margin: 5px 0 0; font-size: 1rem; font-weight: 650; }
-.panelHeader .tradeCount { font-family: var(--font-mono); }
+.panelHeader .tradeCount { font-size: 0.72rem; font-weight: 500; }
 .priceChart { height: clamp(390px, 46vw, 590px); }
 
 .chartData { margin-bottom: 0; background: var(--research-surface); }
@@ -495,7 +500,7 @@
   .controlGrid { grid-template-columns: 1fr; gap: 30px; }
   .controlGrid fieldset:last-child { grid-column: auto; display: grid; grid-template-columns: 1fr; }
   .controlGrid fieldset:last-child legend { grid-column: auto; }
-  .formField > span,
+  .formField > label,
   .checkbox span { font-size: 0.74rem; }
   .formField input,
   .formField select { height: 48px; font-size: 1rem; }

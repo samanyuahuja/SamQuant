@@ -16,7 +16,7 @@ Windows PowerShell users activate with `.venv\Scripts\Activate.ps1`.
 Start the API and web app in separate terminals:
 
 ```bash
-python -m uvicorn samquant.api.app:app --reload
+SAMQUANT_ENABLE_YAHOO=true python -m uvicorn samquant.api.app:app --reload
 ```
 
 ```bash
@@ -24,9 +24,8 @@ cd web
 npm run dev
 ```
 
-Open `http://localhost:3000/research`. The public terminal uses deterministic
-demo data by default. For local Yahoo requests, start the API with
-`SAMQUANT_ENABLE_YAHOO=true` after reviewing the provider terms.
+Open `http://localhost:3000/research`. Demo data remains the default. The local
+API command above also permits Yahoo requests after you select that source.
 
 ## Research Inputs
 
