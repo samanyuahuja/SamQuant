@@ -52,7 +52,10 @@ Complete symbols such as `RELIANCE.NS` and indices such as `^NSEI` are preserved
 
 The start and end dates choose the historical research window. More history is
 needed than the strategy's longest lookback. Yahoo's daily `end` date is
-exclusive internally; the dashboard includes the date selected by the user.
+exclusive internally; the research API converts it so the interface includes
+the date selected by the user. The latest selectable date is the most recent
+eligible weekday after that market's regular close. The data provider skips
+exchange holidays with no recorded bars.
 
 ### Strategy settings
 
@@ -75,6 +78,9 @@ exclusive internally; the dashboard includes the date selected by the user.
 
 - **Plain-English result:** Explains the account outcome, benchmark comparison,
   risk, amount of evidence, and the model's position at the end of the test.
+- **Parameter study:** Ranks a small fixed set of strategy settings on the first
+  70% of the period and reports the final 30% separately. It is a historical
+  robustness check, not a forecast or an automatic trading recommendation.
 - **Overview:** Equity growth, drawdown, final value, trade count, and holdings.
 - **Trades:** Every simulated buy and sell, including quantity, fill, and fee.
 - **Strategy comparison:** All three strategies and an equal-weight benchmark,
@@ -105,6 +111,7 @@ npm run screenshots
 ```
 
 The output covers the homepage, research terminal, and architecture page at 375, 768, 1024, and 1440 pixels.
+The generated `public/brand/samquant-logo.jpg` file is the downloadable JPEG logo.
 
 ## Deployment Notes
 

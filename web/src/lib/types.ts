@@ -72,6 +72,17 @@ export interface MetricValues {
   tradeCount: number;
 }
 
+export interface StrategyStudyTrial {
+  rank: number;
+  strategy: string;
+  parameters: Record<string, number | boolean>;
+  selectionReturn: number;
+  validationReturn: number;
+  fullPeriodReturn: number;
+  maximumDrawdown: number;
+  tradeCount: number;
+}
+
 export interface BacktestResponse {
   metadata: {
     requestId: string;
@@ -97,6 +108,11 @@ export interface BacktestResponse {
   };
   metrics: MetricValues;
   benchmarkMetrics: MetricValues;
+  strategyStudy?: {
+    selectionPercent: number;
+    validationPercent: number;
+    trials: StrategyStudyTrial[];
+  };
   trades: TradeRecord[];
   assumptions: Record<string, string>;
   warnings: string[];

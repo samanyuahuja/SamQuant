@@ -41,6 +41,10 @@ await Promise.all([
   writeFile(path.join(brandDirectory, "samquant-mark.svg"), markSvg("#f1efe8", "#111310")),
   writeFile(path.join(brandDirectory, "samquant-logo-light.svg"), logoSvg("#f1efe8", "#111310")),
   writeFile(path.join(brandDirectory, "samquant-logo-dark.svg"), logoSvg("#202421", "#f1efe8")),
+  sharp(Buffer.from(logoSvg("#f1efe8", "#111310")))
+    .resize({ width: 1400 })
+    .jpeg({ quality: 94, chromaSubsampling: "4:4:4" })
+    .toFile(path.join(brandDirectory, "samquant-logo.jpg")),
 ]);
 
 const iconSizes = [16, 32, 48];

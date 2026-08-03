@@ -22,10 +22,20 @@ import { ResearchApiError, runBacktest } from "@/lib/api";
 import { explainResults } from "@/lib/explain-results";
 import { formatMoney, formatNumber, formatPercent } from "@/lib/format";
 import {
+  clearResearchSession,
+  isIsoDate,
+  latestCompletedMarketDate,
+  loadResearchReport,
+  loadResearchRequest,
+  saveResearchReport,
+  saveResearchRequest,
+} from "@/lib/research-session";
+import {
   DEFAULT_REQUEST,
   type BacktestRequest,
   type BacktestResponse,
   type Market,
+  type StrategyStudyTrial,
   type StrategyId,
 } from "@/lib/types";
 import styles from "./research-terminal.module.css";
@@ -35,7 +45,7 @@ const FinancialChart = dynamic(
   { ssr: false, loading: () => <ChartSkeleton /> },
 );
 
-type ResultTab = "performance" | "drawdown" | "trades" | "comparison";
+type ResultTab = "performance" | "drawdown" | "trades" | "comparison" | "study";
 
 const MARKET_DEFAULTS: Record<Market, string[]> = {
   US: ["AAPL"],
@@ -54,6 +64,7 @@ const TABS: { id: ResultTab; label: string; icon: React.ReactNode }[] = [
   { id: "drawdown", label: "Drawdown", icon: <Waves size={15} /> },
   { id: "trades", label: "Trades", icon: <Table2 size={15} /> },
   { id: "comparison", label: "Comparison", icon: <CandlestickChart size={15} /> },
+  { id: "study", label: "Parameter study", icon: <SlidersHorizontal size={15} /> },
 ];
 
 const subscribeToHydration = () => () => undefined;
@@ -68,10 +79,37 @@ export function ResearchTerminal({ initialReport }: { initialReport: BacktestRes
   const [error, setError] = useState<string | null>(null);
   const [errorFields, setErrorFields] = useState<string[]>([]);
   const [controlsOpen, setControlsOpen] = useState(false);
+  const [sessionReady, setSessionReady] = useState(false);
   const ready = useSyncExternalStore(subscribeToHydration, () => true, () => false);
   const activeRequest = useRef<AbortController | null>(null);
 
   useEffect(() => () => activeRequest.current?.abort(), []);
+
+  useEffect(() => {
+    const restoreTimer = window.setTimeout(() => {
+      const savedRequest = loadResearchRequest();
+      const savedReport = loadResearchReport();
+      if (savedRequest) {
+        const latestDate = latestCompletedMarketDate(savedRequest.market);
+        const restoredRequest = savedRequest.end > latestDate
+          ? { ...savedRequest, end: latestDate }
+          : savedRequest;
+        setRequest(restoredRequest);
+        setSymbolsInput(restoredRequest.symbols.join(", "));
+      }
+      if (savedReport) setReport(savedReport);
+      setSessionReady(true);
+    }, 0);
+    return () => window.clearTimeout(restoreTimer);
+  }, []);
+
+  useEffect(() => {
+    if (sessionReady) saveResearchRequest(request);
+  }, [request, sessionReady]);
+
+  useEffect(() => {
+    if (sessionReady) saveResearchReport(report);
+  }, [report, sessionReady]);
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -124,6 +162,7 @@ export function ResearchTerminal({ initialReport }: { initialReport: BacktestRes
 
   function reset() {
     activeRequest.current?.abort();
+    clearResearchSession();
     setRequest(DEFAULT_REQUEST);
     setSymbolsInput(DEFAULT_REQUEST.symbols.join(", "));
     setInputRevision((current) => current + 1);
@@ -136,10 +175,12 @@ export function ResearchTerminal({ initialReport }: { initialReport: BacktestRes
 
   const inputCurrency = request.market === "US" ? "USD" : "INR";
   const resultCurrency = report.metadata.market === "US" ? "USD" : "INR";
+  const latestDate = latestCompletedMarketDate(request.market);
   const symbol = report.metadata.symbols[0];
+  const interactiveReady = ready && sessionReady;
   return (
-    <main id="main-content" className={styles.main} data-ready={ready} data-route="research">
-      <section className={styles.workspace} aria-live="polite" aria-busy={loading}>
+    <main id="main-content" className={styles.main} data-ready={interactiveReady} data-route="research">
+      <section className={styles.workspace} aria-live="polite" aria-busy={!interactiveReady || loading}>
         <header className={styles.workspaceHeader}>
           <div>
             <p className={styles.contextLine}>Backtest research / {report.metadata.symbols.join(" + ")}</p>
@@ -229,10 +270,10 @@ export function ResearchTerminal({ initialReport }: { initialReport: BacktestRes
                   </FormField>
                   <div className={styles.twoColumns}>
                     <FormField label="Start" htmlFor="start">
-                      <input id="start" type="date" aria-invalid={errorFields.includes("start")} value={request.start} onChange={(event) => updateRequest("start", event.target.value)} />
+                      <DateInput key={request.start} id="start" value={request.start} max={latestDate} ariaInvalid={errorFields.includes("start")} onValueChange={(value) => updateRequest("start", value)} />
                     </FormField>
-                    <FormField label="End" htmlFor="end">
-                      <input id="end" type="date" aria-invalid={errorFields.includes("end")} value={request.end} onChange={(event) => updateRequest("end", event.target.value)} />
+                    <FormField label="End" htmlFor="end" hint={`Latest allowed date: ${formatDate(latestDate)}.`}>
+                      <DateInput key={request.end} id="end" value={request.end} max={latestDate} ariaInvalid={errorFields.includes("end")} onValueChange={(value) => updateRequest("end", value)} />
                     </FormField>
                   </div>
                 </fieldset>
@@ -302,7 +343,7 @@ export function ResearchTerminal({ initialReport }: { initialReport: BacktestRes
           <Metric label="Final value" value={formatMoney(report.metrics.finalValue, resultCurrency)} />
         </section>
 
-        <PlainEnglishResult report={report} currency={resultCurrency} />
+        <ResultReadout report={report} currency={resultCurrency} />
 
         <div className={styles.tabs} role="tablist" aria-label="Research results">
           {TABS.map((tab) => (
@@ -323,6 +364,8 @@ export function ResearchTerminal({ initialReport }: { initialReport: BacktestRes
         <section className={styles.resultPanel} id={`panel-${activeTab}`} role="tabpanel" aria-labelledby={`tab-${activeTab}`}>
           {activeTab === "trades" ? (
             <TradeTable report={report} currency={resultCurrency} />
+          ) : activeTab === "study" ? (
+            <StrategyStudy report={report} />
           ) : (
             <div className={styles.resultChart}>
               <FinancialChart report={report} mode={activeTab} />
@@ -406,6 +449,47 @@ function NumberInput({
   );
 }
 
+function DateInput({
+  id,
+  value,
+  max,
+  onValueChange,
+  ariaInvalid = false,
+}: {
+  id: string;
+  value: string;
+  max: string;
+  onValueChange: (value: string) => void;
+  ariaInvalid?: boolean;
+}) {
+  const [draft, setDraft] = useState(value);
+
+  return (
+    <input
+      id={id}
+      type="date"
+      required
+      max={max}
+      value={draft}
+      aria-invalid={ariaInvalid || undefined}
+      onChange={(event) => {
+        const nextDraft = event.target.value;
+        setDraft(nextDraft);
+        if (isIsoDate(nextDraft)) onValueChange(nextDraft);
+      }}
+      onBlur={() => {
+        if (!isIsoDate(draft)) setDraft(value);
+      }}
+      onKeyDown={(event) => {
+        if (event.key === "Escape") {
+          setDraft(value);
+          event.currentTarget.blur();
+        }
+      }}
+    />
+  );
+}
+
 function StrategyFields({
   request,
   update,
@@ -445,52 +529,55 @@ function Metric({ label, value }: { label: string; value: string }) {
   return <div><span>{label}<Link href="/methodology" title={`${label} methodology`} aria-label={`Read ${label} methodology`}><Info size={12} /></Link></span><strong>{value}</strong></div>;
 }
 
-function PlainEnglishResult({ report, currency }: { report: BacktestResponse; currency: string }) {
+function ResultReadout({ report, currency }: { report: BacktestResponse; currency: string }) {
   const explanation = explainResults(report, currency);
   return (
     <section className={styles.explanation} aria-labelledby="result-explanation-heading">
       <header className={styles.explanationHeader}>
         <div>
-          <span>Plain-English result</span>
-          <h2 id="result-explanation-heading">What happened in this backtest?</h2>
+          <span>Research readout</span>
+          <h2 id="result-explanation-heading">What this run actually says</h2>
         </div>
         <strong data-tone={explanation.tone}>{explanation.status}</strong>
       </header>
 
       <p className={styles.explanationLead}>{explanation.outcome}</p>
-
-      <div className={styles.explanationLessons}>
-        <article>
-          <span>Compared with holding</span>
-          <h3>Did the rules help?</h3>
-          <p>{explanation.comparison}</p>
-        </article>
-        <article>
-          <span>Risk</span>
-          <h3>How rough was the ride?</h3>
-          <p>{explanation.risk}</p>
-        </article>
-        <article>
-          <span>Evidence</span>
-          <h3>How much can we learn?</h3>
-          <p>{explanation.evidence}</p>
-        </article>
-      </div>
-
-      <div className={styles.explanationAnswers}>
-        <article>
-          <span>Buy or sell?</span>
-          <h3>{explanation.decisionTitle}</h3>
-          <p>{explanation.decisionBody}</p>
-        </article>
-        <article>
-          <span>Future prediction</span>
-          <h3>{explanation.futureTitle}</h3>
-          <p>{explanation.futureBody}</p>
-        </article>
-      </div>
+      <dl className={styles.readoutRows}>
+        <div><dt>Against holding</dt><dd>{explanation.comparison}</dd></div>
+        <div><dt>Downside</dt><dd>{explanation.risk}</dd></div>
+        <div><dt>Sample</dt><dd>{explanation.evidence}</dd></div>
+        <div><dt>Last rule</dt><dd>{explanation.decisionBody}</dd></div>
+        <div><dt>Next step</dt><dd>{explanation.futureBody}</dd></div>
+      </dl>
     </section>
   );
+}
+
+function StrategyStudy({ report }: { report: BacktestResponse }) {
+  const trials = report.strategyStudy?.trials ?? [];
+  if (!trials.length) {
+    return <div className={styles.emptyState}><SlidersHorizontal aria-hidden="true" size={24} /><h3>No parameter study yet</h3><p>Run the backtest once to compare the fixed strategy setups.</p></div>;
+  }
+  const leader = trials[0];
+  return <div className={styles.study}>
+    <header>
+      <div><span>Highest return in the first 70%</span><h3>{leader.strategy}</h3></div>
+      <strong>{formatPercent(leader.selectionReturn)}</strong>
+      <p>{formatParameters(leader)} The final 30% returned {formatPercent(leader.validationReturn)}.</p>
+    </header>
+    <p className={styles.studyNote}>SamQuant ranks a fixed set of trials on the earlier data, then checks the winner on the later data. This reduces overfitting, but it cannot prove the same setup will work next time.</p>
+    <div className={styles.tableWrap}>
+      <table>
+        <caption>Historical strategy parameter study</caption>
+        <thead><tr><th>Rank</th><th>Strategy and settings</th><th>First 70%</th><th>Final 30%</th><th>Full period</th><th>Drawdown</th><th>Trades</th></tr></thead>
+        <tbody>{trials.map((trial) => <tr key={`${trial.strategy}-${JSON.stringify(trial.parameters)}`}>
+          <td>{trial.rank}</td><td>{trial.strategy}<small>{formatParameters(trial)}</small></td>
+          <td>{formatPercent(trial.selectionReturn)}</td><td>{formatPercent(trial.validationReturn)}</td>
+          <td>{formatPercent(trial.fullPeriodReturn)}</td><td>{formatPercent(trial.maximumDrawdown)}</td><td>{trial.tradeCount}</td>
+        </tr>)}</tbody>
+      </table>
+    </div>
+  </div>;
 }
 
 function TradeTable({ report, currency }: { report: BacktestResponse; currency: string }) {
@@ -530,7 +617,14 @@ function parseTickerInput(value: string): string[] {
 }
 
 function formatDate(value: string): string {
+  if (!isIsoDate(value)) return value;
   return new Intl.DateTimeFormat("en", { month: "short", day: "numeric", year: "numeric" }).format(new Date(`${value}T00:00:00`));
+}
+
+function formatParameters(trial: StrategyStudyTrial): string {
+  return Object.entries(trial.parameters)
+    .map(([key, value]) => `${key.replaceAll("_", " ")} ${String(value)}`)
+    .join(" · ");
 }
 
 function sourceLabel(source: BacktestResponse["metadata"]["dataSource"]): string {
@@ -567,6 +661,8 @@ function validateRequest(request: BacktestRequest): { message: string; fields: s
   if (!request.symbols.length) return { message: "Enter at least one ticker symbol.", fields: ["symbols"] };
   if (request.symbols.length > 6) return { message: "Enter no more than six ticker symbols.", fields: ["symbols"] };
   if (request.end <= request.start) return { message: "End date must be later than start date.", fields: ["start", "end"] };
+  const latestDate = latestCompletedMarketDate(request.market);
+  if (request.end > latestDate) return { message: `End date cannot be later than ${formatDate(latestDate)}, the latest allowed market date.`, fields: ["end"] };
   if (request.strategy === "moving_average" && request.parameters.short_window >= request.parameters.long_window) {
     return { message: "Short window must be smaller than long window.", fields: ["short_window", "long_window"] };
   }

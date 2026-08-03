@@ -16,11 +16,12 @@ describe("ResearchTerminal", () => {
     render(<ResearchTerminal initialReport={demoReport as BacktestResponse} />);
 
     expect(screen.getByRole("heading", { name: "Moving average crossover" })).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "What happened in this backtest?" })).toBeInTheDocument();
-    expect(screen.getByText("Loss in this test")).toBeInTheDocument();
-    expect(screen.getByText("The old test ended holding AAPL.")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "What this run actually says" })).toBeInTheDocument();
+    expect(screen.getByText("Finished behind")).toBeInTheDocument();
+    expect(screen.getByText(/BUY AAPL on/)).toBeInTheDocument();
     expect(screen.getByRole("tab", { name: /Performance/ })).toHaveAttribute("aria-selected", "true");
     expect(screen.getByRole("tab", { name: /Trades/ })).toBeInTheDocument();
+    expect(screen.getByRole("tab", { name: /Parameter study/ })).toBeInTheDocument();
     expect(await screen.findByTestId("chart-price")).toBeInTheDocument();
   });
 
@@ -74,6 +75,58 @@ describe("ResearchTerminal", () => {
     expect(shortWindow).toHaveValue(null);
     fireEvent.change(shortWindow, { target: { value: "24" } });
     expect(shortWindow).toHaveValue(24);
+  });
+
+  it("keeps the previous date while a date field is temporarily empty", () => {
+    render(<ResearchTerminal initialReport={demoReport as BacktestResponse} />);
+    const start = screen.getByLabelText("Start", { exact: true });
+
+    fireEvent.change(start, { target: { value: "" } });
+
+    expect(start).toHaveValue("");
+    expect(screen.getByText(/AAPL with moving average, Jan 3, 2023 to Jan 3, 2024/)).toBeInTheDocument();
+    fireEvent.keyDown(start, { key: "Escape" });
+    expect(start).toHaveValue("2023-01-03");
+  });
+
+  it("restores saved research controls after remounting", async () => {
+    const first = render(<ResearchTerminal initialReport={demoReport as BacktestResponse} />);
+    fireEvent.change(screen.getByLabelText("Market"), { target: { value: "India (NSE)" } });
+    fireEvent.change(screen.getByLabelText("Tickers"), { target: { value: "RELIANCE, INFY" } });
+    await waitFor(() => expect(window.localStorage.getItem("samquant.research.request.v1")).toContain("RELIANCE"));
+    first.unmount();
+
+    render(<ResearchTerminal initialReport={demoReport as BacktestResponse} />);
+
+    await waitFor(() => expect(screen.getByLabelText("Market")).toHaveValue("India (NSE)"));
+    expect(screen.getByLabelText("Tickers")).toHaveValue("RELIANCE, INFY");
+  });
+
+  it("shows ranked settings in the parameter study tab", () => {
+    const report: BacktestResponse = {
+      ...(demoReport as BacktestResponse),
+      strategyStudy: {
+        selectionPercent: 70,
+        validationPercent: 30,
+        trials: [{
+          rank: 1,
+          strategy: "Mean reversion",
+          parameters: { lookback_window: 20, entry_z_score: -1.5, exit_z_score: 0 },
+          selectionReturn: 0.12,
+          validationReturn: 0.03,
+          fullPeriodReturn: 0.15,
+          maximumDrawdown: -0.08,
+          tradeCount: 14,
+        }],
+      },
+    };
+    render(<ResearchTerminal initialReport={report} />);
+
+    fireEvent.click(screen.getByRole("tab", { name: /Parameter study/ }));
+
+    expect(screen.getByRole("table", { name: "Historical strategy parameter study" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Mean reversion" })).toBeInTheDocument();
+    expect(screen.getAllByText(/entry z score -1.5/)).toHaveLength(2);
   });
 
   it("does not carry a draft number into another strategy", () => {

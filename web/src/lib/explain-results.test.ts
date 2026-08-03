@@ -8,15 +8,15 @@ describe("explainResults", () => {
   it("turns the demo result into clear, evidence-based language", () => {
     const explanation = explainResults(demoReport as BacktestResponse, "USD");
 
-    expect(explanation.status).toBe("Loss in this test");
-    expect(explanation.outcome).toContain("started with $100,000");
-    expect(explanation.outcome).toContain("lost 0.8%");
-    expect(explanation.comparison).toContain("trailed the equal-weight benchmark by 35.8 percentage points");
-    expect(explanation.risk).toContain("largest fall from an earlier high was 12.0%");
-    expect(explanation.evidence).toContain("Only 5 trades were executed");
-    expect(explanation.decisionTitle).toBe("The old test ended holding AAPL.");
-    expect(explanation.decisionBody).toContain("last historical signal was BUY for AAPL on Dec 12, 2023");
-    expect(explanation.futureBody).toContain("cannot see prices after that day");
+    expect(explanation.status).toBe("Finished behind");
+    expect(explanation.outcome).toContain("$100,000");
+    expect(explanation.outcome).toContain("0.8% loss");
+    expect(explanation.comparison).toContain("Equal-weight holding finished 35.8 percentage points ahead");
+    expect(explanation.risk).toContain("worst fall from a previous high was 12.0%");
+    expect(explanation.evidence).toContain("5 trades is a thin sample");
+    expect(explanation.decisionTitle).toBe("Ended holding AAPL.");
+    expect(explanation.decisionBody).toContain("BUY AAPL on Dec 12, 2023");
+    expect(explanation.futureBody).toContain("record stops on");
   });
 
   it("does not invent a trade instruction when no signals were produced", () => {
@@ -43,11 +43,11 @@ describe("explainResults", () => {
 
     const explanation = explainResults(report, "USD");
 
-    expect(explanation.status).toBe("Gain in this test");
-    expect(explanation.comparison).toContain("beat the equal-weight benchmark by 10.0 percentage points");
-    expect(explanation.evidence).toContain("made no trades");
-    expect(explanation.decisionTitle).toBe("The old test ended in cash.");
-    expect(explanation.decisionBody).toContain("No buy or sell signal appeared");
+    expect(explanation.status).toBe("Finished ahead");
+    expect(explanation.comparison).toContain("rules finished 10.0 percentage points ahead");
+    expect(explanation.evidence).toContain("No trades were made");
+    expect(explanation.decisionTitle).toBe("Ended in cash.");
+    expect(explanation.decisionBody).toContain("No buy or sell rule fired");
     expect(explanation.decisionBody).not.toContain("instruction to buy");
   });
 });

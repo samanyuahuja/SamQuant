@@ -3,10 +3,12 @@
 from __future__ import annotations
 
 import importlib
+from datetime import datetime, timezone
 
 from fastapi.testclient import TestClient
 
 from samquant.api.app import create_app
+from samquant.api.models import Market, latest_completed_session_date
 
 api_module = importlib.import_module("samquant.api.app")
 
@@ -47,6 +49,14 @@ def test_backtest_response_contains_real_domain_outputs() -> None:
     assert body["portfolio"]["equity"]
     assert body["portfolio"]["benchmark"]
     assert body["metrics"]["finalValue"] > 0
+    assert body["metadata"]["end"] == "2024-06-28"
+    assert body["strategyStudy"]["selectionPercent"] == 70
+    assert body["strategyStudy"]["trials"][0]["rank"] == 1
+    assert {trial["strategy"] for trial in body["strategyStudy"]["trials"]} == {
+        "Moving average crossover",
+        "Mean reversion",
+        "Momentum",
+    }
     assert response.headers["x-request-id"] == body["metadata"]["requestId"]
 
 
@@ -110,3 +120,15 @@ def test_unexpected_backend_failure_does_not_expose_a_traceback(monkeypatch) -> 
     body = response.json()
     assert body["error"]["code"] == "INTERNAL_ERROR"
     assert "private implementation detail" not in response.text
+
+
+def test_latest_session_date_respects_each_market_close() -> None:
+    before_us_close = datetime(2026, 8, 4, 19, 0, tzinfo=timezone.utc)
+    after_us_close = datetime(2026, 8, 4, 21, 0, tzinfo=timezone.utc)
+    before_india_close = datetime(2026, 8, 4, 9, 0, tzinfo=timezone.utc)
+    after_india_close = datetime(2026, 8, 4, 10, 30, tzinfo=timezone.utc)
+
+    assert latest_completed_session_date(Market.US, before_us_close).isoformat() == "2026-08-03"
+    assert latest_completed_session_date(Market.US, after_us_close).isoformat() == "2026-08-04"
+    assert latest_completed_session_date(Market.INDIA_NSE, before_india_close).isoformat() == "2026-08-03"
+    assert latest_completed_session_date(Market.INDIA_NSE, after_india_close).isoformat() == "2026-08-04"

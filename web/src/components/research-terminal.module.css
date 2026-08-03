@@ -14,6 +14,8 @@
   color: var(--research-ink);
 }
 
+.main[data-ready="false"] .workspace { visibility: hidden; }
+
 .visuallyHidden {
   position: absolute;
   width: 1px;
@@ -360,8 +362,8 @@
 }
 
 .explanation {
-  margin: 0 0 38px;
-  padding: 34px 0 36px;
+  margin: 0 0 30px;
+  padding: 28px 0 30px;
   border-block: 1px solid var(--research-line);
 }
 
@@ -373,8 +375,7 @@
 }
 
 .explanationHeader span,
-.explanationLessons span,
-.explanationAnswers span {
+.study header span {
   color: var(--research-muted);
   font-size: 0.68rem;
   font-weight: 600;
@@ -399,62 +400,33 @@
 .explanationHeader > strong[data-tone="flat"] { border-color: var(--research-accent); color: var(--research-accent); }
 
 .explanationLead {
-  max-width: 72ch;
-  margin: 26px 0 0;
-  font-size: 1.08rem;
-  line-height: 1.65;
-}
-
-.explanationLessons {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  margin-top: 30px;
-  border-top: 1px solid var(--research-line);
-}
-
-.explanationLessons article {
-  min-width: 0;
-  padding: 24px 28px 0 0;
-}
-
-.explanationLessons article + article {
-  padding-left: 28px;
-  border-left: 1px solid var(--research-line);
-}
-
-.explanationLessons h3,
-.explanationAnswers h3 {
-  margin: 8px 0 0;
-  font-size: 0.98rem;
-  font-weight: 650;
-}
-
-.explanationLessons p,
-.explanationAnswers p {
-  max-width: 62ch;
-  margin: 10px 0 0;
-  color: var(--research-muted);
+  max-width: 76ch;
+  margin: 22px 0 0;
+  font-family: var(--font-mono);
   font-size: 0.86rem;
-  line-height: 1.65;
+  line-height: 1.6;
 }
 
-.explanationAnswers {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  margin-top: 30px;
-  padding-top: 26px;
+.readoutRows {
+  margin: 24px 0 0;
   border-top: 1px solid var(--research-line);
 }
 
-.explanationAnswers article { min-width: 0; padding-right: 34px; }
-.explanationAnswers article + article {
-  padding: 0 0 0 34px;
-  border-left: 1px solid var(--research-line);
+.readoutRows > div {
+  display: grid;
+  grid-template-columns: 150px minmax(0, 1fr);
+  gap: 24px;
+  padding: 13px 0;
+  border-bottom: 1px solid var(--research-line);
 }
+
+.readoutRows dt { color: var(--research-ink); font-size: 0.7rem; font-weight: 650; }
+.readoutRows dd { max-width: 90ch; margin: 0; color: var(--research-muted); font-size: 0.78rem; line-height: 1.55; }
 
 .tabs {
   display: flex;
   gap: 28px;
+  overflow-x: auto;
   border-bottom: 1px solid var(--research-line);
 }
 .tabs button {
@@ -469,6 +441,7 @@
   color: var(--research-muted);
   font-size: 0.72rem;
   cursor: pointer;
+  white-space: nowrap;
 }
 .tabs button[aria-selected="true"] { border-bottom-color: var(--research-ink); color: var(--research-ink); }
 
@@ -477,6 +450,21 @@
   background: var(--research-surface);
 }
 .resultChart { height: 420px; }
+
+.study { min-height: 420px; }
+.study > header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 5px 30px;
+  padding: 24px 20px 20px;
+  border-bottom: 1px solid var(--research-line);
+}
+.study header h3 { margin: 5px 0 0; font-size: 1.05rem; }
+.study header strong { align-self: center; font-family: var(--font-mono); font-size: 1.35rem; font-weight: 500; }
+.study header p { grid-column: 1 / -1; margin: 6px 0 0; color: var(--research-muted); font-family: var(--font-mono); font-size: 0.7rem; }
+.studyNote { max-width: 92ch; margin: 0; padding: 15px 20px; border-bottom: 1px solid var(--research-line); color: var(--research-muted); font-size: 0.72rem; line-height: 1.55; }
+.study td:nth-child(2) { min-width: 320px; text-align: left; }
+.study td small { display: block; margin-top: 4px; color: var(--research-muted); font-size: 0.58rem; }
 
 .tableWrap { max-height: 520px; overflow: auto; }
 .tableWrap table {
@@ -576,8 +564,6 @@
   .controlGrid fieldset:last-child { grid-column: 1 / -1; grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .controlGrid fieldset:last-child legend { grid-column: 1 / -1; }
   .metrics { grid-template-columns: repeat(4, minmax(110px, 1fr)); row-gap: 22px; }
-  .explanationLessons article { padding-right: 20px; }
-  .explanationLessons article + article { padding-left: 20px; }
 }
 
 @media (max-width: 720px) {
@@ -612,28 +598,16 @@
   .explanation { margin-bottom: 30px; padding-block: 30px; }
   .explanationHeader { align-items: flex-start; flex-direction: column; gap: 18px; }
   .explanationHeader h2 { font-size: 1.65rem; }
-  .explanationLead { font-size: 1rem; }
-  .explanationLessons,
-  .explanationAnswers { grid-template-columns: 1fr; }
-  .explanationLessons article,
-  .explanationLessons article + article,
-  .explanationAnswers article,
-  .explanationAnswers article + article {
-    padding: 22px 0 0;
-    border-left: 0;
-  }
-  .explanationLessons article + article,
-  .explanationAnswers article + article {
-    margin-top: 22px;
-    border-top: 1px solid var(--research-line);
-  }
-  .explanationLessons p,
-  .explanationAnswers p { font-size: 1rem; }
-  .tabs { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0; }
+  .explanationLead { font-size: 0.84rem; }
+  .readoutRows > div { grid-template-columns: 1fr; gap: 5px; }
+  .study > header { grid-template-columns: 1fr; }
+  .study header strong,
+  .study header p { grid-column: auto; }
+  .tabs { gap: 22px; }
   .tabs button { justify-content: center; font-size: 0.68rem; }
   .tabs button svg { display: none; }
-  .resultPanel,
-  .resultChart { min-height: 350px; height: 350px; }
+  .resultPanel { min-height: 350px; }
+  .resultChart { height: 350px; }
   .assumptions dl div { grid-template-columns: 1fr; gap: 6px; }
 }
 

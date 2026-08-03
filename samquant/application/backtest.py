@@ -83,6 +83,19 @@ class ResearchRun:
         return self.evaluation.target_weights
 
 
+@dataclass(frozen=True)
+class StrategyStudyTrial:
+    """One bounded parameter trial with chronological selection and validation returns."""
+
+    strategy_name: str
+    parameters: dict[str, int | float | bool]
+    selection_return: float
+    validation_return: float
+    full_period_return: float
+    maximum_drawdown: float
+    trade_count: int
+
+
 def parse_symbols(
     raw_symbols: str,
     market_name: str = US_MARKET,
@@ -319,6 +332,81 @@ def run_strategy_comparison(
             runs[strategy_name] = run_backtest(aligned_data, strategy_name, config)
     runs[EQUAL_WEIGHT_BENCHMARK] = run_equal_weight_benchmark(aligned_data, config)
     return runs
+
+
+def run_strategy_study(
+    market_data: Mapping[str, pd.DataFrame],
+    config: BacktestConfig,
+    selected_strategy: str,
+    selected_parameters: Mapping[str, int | float | bool],
+) -> tuple[StrategyStudyTrial, ...]:
+    """Rank a small, fixed parameter set without tuning on the validation segment."""
+    aligned_data = align_market_data(market_data)
+    period_count = len(next(iter(aligned_data.values())))
+    split_position = max(2, min(period_count - 1, round(period_count * 0.7)))
+    candidates = _strategy_study_candidates(
+        symbol_count=len(aligned_data),
+        selected_strategy=selected_strategy,
+        selected_parameters=selected_parameters,
+    )
+    trials: list[StrategyStudyTrial] = []
+    for strategy_name, parameters in candidates:
+        run = run_backtest(aligned_data, strategy_name, config, parameters)
+        equity = run.result.equity_curve
+        trials.append(
+            StrategyStudyTrial(
+                strategy_name=strategy_name,
+                parameters=dict(parameters),
+                selection_return=_segment_return(equity.iloc[:split_position]),
+                validation_return=_segment_return(equity.iloc[split_position - 1 :]),
+                full_period_return=_segment_return(equity),
+                maximum_drawdown=float(run.metrics.maximum_drawdown),
+                trade_count=len(run.result.trades),
+            )
+        )
+    return tuple(
+        sorted(
+            trials,
+            key=lambda trial: (trial.selection_return, trial.validation_return),
+            reverse=True,
+        )
+    )
+
+
+def _strategy_study_candidates(
+    *,
+    symbol_count: int,
+    selected_strategy: str,
+    selected_parameters: Mapping[str, int | float | bool],
+) -> tuple[tuple[str, dict[str, int | float | bool]], ...]:
+    candidates: list[tuple[str, dict[str, int | float | bool]]] = [
+        (MOVING_AVERAGE, {"short_window": 10, "long_window": 30}),
+        (MOVING_AVERAGE, {"short_window": 20, "long_window": 60}),
+        (MOVING_AVERAGE, {"short_window": 50, "long_window": 200}),
+        (MEAN_REVERSION, {"lookback_window": 10, "entry_z_score": -1.0, "exit_z_score": 0.0}),
+        (MEAN_REVERSION, {"lookback_window": 20, "entry_z_score": -1.5, "exit_z_score": 0.0}),
+        (MEAN_REVERSION, {"lookback_window": 20, "entry_z_score": -2.0, "exit_z_score": 0.0}),
+        (MEAN_REVERSION, {"lookback_window": 40, "entry_z_score": -2.0, "exit_z_score": 0.0}),
+        (MOMENTUM, {"lookback_window": 20, "top_n": 1, "rebalance_frequency": 5, "require_positive_returns": True}),
+        (MOMENTUM, {"lookback_window": 60, "top_n": min(2, symbol_count), "rebalance_frequency": 21, "require_positive_returns": True}),
+        (MOMENTUM, {"lookback_window": 120, "top_n": min(3, symbol_count), "rebalance_frequency": 21, "require_positive_returns": True}),
+    ]
+    candidates.append((selected_strategy, dict(selected_parameters)))
+
+    unique: list[tuple[str, dict[str, int | float | bool]]] = []
+    seen: set[tuple[str, tuple[tuple[str, int | float | bool], ...]]] = set()
+    for strategy_name, parameters in candidates:
+        key = (strategy_name, tuple(sorted(parameters.items())))
+        if key not in seen:
+            seen.add(key)
+            unique.append((strategy_name, parameters))
+    return tuple(unique)
+
+
+def _segment_return(equity: pd.Series) -> float:
+    if len(equity) < 2:
+        return 0.0
+    return float(equity.iloc[-1] / equity.iloc[0] - 1.0)
 
 
 def _run_engine(

@@ -16,6 +16,7 @@ from samquant.application.backtest import (
     BacktestConfig,
     ResearchError,
     ResearchRun,
+    StrategyStudyTrial,
     align_market_data,
     build_strategy,
     generate_demo_market_data,
@@ -24,6 +25,7 @@ from samquant.application.backtest import (
     run_backtest,
     run_equal_weight_benchmark,
     run_strategy_comparison,
+    run_strategy_study,
 )
 
 __all__ = [
@@ -42,6 +44,7 @@ __all__ = [
     "BacktestConfig",
     "ResearchError",
     "ResearchRun",
+    "StrategyStudyTrial",
     "align_market_data",
     "build_strategy",
     "generate_demo_market_data",
@@ -50,4 +53,5 @@ __all__ = [
     "run_backtest",
     "run_equal_weight_benchmark",
     "run_strategy_comparison",
+    "run_strategy_study",
 ]

@@ -13,6 +13,11 @@
 
 .primary { justify-content: space-between; gap: 40px; padding-bottom: 48px; }
 .identity p { max-width: 360px; margin: 18px 0 0; line-height: 1.6; }
+.identity .creator { margin-top: 8px; font-size: 0.78rem; }
+.creator a,
+.logoDownload { color: var(--paper); }
+.creator a { text-decoration: underline; text-underline-offset: 3px; }
+.logoDownload { display: inline-block; margin-top: 18px; font-size: 0.72rem; text-decoration: underline; text-underline-offset: 4px; }
 .links { flex-wrap: wrap; justify-content: flex-end; gap: 14px 28px; max-width: 440px; }
 .links a,
 .legal a { color: var(--muted-2); }

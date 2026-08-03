@@ -14,6 +14,7 @@ from samquant.application import (
     parse_symbols,
     run_backtest,
     run_equal_weight_benchmark,
+    run_strategy_study,
 )
 
 
@@ -64,6 +65,28 @@ def test_equal_weight_benchmark_uses_the_same_execution_engine() -> None:
 
     assert run.target_weights.iloc[0].to_dict() == {"AAPL": 0.5, "MSFT": 0.5}
     assert run.result.trades[0].timestamp == market_data["AAPL"].index[1]
+
+
+def test_strategy_study_ranks_fixed_trials_on_the_earlier_period() -> None:
+    market_data = generate_demo_market_data(("AAPL", "MSFT"), periods=260)
+
+    trials = run_strategy_study(
+        market_data,
+        BacktestConfig(initial_cash=25_000.0),
+        selected_strategy=MOVING_AVERAGE,
+        selected_parameters={"short_window": 12, "long_window": 48},
+    )
+
+    assert len(trials) == 11
+    assert {trial.strategy_name for trial in trials} == {
+        "Moving average crossover",
+        "Mean reversion",
+        "Momentum",
+    }
+    assert [trial.selection_return for trial in trials] == sorted(
+        (trial.selection_return for trial in trials), reverse=True
+    )
+    assert any(trial.parameters == {"short_window": 12, "long_window": 48} for trial in trials)
 
 
 def test_application_bounds_symbols_and_date_ranges() -> None:

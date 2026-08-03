@@ -36,8 +36,7 @@ test("visualizations rise and zoom into place while scrolling", async ({ page },
 test("research terminal runs the primary backtest journey", async ({ page }) => {
   await page.goto("/research");
   await expect(page.locator("main[data-ready='true']")).toBeVisible();
-  await expect(page.getByRole("heading", { name: "What happened in this backtest?" })).toBeVisible();
-  await expect(page.getByText("The old test ended holding AAPL.")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "What this run actually says" })).toBeVisible();
   await page.getByRole("button", { name: "Edit setup" }).click();
   await page.getByLabel("Tickers").fill("AAPL, MSFT");
   const shortWindow = page.getByLabel("Short window");
@@ -50,8 +49,41 @@ test("research terminal runs the primary backtest journey", async ({ page }) => 
   await page.getByRole("button", { name: "Run backtest" }).click();
   await expect((await responsePromise).status()).toBe(200);
   await expect(page.getByText("Backtest research / AAPL + MSFT", { exact: true })).toBeVisible();
+  await page.getByRole("tab", { name: /Parameter study/ }).click();
+  await expect(page.getByRole("table", { name: "Historical strategy parameter study" })).toBeVisible();
   await page.getByTitle("Export results").click();
   await expect(page.getByRole("button", { name: "Trades CSV" })).toBeVisible();
+});
+
+test("research settings and results survive a refresh", async ({ page }) => {
+  await page.goto("/research");
+  await expect(page.locator("main[data-ready='true']")).toBeVisible();
+  await page.getByRole("button", { name: "Edit setup" }).click();
+  await page.getByLabel("Market").selectOption("India (NSE)");
+  await page.getByLabel("Tickers").fill("RELIANCE, INFY");
+  const responsePromise = page.waitForResponse((response) => response.url().includes("/api/backtests"));
+  await page.getByRole("button", { name: "Run backtest" }).click();
+  await expect((await responsePromise).status()).toBe(200);
+  await expect(page.getByText("Backtest research / RELIANCE.NS + INFY.NS", { exact: true })).toBeVisible();
+
+  await page.reload();
+
+  await expect(page.getByText("Backtest research / RELIANCE.NS + INFY.NS", { exact: true })).toBeVisible();
+  await expect(page.getByLabel("Market")).toHaveValue("India (NSE)");
+  await expect(page.getByLabel("Tickers")).toHaveValue("RELIANCE, INFY");
+});
+
+test("date drafts do not reset the research header", async ({ page }) => {
+  await page.goto("/research");
+  await expect(page.locator("main[data-ready='true']")).toBeVisible();
+  await page.getByRole("button", { name: "Edit setup" }).click();
+  const end = page.getByLabel("End", { exact: true });
+  await end.fill("");
+  await expect(page.getByRole("heading", { name: "Moving average crossover" })).toBeVisible();
+  await end.press("Escape");
+  await expect(end).toHaveValue("2024-01-03");
+  const maximum = await end.getAttribute("max");
+  expect(maximum).toMatch(/^\d{4}-\d{2}-\d{2}$/);
 });
 
 test("invalid inputs stay understandable", async ({ page }) => {

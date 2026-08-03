@@ -2,8 +2,9 @@
 
 from __future__ import annotations
 
-from datetime import date
+from datetime import date, datetime, time, timedelta, timezone
 from enum import Enum
+from zoneinfo import ZoneInfo
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
@@ -81,6 +82,11 @@ class BacktestRequest(BaseModel):
         """Validate date and strategy relationships that span multiple fields."""
         if self.end <= self.start:
             raise ValueError("End date must be later than start date.")
+        latest_session = latest_completed_session_date(self.market)
+        if self.end > latest_session:
+            raise ValueError(
+                f"End date cannot be later than the latest allowed market date, {latest_session.isoformat()}."
+            )
         if (
             self.strategy is StrategyId.MOVING_AVERAGE
             and self.parameters.short_window >= self.parameters.long_window
@@ -94,3 +100,26 @@ class BacktestRequest(BaseModel):
         if self.parameters.top_n > len(self.symbols):
             raise ValueError("Top asset count cannot exceed the symbol count.")
         return self
+
+
+def latest_completed_session_date(
+    market: Market,
+    now: datetime | None = None,
+) -> date:
+    """Return the latest eligible weekday after the regular market close."""
+    schedules = {
+        Market.US: (ZoneInfo("America/New_York"), time(16, 0)),
+        Market.INDIA_NSE: (ZoneInfo("Asia/Kolkata"), time(15, 30)),
+        Market.INDIA_BSE: (ZoneInfo("Asia/Kolkata"), time(15, 30)),
+    }
+    zone, close_time = schedules[market]
+    current = now or datetime.now(timezone.utc)
+    if current.tzinfo is None:
+        current = current.replace(tzinfo=timezone.utc)
+    local = current.astimezone(zone)
+    candidate = local.date()
+    if local.weekday() >= 5 or local.time() < close_time:
+        candidate -= timedelta(days=1)
+    while candidate.weekday() >= 5:
+        candidate -= timedelta(days=1)
+    return candidate

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
+from datetime import timedelta
 from math import isfinite
 from typing import Any
 
@@ -16,10 +17,12 @@ from samquant.application import (
     MOVING_AVERAGE,
     BacktestConfig,
     ResearchRun,
+    StrategyStudyTrial,
     load_market_data,
     parse_symbols,
     run_backtest,
     run_equal_weight_benchmark,
+    run_strategy_study,
 )
 
 STRATEGY_LABELS = {
@@ -41,7 +44,7 @@ def run_request(
         source=request.data_source.value,
         symbols=symbols,
         start=request.start.isoformat(),
-        end=request.end.isoformat(),
+        end=(request.end + timedelta(days=1)).isoformat(),
         allow_yahoo=allow_yahoo,
     )
     config = BacktestConfig(
@@ -56,6 +59,12 @@ def run_request(
     parameters = _strategy_parameters(request)
     primary = run_backtest(market_data, strategy_name, config, parameters)
     benchmark = run_equal_weight_benchmark(market_data, config)
+    strategy_study = run_strategy_study(
+        market_data,
+        config,
+        selected_strategy=strategy_name,
+        selected_parameters=parameters,
+    )
     return _serialize_report(
         request,
         request_id,
@@ -63,6 +72,7 @@ def run_request(
         primary,
         benchmark,
         parameters,
+        strategy_study,
     )
 
 
@@ -94,6 +104,7 @@ def _serialize_report(
     primary: ResearchRun,
     benchmark: ResearchRun,
     parameters: Mapping[str, int | float | bool],
+    strategy_study: tuple[StrategyStudyTrial, ...],
 ) -> dict[str, Any]:
     first_index = next(iter(market_data.values())).index
     drawdown = primary.result.equity_curve / primary.result.equity_curve.cummax() - 1.0
@@ -142,6 +153,23 @@ def _serialize_report(
         },
         "metrics": _metric_values(primary),
         "benchmarkMetrics": _metric_values(benchmark),
+        "strategyStudy": {
+            "selectionPercent": 70,
+            "validationPercent": 30,
+            "trials": [
+                {
+                    "rank": rank,
+                    "strategy": trial.strategy_name,
+                    "parameters": trial.parameters,
+                    "selectionReturn": trial.selection_return,
+                    "validationReturn": trial.validation_return,
+                    "fullPeriodReturn": trial.full_period_return,
+                    "maximumDrawdown": trial.maximum_drawdown,
+                    "tradeCount": trial.trade_count,
+                }
+                for rank, trial in enumerate(strategy_study, start=1)
+            ],
+        },
         "trades": [
             {
                 "time": trade.timestamp.date().isoformat(),

@@ -1,6 +1,7 @@
 import { defineConfig, devices } from "@playwright/test";
 
 const python = process.env.SAMQUANT_PYTHON ?? "../.venv/bin/python";
+const externalBaseUrl = process.env.SAMQUANT_TEST_BASE_URL;
 
 export default defineConfig({
   testDir: "./e2e",
@@ -10,7 +11,7 @@ export default defineConfig({
   retries: process.env.CI ? 2 : 0,
   reporter: "html",
   use: {
-    baseURL: "http://127.0.0.1:3000",
+    baseURL: externalBaseUrl ?? "http://127.0.0.1:3000",
     trace: "on-first-retry",
     screenshot: "only-on-failure",
   },
@@ -20,7 +21,7 @@ export default defineConfig({
     { name: "tablet", use: { ...devices["iPad Pro 11"], browserName: "chromium", viewport: { width: 768, height: 1024 } } },
     { name: "mobile", use: { ...devices["iPhone 13"], browserName: "chromium", viewport: { width: 375, height: 812 } } },
   ],
-  webServer: [
+  webServer: externalBaseUrl ? undefined : [
     {
       command: `${python} -m uvicorn samquant.api.app:app --port 8000`,
       url: "http://127.0.0.1:8000/api/v1/health",

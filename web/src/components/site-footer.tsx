@@ -15,6 +15,8 @@ export function SiteFooter() {
         <div className={styles.identity}>
           <BrandMark inverse />
           <p>Research software built to show its work.</p>
+          <p className={styles.creator}>Built by Samanyu Ahuja · <a href="mailto:samanyuahuja@gmail.com">samanyuahuja@gmail.com</a></p>
+          <a className={styles.logoDownload} href="/brand/samquant-logo.jpg" download>Download logo (JPEG)</a>
         </div>
         <div className={styles.links}>
           <Link href="/research">Research terminal</Link>

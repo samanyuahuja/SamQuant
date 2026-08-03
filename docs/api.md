@@ -103,17 +103,22 @@ Sharpe ratio with zero volatility or win rate with no completed sale return
 - `load_market_data` applies date, symbol, and live-provider limits.
 - `run_backtest` joins strategy evaluation, engine execution, and analytics.
 - `run_equal_weight_benchmark` uses the same delayed execution engine.
+- `run_strategy_study` ranks a bounded parameter grid on the first 70% of the
+  selected history and reports the final 30% separately.
 
 ## HTTP API
 
 - `GET /api/v1/health` reports service readiness.
 - `GET /api/v1/catalog` lists enabled markets, strategies, sources, and limits.
 - `POST /api/v1/backtests` accepts validated research inputs and returns OHLCV,
-  indicators, signals, portfolio history, metrics, trades, assumptions, and warnings.
+  indicators, signals, portfolio history, metrics, a parameter study, trades,
+  assumptions, and warnings.
 
 Dates use ISO `YYYY-MM-DD` strings. Undefined metrics become JSON `null` rather
-than invalid `NaN` values. Errors contain a code, natural message, affected
-fields, and request ID without exposing Python tracebacks.
+than invalid `NaN` values. The HTTP end date is inclusive and cannot extend
+past the latest allowed market date. Errors contain a code,
+natural message, affected fields, and request ID without exposing Python
+tracebacks.
 
 ## Dashboard Pipeline
 
