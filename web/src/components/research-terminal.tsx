@@ -104,7 +104,10 @@ export function ResearchTerminal({ initialReport }: { initialReport: BacktestRes
         if (caught.fields.length) focusFirstField(caught.fields);
       }
     } finally {
-      if (!controller.signal.aborted) setLoading(false);
+      if (activeRequest.current === controller) {
+        activeRequest.current = null;
+        setLoading(false);
+      }
     }
   }
 
