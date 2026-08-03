@@ -61,16 +61,14 @@ export function LandingStory({ report, strategyDemos }: { report: BacktestRespon
           gsap.fromTo(
             panel,
             {
-              y: compact ? 36 : 84,
-              scale: compact ? 0.96 : 0.88,
-              filter: `blur(${compact ? 2 : 6}px)`,
+              y: compact ? 24 : 48,
+              scale: compact ? 0.97 : 0.92,
               transformOrigin: "50% 50%",
               force3D: true,
             },
             {
               y: 0,
               scale: 1,
-              filter: "blur(0px)",
               ease: "none",
               force3D: true,
               scrollTrigger: {
@@ -126,14 +124,7 @@ export function LandingStory({ report, strategyDemos }: { report: BacktestRespon
 
   return (
     <main id="main-content" ref={root} className={styles.main} data-route="home">
-      <div className={styles.continuousLine} aria-hidden="true"><i /><span>DATA</span><span>SIGNAL</span><span>ORDER</span><span>RISK</span></div>
-
       <section className={styles.hero} aria-labelledby="hero-title">
-        <div className={styles.heroGrid} aria-hidden="true" />
-        <div className={styles.heroMeta}>
-          <span>SamQuant / transparent research system</span>
-          <span>{symbol} / daily / {market.length} bars</span>
-        </div>
         <svg className={styles.heroChart} viewBox="0 0 1200 480" preserveAspectRatio="none" role="img" aria-label="Deterministic SamQuant demonstration price series">
           <path className={styles.heroLineGhost} d={pricePath} />
           <path className={styles.heroLine} pathLength="1" d={pricePath} />
@@ -150,13 +141,10 @@ export function LandingStory({ report, strategyDemos }: { report: BacktestRespon
             <Link href="/methodology">Read methodology</Link>
           </div>
         </div>
-        <div className={styles.heroFoot}>
-          <span><b>01</b> Data</span><span><b>02</b> Strategy</span><span><b>03</b> Execution</span><span><b>04</b> Risk</span>
-        </div>
       </section>
 
       <section className={`${styles.band} ${styles.data}`} aria-labelledby="data-title">
-        <StageLabel state="DATA / VALIDATED" label="Market data" />
+        <StageLabel label="Market data" />
         <div className={styles.sectionLead}>
           <h2 id="data-title">Clean data before asking it questions.</h2>
           <p>Each daily bar passes the same checks before strategy code sees it.</p>
@@ -188,7 +176,7 @@ export function LandingStory({ report, strategyDemos }: { report: BacktestRespon
       </section>
 
       <section className={`${styles.band} ${styles.darkBand} ${styles.strategy}`} aria-labelledby="strategy-title">
-        <StageLabel state="DATA / INTERPRETED" label="Strategy" inverse />
+        <StageLabel label="Strategy" />
         <div className={styles.strategyHeading}>
           <div><h2 id="strategy-title">Indicators analyze. Strategies decide.</h2></div>
           <p>{STRATEGY_COPY[strategy]}</p>
@@ -218,7 +206,7 @@ export function LandingStory({ report, strategyDemos }: { report: BacktestRespon
       </section>
 
       <section className={`${styles.band} ${styles.execution}`} aria-labelledby="execution-title">
-        <StageLabel state="SIGNAL / QUEUED" label="Execution engine" />
+        <StageLabel label="Execution engine" />
         <div className={styles.sectionLead}>
           <h2 id="execution-title">The strategy decides.<br />The engine executes.</h2>
           <p>Every target waits for the next bar before it can become a trade.</p>
@@ -245,7 +233,7 @@ export function LandingStory({ report, strategyDemos }: { report: BacktestRespon
       </section>
 
       <section className={`${styles.band} ${styles.darkBand} ${styles.analytics}`} aria-labelledby="analytics-title">
-        <StageLabel state="PORTFOLIO / MEASURED" label="Analytics" inverse />
+        <StageLabel label="Analytics" />
         <div className={styles.analyticsLead}>
           <h2 id="analytics-title">Return without risk is half a result.</h2>
           <p>The portfolio record becomes equity, benchmark, and drawdown curves.</p>
@@ -272,7 +260,7 @@ export function LandingStory({ report, strategyDemos }: { report: BacktestRespon
       </section>
 
       <section className={`${styles.band} ${styles.productReveal}`} aria-labelledby="product-title">
-        <StageLabel state="SYSTEM / INTERACTIVE" label="Research terminal" />
+        <StageLabel label="Research terminal" />
         <div className={styles.revealCopy}>
           <h2 id="product-title">Run the complete system.</h2>
           <p>Choose the market, dates, strategy, costs, and starting capital.</p>
@@ -288,7 +276,7 @@ export function LandingStory({ report, strategyDemos }: { report: BacktestRespon
       </section>
 
       <section className={`${styles.band} ${styles.trust}`} aria-labelledby="trust-title">
-        <StageLabel state="METHOD / EXPOSED" label="Trust record" />
+        <StageLabel label="Methodology" />
         <div className={styles.trustLead}><h2 id="trust-title">The assumptions stay beside the result.</h2></div>
         <div className={styles.trustList}>
           <span><b>Signal timing</b> Close today, next open tomorrow</span>
@@ -302,7 +290,7 @@ export function LandingStory({ report, strategyDemos }: { report: BacktestRespon
       </section>
 
       <section className={`${styles.band} ${styles.project}`} aria-labelledby="project-title">
-        <StageLabel state="PROJECT / OPEN" label="Architecture" inverse />
+        <StageLabel label="Architecture" />
         <div className={styles.projectLead}>
           <h2 id="project-title">Built to be inspected.</h2>
           <p>Python owns the financial logic. Interfaces render typed results.</p>
@@ -319,8 +307,8 @@ export function LandingStory({ report, strategyDemos }: { report: BacktestRespon
   );
 }
 
-function StageLabel({ state, label, inverse = false }: { state: string; label: string; inverse?: boolean }) {
-  return <div className={styles.stageLabel} data-inverse={inverse}><span>{state}</span><strong>{label}</strong></div>;
+function StageLabel({ label }: { label: string }) {
+  return <p className={styles.stageLabel}>{label}</p>;
 }
 
 function ExecutionStep({ label, value }: { label: string; value: string }) {

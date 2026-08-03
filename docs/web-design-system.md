@@ -4,6 +4,10 @@
 
 SamQuant uses a split register. Public explanations sit on warm research paper. The working terminal uses graphite surfaces built for dense financial data. One steel-blue market line links data, strategy, execution, portfolio state, and risk.
 
+## Visual Hierarchy
+
+Charts carry the visual weight. Section labels provide quiet orientation, headings explain one idea, and supporting text stays secondary. Dividers appear only inside real data tools or where they communicate sequence. Decorative grids, persistent guide lines, repeated state jargon, and ornamental rules are intentionally excluded.
+
 ## Typography
 
 - Barlow Condensed: headlines and the SamQuant wordmark
@@ -37,7 +41,7 @@ Run `npm run assets:brand` inside `web/` to reproduce every raster brand asset f
 
 ## Motion
 
-The landing page has four motion sequences: raw line reveal, strategy interpretation, order execution, and portfolio analytics. As each visualization enters the viewport, it rises, sharpens, and scales into place before its data is drawn. Mobile uses shorter travel and less blur. Reduced-motion users receive the complete static diagrams. Scrolling remains native and no section is pinned.
+The landing page has four motion sequences: raw line reveal, strategy interpretation, order execution, and portfolio analytics. Each visualization rises and scales into place before its data is drawn. Mobile uses shorter travel. Reduced-motion users receive the complete static diagrams. Scrolling remains native and no section is pinned.
 
 ## Responsive Rules
 

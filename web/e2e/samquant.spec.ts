@@ -19,21 +19,17 @@ test("visualizations rise and zoom into place while scrolling", async ({ page },
   const strategyChart = page.locator("[data-scroll-zoom='strategy']");
   await page.waitForTimeout(100);
   const before = await strategyChart.evaluate((element) => ({
-    filter: getComputedStyle(element).filter,
     transform: getComputedStyle(element).transform,
   }));
 
-  expect(before.filter).not.toBe("none");
   expect(before.transform).not.toBe("none");
 
   await strategyChart.scrollIntoViewIfNeeded();
   await page.waitForTimeout(300);
   const after = await strategyChart.evaluate((element) => ({
-    filter: getComputedStyle(element).filter,
     transform: getComputedStyle(element).transform,
   }));
 
-  expect(after.filter).not.toBe(before.filter);
   expect(after.transform).not.toBe(before.transform);
 });
 
@@ -113,7 +109,6 @@ test("reduced motion keeps the story readable", async ({ page }) => {
   const firstVisualization = page.locator("[data-scroll-zoom]").first();
   await expect(firstVisualization).toHaveCSS("opacity", "1");
   await expect(firstVisualization).toHaveCSS("transform", "none");
-  await expect(firstVisualization).toHaveCSS("filter", "none");
 });
 
 test("brand metadata and professional routes are complete", async ({ page }) => {
