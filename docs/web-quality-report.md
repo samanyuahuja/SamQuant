@@ -14,14 +14,14 @@ The review covered the public narrative, research terminal, professional pages, 
 | Python coverage | 90.02%, above the 85% gate |
 | Ruff | Passed |
 | Frontend unit and API tests | 11 passed |
-| Playwright | 39 passed, 9 intentional project skips |
+| Playwright | 40 passed, 12 intentional project skips |
 | TypeScript | Passed |
 | ESLint | Passed with zero warnings |
 | Next.js production build | Passed, 19 static or dynamic routes |
 | Axe WCAG audit | No serious or critical findings |
 | npm production audit | 0 known vulnerabilities |
 
-The Playwright suite checks the primary backtest journey, invalid dates, empty tickers, loading, unavailable Python service, route completeness, reduced motion, responsive overflow, accessibility, local web vitals, and desktop visual baselines.
+The Playwright suite checks the primary backtest journey, invalid dates, empty tickers, loading, unavailable Python service, route completeness, scroll-driven visualization motion, reduced motion, responsive overflow, accessibility, local web vitals, and desktop visual baselines.
 
 ## Performance
 

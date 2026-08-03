@@ -27,6 +27,7 @@
 .strategy,
 .execution,
 .analytics { isolation: isolate; }
+.scrollZoom { transform-origin: center; backface-visibility: hidden; }
 .darkBand { background: var(--ink-soft); color: var(--paper); }
 .stageLabel { display: grid; grid-template-columns: 190px 1fr; padding-bottom: 20px; border-bottom: 1px solid var(--line-strong); color: var(--muted); }
 .stageLabel span { font-family: var(--font-mono); font-size: 0.58rem; }
@@ -257,5 +258,6 @@
   .equityLine { stroke-dashoffset: 0 !important; }
   .signalOutput,
   .executionStep,
-  .metricStrip > div { opacity: 1 !important; transform: none !important; }
+  .metricStrip > div,
+  .scrollZoom { opacity: 1 !important; transform: none !important; filter: none !important; }
 }

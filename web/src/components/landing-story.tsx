@@ -54,31 +54,68 @@ export function LandingStory({ report, strategyDemos }: { report: BacktestRespon
   useLayoutEffect(() => {
     const media = gsap.matchMedia();
     const context = gsap.context(() => {
+      const addScrollZoomReveals = (compact: boolean) => {
+        const panels = gsap.utils.toArray<HTMLElement>("[data-scroll-zoom]", root.current);
+
+        panels.forEach((panel) => {
+          gsap.fromTo(
+            panel,
+            {
+              y: compact ? 36 : 84,
+              scale: compact ? 0.96 : 0.88,
+              filter: `blur(${compact ? 2 : 6}px)`,
+              transformOrigin: "50% 50%",
+              force3D: true,
+            },
+            {
+              y: 0,
+              scale: 1,
+              filter: "blur(0px)",
+              ease: "none",
+              force3D: true,
+              scrollTrigger: {
+                trigger: panel,
+                start: compact ? "top 96%" : "top 92%",
+                end: compact ? "top 70%" : "top 48%",
+                scrub: compact ? 0.35 : 0.6,
+                invalidateOnRefresh: true,
+              },
+            },
+          );
+        });
+      };
+
       media.add("(prefers-reduced-motion: no-preference) and (min-width: 721px)", () => {
+        addScrollZoomReveals(false);
+
         gsap.timeline()
           .fromTo(`.${styles.heroLine}`, { strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: 1.55, ease: "power2.out" })
           .fromTo(`.${styles.heroReadout}`, { y: 8, opacity: 0 }, { y: 0, opacity: 1, duration: 0.45 }, "-=0.3");
 
         gsap.timeline({
-          scrollTrigger: { trigger: `.${styles.strategy}`, start: "top 66%", end: "center 48%", scrub: 0.45 },
+          scrollTrigger: { trigger: `.${styles.strategyCanvas}`, start: "top 82%", end: "center 48%", scrub: 0.45 },
         })
           .fromTo(`.${styles.strategyPrice}`, { strokeDashoffset: 1 }, { strokeDashoffset: 0 })
           .fromTo(`.${styles.indicatorLine}`, { strokeDashoffset: 1 }, { strokeDashoffset: 0, stagger: 0.08 }, "<18%")
           .fromTo(`.${styles.signalOutput}`, { scale: 0.86, opacity: 0 }, { scale: 1, opacity: 1 }, "<55%");
 
         gsap.timeline({
-          scrollTrigger: { trigger: `.${styles.execution}`, start: "top 68%", end: "center 44%", scrub: 0.4 },
+          scrollTrigger: { trigger: `.${styles.executionFlow}`, start: "top 84%", end: "top 46%", scrub: 0.4 },
         })
           .fromTo(`.${styles.executionProgress}`, { scaleX: 0 }, { scaleX: 1, ease: "none" })
           .fromTo(`.${styles.executionStep}`, { y: 14, opacity: 0 }, { y: 0, opacity: 1, stagger: 0.08 }, "<20%");
 
         gsap.timeline({
-          scrollTrigger: { trigger: `.${styles.analytics}`, start: "top 62%", end: "center 42%", scrub: 0.4 },
+          scrollTrigger: { trigger: `.${styles.analyticsChart}`, start: "top 84%", end: "center 44%", scrub: 0.4 },
         })
           .fromTo(`.${styles.benchmarkLine}`, { strokeDashoffset: 1 }, { strokeDashoffset: 0 })
           .fromTo(`.${styles.equityLine}`, { strokeDashoffset: 1 }, { strokeDashoffset: 0 }, "<12%")
           .fromTo(`.${styles.drawdownArea}`, { opacity: 0 }, { opacity: 1 }, "<45%")
           .fromTo(`.${styles.metricStrip} > div`, { y: 10, opacity: 0 }, { y: 0, opacity: 1, stagger: 0.04 }, "<55%");
+      });
+
+      media.add("(prefers-reduced-motion: no-preference) and (max-width: 720px)", () => {
+        addScrollZoomReveals(true);
       });
     }, root);
     return () => {
@@ -124,7 +161,7 @@ export function LandingStory({ report, strategyDemos }: { report: BacktestRespon
           <h2 id="data-title">Clean data before asking it questions.</h2>
           <p>Each daily bar passes the same checks before strategy code sees it.</p>
         </div>
-        <div className={styles.dataAudit}>
+        <div className={`${styles.dataAudit} ${styles.scrollZoom}`} data-scroll-zoom="market-data">
           <div className={styles.auditHeader}>
             <div><span>Input</span><strong>{symbol}.daily.csv</strong></div>
             <div><span>Output</span><strong>{market.length} valid bars</strong></div>
@@ -163,7 +200,7 @@ export function LandingStory({ report, strategyDemos }: { report: BacktestRespon
             ))}
             <p>Output: target weights. No cash changes here.</p>
           </div>
-          <div className={styles.strategyCanvas}>
+          <div className={`${styles.strategyCanvas} ${styles.scrollZoom}`} data-scroll-zoom="strategy">
             <div className={styles.chartMeta}><span>{symbol} / close</span><span>{report.metadata.start} to {report.metadata.end}</span></div>
             <svg viewBox="0 0 1200 480" preserveAspectRatio="none" role="img" aria-label={`${activeDemo.strategyLabel} indicators over the demonstration price series`}>
               <path className={styles.strategyGrid} d="M0 120H1200M0 240H1200M0 360H1200" />
@@ -186,7 +223,7 @@ export function LandingStory({ report, strategyDemos }: { report: BacktestRespon
           <h2 id="execution-title">The strategy decides.<br />The engine executes.</h2>
           <p>Every target waits for the next bar before it can become a trade.</p>
         </div>
-        <div className={styles.executionFlow}>
+        <div className={`${styles.executionFlow} ${styles.scrollZoom}`} data-scroll-zoom="execution">
           <div className={styles.executionTrack}><i className={styles.executionProgress} /></div>
           <ExecutionStep label="Signal" value={firstTrade ? `${firstTrade.side} ${firstTrade.symbol}` : "Hold cash"} />
           <ExecutionStep label="Validate" value="Cash and position" />
@@ -213,7 +250,7 @@ export function LandingStory({ report, strategyDemos }: { report: BacktestRespon
           <h2 id="analytics-title">Return without risk is half a result.</h2>
           <p>The portfolio record becomes equity, benchmark, and drawdown curves.</p>
         </div>
-        <div className={styles.analyticsChart}>
+        <div className={`${styles.analyticsChart} ${styles.scrollZoom}`} data-scroll-zoom="analytics">
           <div className={styles.analyticsReadout}><span>Final portfolio</span><strong>{formatMoney(report.metrics.finalValue)}</strong><small>{report.trades.length} trades</small></div>
           <svg viewBox="0 0 1200 500" preserveAspectRatio="none" role="img" aria-label="Portfolio equity, benchmark, and drawdown from the deterministic SamQuant run">
             <path className={styles.analyticsGrid} d="M0 100H1200M0 200H1200M0 300H1200M0 370H1200" />
@@ -241,7 +278,7 @@ export function LandingStory({ report, strategyDemos }: { report: BacktestRespon
           <p>Choose the market, dates, strategy, costs, and starting capital.</p>
           <Link className={styles.primaryAction} href="/research">Open research terminal <ArrowRight aria-hidden="true" size={16} /></Link>
         </div>
-        <div className={styles.terminalReveal} aria-label="Research terminal preview using real demonstration output">
+        <div className={`${styles.terminalReveal} ${styles.scrollZoom}`} data-scroll-zoom="research-terminal" aria-label="Research terminal preview using real demonstration output">
           <div className={styles.terminalTop}><span>RESEARCH / {symbol}</span><span>RUN COMPLETE</span></div>
           <svg viewBox="0 0 800 270" preserveAspectRatio="none" role="img" aria-label="Actual demonstration equity curve preview"><path d={buildTimedPath(report.portfolio.equity, 800, 270, 18)} /></svg>
           <div className={styles.terminalMetrics}>

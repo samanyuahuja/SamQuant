@@ -8,6 +8,33 @@ test("landing page tells the complete system story", async ({ page }) => {
   await expect(page.getByRole("heading", { name: /The strategy decides/ })).toBeVisible();
   await expect(page.getByRole("heading", { name: /Return without risk/ })).toBeVisible();
   await expect(page.getByRole("link", { name: /Open research terminal/ }).first()).toBeVisible();
+  await expect(page.locator("[data-scroll-zoom]")).toHaveCount(5);
+});
+
+test("visualizations rise and zoom into place while scrolling", async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== "desktop", "One desktop run verifies the full scroll motion.");
+  await page.emulateMedia({ reducedMotion: "no-preference" });
+  await page.goto("/");
+
+  const strategyChart = page.locator("[data-scroll-zoom='strategy']");
+  await page.waitForTimeout(100);
+  const before = await strategyChart.evaluate((element) => ({
+    filter: getComputedStyle(element).filter,
+    transform: getComputedStyle(element).transform,
+  }));
+
+  expect(before.filter).not.toBe("none");
+  expect(before.transform).not.toBe("none");
+
+  await strategyChart.scrollIntoViewIfNeeded();
+  await page.waitForTimeout(300);
+  const after = await strategyChart.evaluate((element) => ({
+    filter: getComputedStyle(element).filter,
+    transform: getComputedStyle(element).transform,
+  }));
+
+  expect(after.filter).not.toBe(before.filter);
+  expect(after.transform).not.toBe(before.transform);
 });
 
 test("research terminal runs the primary backtest journey", async ({ page }) => {
@@ -83,6 +110,10 @@ test("reduced motion keeps the story readable", async ({ page }) => {
   await page.goto("/");
   await expect(page.getByRole("heading", { name: /Test the strategy/ })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Run the complete system." })).toBeVisible();
+  const firstVisualization = page.locator("[data-scroll-zoom]").first();
+  await expect(firstVisualization).toHaveCSS("opacity", "1");
+  await expect(firstVisualization).toHaveCSS("transform", "none");
+  await expect(firstVisualization).toHaveCSS("filter", "none");
 });
 
 test("brand metadata and professional routes are complete", async ({ page }) => {
