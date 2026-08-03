@@ -47,6 +47,10 @@ per symbol, nonnegative weights, and row sums no greater than `1.0`.
 
 Invalid configuration or misaligned data raises `StrategyError`.
 
+Research interfaces call `evaluate(market_data)`, which returns the same target
+weights plus causal indicator frames. `generate_target_weights` delegates to
+this method, so execution and visualization cannot drift apart.
+
 ## Trading Engine
 
 ### `Order(symbol, side, quantity)`
@@ -92,6 +96,25 @@ Individual metric functions are also public. Undefined quantities such as a
 Sharpe ratio with zero volatility or win rate with no completed sale return
 `NaN`, not a misleading zero.
 
+## Application Service
+
+- `parse_symbols` normalizes comma-separated US, NSE, or BSE tickers.
+- `generate_demo_market_data` creates deterministic valid OHLCV frames.
+- `load_market_data` applies date, symbol, and live-provider limits.
+- `run_backtest` joins strategy evaluation, engine execution, and analytics.
+- `run_equal_weight_benchmark` uses the same delayed execution engine.
+
+## HTTP API
+
+- `GET /api/v1/health` reports service readiness.
+- `GET /api/v1/catalog` lists enabled markets, strategies, sources, and limits.
+- `POST /api/v1/backtests` accepts validated research inputs and returns OHLCV,
+  indicators, signals, portfolio history, metrics, trades, assumptions, and warnings.
+
+Dates use ISO `YYYY-MM-DD` strings. Undefined metrics become JSON `null` rather
+than invalid `NaN` values. Errors contain a code, natural message, affected
+fields, and request ID without exposing Python tracebacks.
+
 ## Dashboard Pipeline
 
 - `parse_symbols` normalizes comma-separated US, NSE, or BSE tickers.
@@ -100,4 +123,5 @@ Sharpe ratio with zero volatility or win rate with no completed sale return
 - `run_dashboard_backtest` runs strategy, engine, and analytics layers.
 - `run_strategy_comparison` adds all strategies and the equal-weight benchmark.
 
-These helpers can be tested or reused without rendering Streamlit.
+The dashboard module keeps backward-compatible names while delegating research
+orchestration to `samquant.application`.

@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import dataclass
-from typing import Mapping
 
 import pandas as pd
 
@@ -12,6 +12,7 @@ from samquant.strategies._common import (
     validate_positive_integer,
     validated_close_prices,
 )
+from samquant.strategies.evaluation import StrategyEvaluation
 
 
 @dataclass(frozen=True)
@@ -50,6 +51,13 @@ class MomentumStrategy:
         market_data: Mapping[str, pd.DataFrame],
     ) -> pd.DataFrame:
         """Rank trailing returns and hold equal weights until the next rebalance."""
+        return self.evaluate(market_data).target_weights
+
+    def evaluate(
+        self,
+        market_data: Mapping[str, pd.DataFrame],
+    ) -> StrategyEvaluation:
+        """Return target weights and trailing-return ranking inputs."""
         close_prices = validated_close_prices(market_data)
         trailing_returns = close_prices / close_prices.shift(self.lookback_window) - 1.0
         weights = pd.DataFrame(
@@ -83,4 +91,7 @@ class MomentumStrategy:
 
             weights.iloc[position] = current_weights
 
-        return weights
+        return StrategyEvaluation(
+            target_weights=weights,
+            indicators={"trailing_return": trailing_returns},
+        )

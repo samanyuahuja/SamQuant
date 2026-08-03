@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import dataclass
-from typing import Mapping
 
 import pandas as pd
 
@@ -13,6 +13,7 @@ from samquant.strategies._common import (
     validate_positive_integer,
     validated_close_prices,
 )
+from samquant.strategies.evaluation import StrategyEvaluation
 
 
 @dataclass(frozen=True)
@@ -36,6 +37,13 @@ class MovingAverageCrossoverStrategy:
         market_data: Mapping[str, pd.DataFrame],
     ) -> pd.DataFrame:
         """Return equal long weights for assets whose short average is higher."""
+        return self.evaluate(market_data).target_weights
+
+    def evaluate(
+        self,
+        market_data: Mapping[str, pd.DataFrame],
+    ) -> StrategyEvaluation:
+        """Return target weights and both moving-average indicator series."""
         close_prices = validated_close_prices(market_data)
         short_average = close_prices.rolling(
             window=self.short_window,
@@ -46,4 +54,10 @@ class MovingAverageCrossoverStrategy:
             min_periods=self.long_window,
         ).mean()
         active = short_average.gt(long_average) & long_average.notna()
-        return equal_weight_active_positions(active)
+        return StrategyEvaluation(
+            target_weights=equal_weight_active_positions(active),
+            indicators={
+                "short_average": short_average,
+                "long_average": long_average,
+            },
+        )

@@ -4,16 +4,17 @@
 ![Python](https://img.shields.io/badge/python-3.10%2B-3776AB?logo=python&logoColor=white)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
-**A modular algorithmic-trading system and historical backtesting engine built
-with Python, pandas, Plotly, Streamlit, and pytest.**
+**A transparent algorithmic-trading system with a tested Python engine and a
+purpose-built quantitative research interface.**
 
 SamQuant turns validated market data into strategy signals, executes those
 signals with delayed next-open fills, tracks portfolio accounting and trading
 costs, calculates risk metrics, and presents the results in an interactive
-dashboard. It is a research and education project, not a claim of future
-profitability.
+dashboard. A FastAPI boundary serves the Next.js research terminal without
+duplicating financial logic in TypeScript. It is an education project, not a
+claim of future profitability.
 
-![SamQuant dashboard](docs/images/dashboard-overview.png)
+![SamQuant web research terminal](docs/images/research-terminal-web.png)
 
 ## Highlights
 
@@ -24,16 +25,21 @@ profitability.
 - Executes every signal at the following bar's open to avoid same-bar leakage.
 - Reports return, volatility, Sharpe ratio, drawdown, and realized win rate.
 - Compares strategies against an equal-weight benchmark in Streamlit.
+- Presents a responsive Next.js terminal with real SamQuant charts and exports.
+- Keeps deterministic public demos separate from opt-in local Yahoo downloads.
 - Runs deterministic tests without depending on live network data.
 
 ## Architecture
 
 ```mermaid
 flowchart LR
-    A["Market Data<br/>download, validate, cache"] --> B["Strategies<br/>generate target weights"]
-    B --> C["Trading Engine<br/>delay, execute, account"]
-    C --> D["Analytics<br/>performance and risk"]
-    D --> E["Dashboard<br/>controls, charts, tables"]
+    A["Market Data"] --> B["Strategies"]
+    B --> C["Trading Engine"]
+    C --> D["Portfolio"]
+    D --> E["Analytics"]
+    E --> F["Application Service"]
+    F --> G["FastAPI / Streamlit"]
+    G --> H["Next.js Research Terminal"]
 ```
 
 Each layer owns one responsibility. The dashboard orchestrates public APIs but
@@ -50,12 +56,25 @@ git clone https://github.com/samanyuahuja/SamQuant.git
 cd SamQuant
 python3 -m venv .venv
 source .venv/bin/activate
-python -m pip install -r requirements.txt
-python -m streamlit run samquant/dashboard/app.py
+python -m pip install -r requirements-dev.txt
+cd web && npm install && cd ..
 ```
 
-The app starts with deterministic demo data, so it works without downloading
-market data. Choose **Yahoo Finance** in the sidebar to request historical data.
+Start the Python API and public web app in separate terminals:
+
+```bash
+source .venv/bin/activate
+python -m uvicorn samquant.api.app:app --reload
+```
+
+```bash
+cd web
+npm run dev
+```
+
+Open `http://localhost:3000`. The terminal starts with deterministic SamQuant
+results. The Streamlit prototype remains available with
+`python -m streamlit run samquant/dashboard/app.py`.
 
 Indian symbols can be entered without provider suffixes:
 
@@ -127,7 +146,10 @@ samquant/
 ├── strategies/    # Market data to target portfolio weights
 ├── engine/        # Orders, portfolio accounting, and backtesting
 ├── analytics/     # Performance and risk calculations
-└── dashboard/     # Testable pipeline and Streamlit presentation
+├── application/   # Shared research use cases
+├── api/           # Validated HTTP boundary
+└── dashboard/     # Streamlit presentation
+web/               # Next.js public site and research terminal
 tests/             # Unit, integration, causality, and UI smoke tests
 docs/              # Architecture, API, usage, and portfolio material
 ```
@@ -138,10 +160,13 @@ docs/              # Architecture, API, usage, and portfolio material
 python -m pip install -r requirements-dev.txt
 ruff check --select E4,E7,E9,F,B --ignore B905 samquant tests
 pytest --cov=samquant --cov-report=term-missing --cov-fail-under=85
+cd web
+npm run lint && npm run typecheck && npm test && npm run build
+npm run test:budget && npm run test:e2e
 ```
 
-GitHub Actions runs linting and the full test suite on Python 3.10 and 3.12.
-Live downloads are mocked in unit tests to keep CI deterministic.
+GitHub Actions checks Python 3.10 and 3.12, the production web build, bundle
+budgets, accessibility, and desktop, tablet, and mobile browser journeys.
 
 ## Documentation
 

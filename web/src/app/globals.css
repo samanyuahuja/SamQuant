@@ -1,0 +1,123 @@
+:root {
+  --ink: #0a0a09;
+  --ink-soft: #10100f;
+  --panel: #151513;
+  --panel-2: #1b1b18;
+  --paper: #f1f0ea;
+  --paper-dim: #d2d1cb;
+  --muted: #92938f;
+  --muted-2: #858680;
+  --line: #292a27;
+  --line-strong: #3a3b37;
+  --accent: #b9d66b;
+  --accent-strong: #d1ef7a;
+  --positive: #5bc28a;
+  --negative: #e16d64;
+  --warning: #e3b75e;
+  --content: 1120px;
+  --content-wide: 1440px;
+  --radius-sm: 4px;
+  --radius-md: 7px;
+  --shadow-deep: 0 24px 80px rgb(0 0 0 / 45%);
+  --font-sans: "Helvetica Neue", "Neue Haas Grotesk Text Pro", Arial, sans-serif;
+  --font-mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+}
+
+* { box-sizing: border-box; }
+
+html {
+  background: var(--ink);
+  color-scheme: dark;
+  scroll-behavior: smooth;
+}
+
+body {
+  min-width: 320px;
+  margin: 0;
+  background: var(--ink);
+  color: var(--paper);
+  font-family: var(--font-sans);
+  letter-spacing: 0;
+  text-rendering: optimizeLegibility;
+}
+
+button,
+input,
+select { font: inherit; }
+
+a { color: inherit; text-decoration: none; }
+
+button,
+a,
+input,
+select,
+summary { outline-offset: 4px; }
+
+:focus-visible { outline: 2px solid var(--accent-strong); }
+
+::selection { background: var(--accent); color: var(--ink); }
+
+.skip-link {
+  position: fixed;
+  z-index: 1000;
+  top: 12px;
+  left: 12px;
+  transform: translateY(-160%);
+  padding: 12px 16px;
+  background: var(--paper);
+  color: var(--ink);
+  font-weight: 700;
+}
+
+.skip-link:focus { transform: translateY(0); }
+
+.eyebrow {
+  margin: 0;
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  line-height: 1.4;
+  text-transform: uppercase;
+}
+
+.text-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--accent);
+  font-size: 0.82rem;
+  font-weight: 650;
+}
+
+.message-page {
+  width: min(100% - 40px, 760px);
+  min-height: 80vh;
+  margin: 0 auto;
+  padding: 190px 0 80px;
+}
+
+.message-page h1 {
+  max-width: 12ch;
+  margin: 20px 0;
+  font-size: 6.5rem;
+  line-height: 0.98;
+}
+
+.message-page > p:not(.eyebrow) { color: var(--muted); }
+
+@media (max-width: 640px) {
+  .message-page h1 { font-size: 3.5rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}

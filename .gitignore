@@ -23,3 +23,9 @@ output/
 *.log
 *.swp
 *.swo
+node_modules/
+.next/
+*.tsbuildinfo
+playwright-report/
+test-results/
+coverage/

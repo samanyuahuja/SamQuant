@@ -8,14 +8,20 @@ flowchart TD
     STRATEGY["Strategies<br/>samquant/strategies"]
     ENGINE["Trading Engine<br/>samquant/engine"]
     ANALYTICS["Analytics<br/>samquant/analytics"]
-    DASHBOARD["Dashboard<br/>samquant/dashboard"]
+    APPLICATION["Application Service<br/>samquant/application"]
+    API["HTTP Boundary<br/>samquant/api"]
+    STREAMLIT["Prototype UI<br/>samquant/dashboard"]
+    WEB["Public Product<br/>web/"]
 
     DATA -->|validated OHLCV frames| STRATEGY
     STRATEGY -->|daily target weights| ENGINE
     DATA -->|next-open and closing prices| ENGINE
     ENGINE -->|equity, cash, positions, trades| ANALYTICS
-    ANALYTICS -->|performance summary| DASHBOARD
-    ENGINE -->|simulation details| DASHBOARD
+    ANALYTICS -->|performance summary| APPLICATION
+    ENGINE -->|simulation details| APPLICATION
+    APPLICATION --> API
+    APPLICATION --> STREAMLIT
+    API -->|typed JSON| WEB
 ```
 
 ## Module Responsibilities
@@ -26,7 +32,10 @@ flowchart TD
 | `strategies` | Converting historical closes into target portfolio weights | Orders, fees, fills, or metrics |
 | `engine` | Delayed execution, orders, cash, positions, fees, slippage, valuation | Data downloading or strategy rules |
 | `analytics` | Validated calculations from completed backtest results | Signal generation or trade execution |
-| `dashboard` | User inputs, orchestration, charts, and tables | A second copy of domain logic |
+| `application` | Research use cases shared by every interface | HTTP or visual presentation |
+| `api` | Request validation, bounded access, and JSON serialization | Financial calculations |
+| `dashboard` | Streamlit controls, charts, and tables | A second copy of domain logic |
+| `web` | Product pages, research controls, and financial visualization | Signals, execution, or metrics |
 
 This dependency direction keeps the financial rules testable without starting
 Streamlit. A strategy can be replaced without changing accounting, and the user
@@ -79,11 +88,25 @@ The engine is long-only, fully invested at most, executes sales before purchases
 caps buys to available cash, and applies adverse slippage. Fractional quantities
 keep Version 1 accounting deterministic and focused.
 
-### The dashboard is an adapter
+### Interfaces are adapters
 
-`dashboard/pipeline.py` converts controls into domain objects and prepares view
-data. `dashboard/app.py` renders Streamlit components. Neither file duplicates
-strategy or portfolio formulas.
+`application/backtest.py` coordinates the domain layers. Streamlit imports that
+service, while FastAPI validates requests and serializes results for Next.js.
+The browser renders typed output and never recalculates financial values.
+
+### Public data access is conservative
+
+The public site bundles a deterministic result produced by the Python engine.
+Yahoo Finance access is disabled in FastAPI unless
+`SAMQUANT_ENABLE_YAHOO=true` is set for local research. This avoids presenting
+provider data as licensed public redistribution.
+
+## Web Performance Budgets
+
+The web build fails when one gzip-compressed JavaScript chunk exceeds 220 KB,
+all chunks exceed 900 KB, or bundled demonstration data exceeds 400 KB. Browser
+tests cover WCAG violations, responsive overflow, reduced motion, and the main
+backtest journey.
 
 ## Current Boundaries
 

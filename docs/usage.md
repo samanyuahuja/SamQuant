@@ -7,20 +7,35 @@ git clone https://github.com/samanyuahuja/SamQuant.git
 cd SamQuant
 python3 -m venv .venv
 source .venv/bin/activate
-python -m pip install -r requirements.txt
-python -m streamlit run samquant/dashboard/app.py
+python -m pip install -r requirements-dev.txt
+cd web && npm install && cd ..
 ```
 
 Windows PowerShell users activate with `.venv\Scripts\Activate.ps1`.
 
-## Dashboard Inputs
+Start the API and web app in separate terminals:
+
+```bash
+python -m uvicorn samquant.api.app:app --reload
+```
+
+```bash
+cd web
+npm run dev
+```
+
+Open `http://localhost:3000/research`. The public terminal uses deterministic
+demo data by default. For local Yahoo requests, start the API with
+`SAMQUANT_ENABLE_YAHOO=true` after reviewing the provider terms.
+
+## Research Inputs
 
 ### Data source
 
 - **Demo data** creates repeatable fictional prices. Use it to learn the app or
   verify behavior without internet access.
 - **Yahoo Finance** downloads historical adjusted OHLCV data and caches it under
-  `data/raw/ohlcv/`.
+  `data/raw/ohlcv/` when the local API explicitly enables it.
 
 ### Market and ticker symbols
 
@@ -64,6 +79,12 @@ exclusive internally; the dashboard includes the date selected by the user.
 - **Strategy comparison:** All three strategies and an equal-weight benchmark,
   rebased to the same starting value.
 - **Data and signals:** Closing prices and the most recent target weights.
+- **Downloads:** Save the complete JSON result or executed trades as CSV.
+
+The web terminal shows price and indicator charts, execution markers, an equity
+curve, drawdown, benchmark comparison, trade history, and the assumptions used.
+The Streamlit prototype remains available with
+`python -m streamlit run samquant/dashboard/app.py`.
 
 Total return measures start-to-finish growth. Annualized return estimates a
 one-year compounded rate. Volatility measures variability. Sharpe compares

@@ -2,10 +2,10 @@
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import dataclass
 from math import isfinite
 from numbers import Real
-from typing import Mapping
 
 import numpy as np
 import pandas as pd
@@ -16,6 +16,7 @@ from samquant.strategies._common import (
     validate_positive_integer,
     validated_close_prices,
 )
+from samquant.strategies.evaluation import StrategyEvaluation
 
 
 @dataclass(frozen=True)
@@ -49,6 +50,13 @@ class MeanReversionStrategy:
         market_data: Mapping[str, pd.DataFrame],
     ) -> pd.DataFrame:
         """Return stateful long weights from rolling closing-price z-scores."""
+        return self.evaluate(market_data).target_weights
+
+    def evaluate(
+        self,
+        market_data: Mapping[str, pd.DataFrame],
+    ) -> StrategyEvaluation:
+        """Return target weights with rolling mean and z-score indicators."""
         close_prices = validated_close_prices(market_data)
         rolling_mean = close_prices.rolling(
             window=self.lookback_window,
@@ -60,7 +68,9 @@ class MeanReversionStrategy:
         ).std(ddof=0)
         z_scores = (close_prices - rolling_mean) / rolling_std.replace(0.0, np.nan)
 
-        active = pd.DataFrame(False, index=close_prices.index, columns=close_prices.columns)
+        active = pd.DataFrame(
+            False, index=close_prices.index, columns=close_prices.columns
+        )
         for symbol in close_prices.columns:
             is_long = False
             for timestamp, z_score in z_scores[symbol].items():
@@ -71,12 +81,16 @@ class MeanReversionStrategy:
                         is_long = False
                 active.at[timestamp, symbol] = is_long
 
-        return equal_weight_active_positions(active)
+        return StrategyEvaluation(
+            target_weights=equal_weight_active_positions(active),
+            indicators={
+                "rolling_mean": rolling_mean,
+                "z_score": z_scores,
+            },
+        )
 
     @staticmethod
     def _is_finite_number(value: float) -> bool:
         return (
-            not isinstance(value, bool)
-            and isinstance(value, Real)
-            and isfinite(value)
+            not isinstance(value, bool) and isinstance(value, Real) and isfinite(value)
         )
