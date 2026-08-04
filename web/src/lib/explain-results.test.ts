@@ -10,12 +10,12 @@ describe("explainResults", () => {
 
     expect(explanation.status).toBe("Finished behind");
     expect(explanation.outcome).toContain("$100,000");
-    expect(explanation.outcome).toContain("0.8% loss");
-    expect(explanation.comparison).toContain("Equal-weight holding finished 35.8 percentage points ahead");
-    expect(explanation.risk).toContain("worst fall from a previous high was 12.0%");
+    expect(explanation.outcome).toContain("3.6% loss");
+    expect(explanation.comparison).toContain("Equal-weight holding finished 35.2 percentage points ahead");
+    expect(explanation.risk).toContain("worst fall from a previous high was 12.2%");
     expect(explanation.evidence).toContain("5 trades is a thin sample");
     expect(explanation.decisionTitle).toBe("Ended holding AAPL.");
-    expect(explanation.decisionBody).toContain("BUY AAPL on Dec 12, 2023");
+    expect(explanation.decisionBody).toContain("BUY AAPL on Dec 11, 2023");
     expect(explanation.futureBody).toContain("record stops on");
   });
 

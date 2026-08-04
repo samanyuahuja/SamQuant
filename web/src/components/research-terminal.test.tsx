@@ -108,6 +108,27 @@ describe("ResearchTerminal", () => {
       strategyStudy: {
         selectionPercent: 70,
         validationPercent: 30,
+        sharedLookback: 20,
+        historicalWinner: {
+          rank: 1,
+          strategy: "Mean reversion",
+          parameters: { lookback_window: 20, entry_z_score: -1.5, exit_z_score: 0 },
+          selectionReturn: 0.12,
+          validationReturn: 0.03,
+          fullPeriodReturn: 0.15,
+          maximumDrawdown: -0.08,
+          tradeCount: 14,
+        },
+        bestByStrategy: [{
+          rank: 1,
+          strategy: "Mean reversion",
+          parameters: { lookback_window: 20, entry_z_score: -1.5, exit_z_score: 0 },
+          selectionReturn: 0.12,
+          validationReturn: 0.03,
+          fullPeriodReturn: 0.15,
+          maximumDrawdown: -0.08,
+          tradeCount: 14,
+        }],
         trials: [{
           rank: 1,
           strategy: "Mean reversion",
@@ -126,7 +147,9 @@ describe("ResearchTerminal", () => {
 
     expect(screen.getByRole("table", { name: "Historical strategy parameter study" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Mean reversion" })).toBeInTheDocument();
-    expect(screen.getAllByText(/entry z score -1.5/)).toHaveLength(2);
+    expect(screen.getByText("Best settings found for each strategy")).toBeInTheDocument();
+    expect(screen.getAllByText(/Entry z-score -1.5/)).toHaveLength(2);
+    expect(screen.getByText(/entry z score -1.5/)).toBeInTheDocument();
   });
 
   it("does not carry a draft number into another strategy", () => {

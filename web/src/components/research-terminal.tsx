@@ -554,18 +554,35 @@ function ResultReadout({ report, currency }: { report: BacktestResponse; currenc
 }
 
 function StrategyStudy({ report }: { report: BacktestResponse }) {
-  const trials = report.strategyStudy?.trials ?? [];
+  const study = report.strategyStudy;
+  const trials = study?.trials ?? [];
   if (!trials.length) {
     return <div className={styles.emptyState}><SlidersHorizontal aria-hidden="true" size={24} /><h3>No parameter study yet</h3><p>Run the backtest once to compare the fixed strategy setups.</p></div>;
   }
-  const leader = trials[0];
+  const bestByStrategy = study?.bestByStrategy?.length
+    ? study.bestByStrategy
+    : bestTrialForEachStrategy(trials);
+  const leader = study?.historicalWinner
+    ?? [...bestByStrategy].sort((left, right) => right.validationReturn - left.validationReturn)[0];
   return <div className={styles.study}>
-    <header>
-      <div><span>Highest return in the first 70%</span><h3>{leader.strategy}</h3></div>
-      <strong>{formatPercent(leader.selectionReturn)}</strong>
-      <p>{formatParameters(leader)} The final 30% returned {formatPercent(leader.validationReturn)}.</p>
+    <header className={styles.studyWinner}>
+      <div><span>Best on the final 30%</span><h3>{leader.strategy}</h3></div>
+      <strong>{formatPercent(leader.validationReturn)}</strong>
+      <p>{formatStrategySettings(leader)} It earned {formatPercent(leader.selectionReturn)} while settings were chosen on the first 70%.</p>
     </header>
-    <p className={styles.studyNote}>SamQuant ranks a fixed set of trials on the earlier data, then checks the winner on the later data. This reduces overfitting, but it cannot prove the same setup will work next time.</p>
+    <div className={styles.familyStudy}>
+      <div className={styles.familyStudyIntro}>
+        <strong>Best settings found for each strategy</strong>
+        <span>Same stocks, dates, costs, and {study?.sharedLookback ?? "chosen"}-day lookback where used.</span>
+      </div>
+      <div className={styles.familyRows}>
+        {bestByStrategy.map((trial) => <div key={trial.strategy} data-winner={trial.strategy === leader.strategy || undefined}>
+          <div><strong>{trial.strategy}</strong><span>{formatStrategySettings(trial)}</span></div>
+          <dl><div><dt>First 70%</dt><dd>{formatPercent(trial.selectionReturn)}</dd></div><div><dt>Final 30%</dt><dd>{formatPercent(trial.validationReturn)}</dd></div></dl>
+        </div>)}
+      </div>
+    </div>
+    <p className={styles.studyNote}>Each strategy picks its settings from the first 70% of the dates. The final 30% checks those choices on later prices. The winner describes this backtest, not the future.</p>
     <div className={styles.tableWrap}>
       <table>
         <caption>Historical strategy parameter study</caption>
@@ -625,6 +642,26 @@ function formatParameters(trial: StrategyStudyTrial): string {
   return Object.entries(trial.parameters)
     .map(([key, value]) => `${key.replaceAll("_", " ")} ${String(value)}`)
     .join(" · ");
+}
+
+function formatStrategySettings(trial: StrategyStudyTrial): string {
+  const parameters = trial.parameters;
+  if (trial.strategy === "Moving average crossover") {
+    return `Short ${parameters.short_window} days · long ${parameters.long_window} days.`;
+  }
+  if (trial.strategy === "Mean reversion") {
+    return `Entry z-score ${parameters.entry_z_score} · exit z-score ${parameters.exit_z_score} · lookback ${parameters.lookback_window} days.`;
+  }
+  return `Rebalance every ${parameters.rebalance_frequency} trading days · lookback ${parameters.lookback_window} days · top ${parameters.top_n}.`;
+}
+
+function bestTrialForEachStrategy(trials: StrategyStudyTrial[]): StrategyStudyTrial[] {
+  return STRATEGIES.map(({ label }) => {
+    const strategyLabel = label === "Moving average" ? "Moving average crossover" : label;
+    return trials
+      .filter((trial) => trial.strategy === strategyLabel)
+      .sort((left, right) => right.selectionReturn - left.selectionReturn)[0];
+  }).filter((trial): trial is StrategyStudyTrial => Boolean(trial));
 }
 
 function sourceLabel(source: BacktestResponse["metadata"]["dataSource"]): string {

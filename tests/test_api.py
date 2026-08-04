@@ -52,6 +52,11 @@ def test_backtest_response_contains_real_domain_outputs() -> None:
     assert body["metadata"]["end"] == "2024-06-28"
     assert body["strategyStudy"]["selectionPercent"] == 70
     assert body["strategyStudy"]["trials"][0]["rank"] == 1
+    assert body["strategyStudy"]["sharedLookback"] == 20
+    assert len(body["strategyStudy"]["bestByStrategy"]) == 3
+    assert body["strategyStudy"]["historicalWinner"] in body["strategyStudy"][
+        "bestByStrategy"
+    ]
     assert {trial["strategy"] for trial in body["strategyStudy"]["trials"]} == {
         "Moving average crossover",
         "Mean reversion",

@@ -96,6 +96,15 @@ class StrategyStudyTrial:
     trade_count: int
 
 
+@dataclass(frozen=True)
+class StrategyStudy:
+    """Chronological parameter study with one trained winner per strategy family."""
+
+    trials: tuple[StrategyStudyTrial, ...]
+    best_by_strategy: tuple[StrategyStudyTrial, ...]
+    holdout_winner: StrategyStudyTrial
+
+
 def parse_symbols(
     raw_symbols: str,
     market_name: str = US_MARKET,
@@ -337,17 +346,15 @@ def run_strategy_comparison(
 def run_strategy_study(
     market_data: Mapping[str, pd.DataFrame],
     config: BacktestConfig,
-    selected_strategy: str,
-    selected_parameters: Mapping[str, int | float | bool],
-) -> tuple[StrategyStudyTrial, ...]:
-    """Rank a small, fixed parameter set without tuning on the validation segment."""
+    study_parameters: Mapping[str, int | float | bool],
+) -> StrategyStudy:
+    """Tune each strategy on early data, then compare the frozen winners later."""
     aligned_data = align_market_data(market_data)
     period_count = len(next(iter(aligned_data.values())))
     split_position = max(2, min(period_count - 1, round(period_count * 0.7)))
     candidates = _strategy_study_candidates(
         symbol_count=len(aligned_data),
-        selected_strategy=selected_strategy,
-        selected_parameters=selected_parameters,
+        study_parameters=study_parameters,
     )
     trials: list[StrategyStudyTrial] = []
     for strategy_name, parameters in candidates:
@@ -364,34 +371,81 @@ def run_strategy_study(
                 trade_count=len(run.result.trades),
             )
         )
-    return tuple(
+    ranked_trials = tuple(
         sorted(
             trials,
             key=lambda trial: (trial.selection_return, trial.validation_return),
             reverse=True,
         )
     )
+    best_by_strategy = tuple(
+        max(
+            (trial for trial in trials if trial.strategy_name == strategy_name),
+            key=lambda trial: (trial.selection_return, trial.validation_return),
+        )
+        for strategy_name in STRATEGY_NAMES
+    )
+    holdout_winner = max(
+        best_by_strategy,
+        key=lambda trial: (trial.validation_return, trial.selection_return),
+    )
+    return StrategyStudy(
+        trials=ranked_trials,
+        best_by_strategy=best_by_strategy,
+        holdout_winner=holdout_winner,
+    )
 
 
 def _strategy_study_candidates(
     *,
     symbol_count: int,
-    selected_strategy: str,
-    selected_parameters: Mapping[str, int | float | bool],
+    study_parameters: Mapping[str, int | float | bool],
 ) -> tuple[tuple[str, dict[str, int | float | bool]], ...]:
+    values = dict(study_parameters)
+    short_window = int(values.get("short_window", 20))
+    long_window = int(values.get("long_window", 60))
+    lookback_window = int(values.get("lookback_window", 20))
+    entry_z_score = float(values.get("entry_z_score", -1.5))
+    exit_z_score = float(values.get("exit_z_score", 0.0))
+    top_n = min(int(values.get("top_n", 1)), symbol_count)
+    rebalance_frequency = int(values.get("rebalance_frequency", 21))
+    require_positive_returns = bool(values.get("require_positive_returns", True))
+
     candidates: list[tuple[str, dict[str, int | float | bool]]] = [
+        (MOVING_AVERAGE, {"short_window": 5, "long_window": 20}),
         (MOVING_AVERAGE, {"short_window": 10, "long_window": 30}),
         (MOVING_AVERAGE, {"short_window": 20, "long_window": 60}),
         (MOVING_AVERAGE, {"short_window": 50, "long_window": 200}),
-        (MEAN_REVERSION, {"lookback_window": 10, "entry_z_score": -1.0, "exit_z_score": 0.0}),
-        (MEAN_REVERSION, {"lookback_window": 20, "entry_z_score": -1.5, "exit_z_score": 0.0}),
-        (MEAN_REVERSION, {"lookback_window": 20, "entry_z_score": -2.0, "exit_z_score": 0.0}),
-        (MEAN_REVERSION, {"lookback_window": 40, "entry_z_score": -2.0, "exit_z_score": 0.0}),
-        (MOMENTUM, {"lookback_window": 20, "top_n": 1, "rebalance_frequency": 5, "require_positive_returns": True}),
-        (MOMENTUM, {"lookback_window": 60, "top_n": min(2, symbol_count), "rebalance_frequency": 21, "require_positive_returns": True}),
-        (MOMENTUM, {"lookback_window": 120, "top_n": min(3, symbol_count), "rebalance_frequency": 21, "require_positive_returns": True}),
     ]
-    candidates.append((selected_strategy, dict(selected_parameters)))
+    if short_window < long_window:
+        candidates.append(
+            (MOVING_AVERAGE, {"short_window": short_window, "long_window": long_window})
+        )
+    for entry in (-1.0, -1.5, -2.0, -2.5, entry_z_score):
+        for exit_score in (0.0, 0.5, exit_z_score):
+            if entry < exit_score:
+                candidates.append(
+                    (
+                        MEAN_REVERSION,
+                        {
+                            "lookback_window": lookback_window,
+                            "entry_z_score": entry,
+                            "exit_z_score": exit_score,
+                        },
+                    )
+                )
+    for frequency in (5, 10, 21, 42, 63, rebalance_frequency):
+        candidates.append(
+            (
+                MOMENTUM,
+                {
+                    "lookback_window": lookback_window,
+                    "top_n": top_n,
+                    "rebalance_frequency": frequency,
+                    "require_positive_returns": require_positive_returns,
+                },
+            )
+        )
 
     unique: list[tuple[str, dict[str, int | float | bool]]] = []
     seen: set[tuple[str, tuple[tuple[str, int | float | bool], ...]]] = set()

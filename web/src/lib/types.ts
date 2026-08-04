@@ -75,7 +75,7 @@ export interface MetricValues {
 export interface StrategyStudyTrial {
   rank: number;
   strategy: string;
-  parameters: Record<string, number | boolean>;
+  parameters: Partial<StrategyParameters>;
   selectionReturn: number;
   validationReturn: number;
   fullPeriodReturn: number;
@@ -111,6 +111,9 @@ export interface BacktestResponse {
   strategyStudy?: {
     selectionPercent: number;
     validationPercent: number;
+    sharedLookback?: number;
+    historicalWinner?: StrategyStudyTrial;
+    bestByStrategy?: StrategyStudyTrial[];
     trials: StrategyStudyTrial[];
   };
   trades: TradeRecord[];

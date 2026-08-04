@@ -452,7 +452,7 @@
 .resultChart { height: 420px; }
 
 .study { min-height: 420px; }
-.study > header {
+.studyWinner {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   gap: 5px 30px;
@@ -462,6 +462,35 @@
 .study header h3 { margin: 5px 0 0; font-size: 1.05rem; }
 .study header strong { align-self: center; font-family: var(--font-mono); font-size: 1.35rem; font-weight: 500; }
 .study header p { grid-column: 1 / -1; margin: 6px 0 0; color: var(--research-muted); font-family: var(--font-mono); font-size: 0.7rem; }
+.familyStudy { border-bottom: 1px solid var(--research-line); }
+.familyStudyIntro {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 18px 20px 12px;
+}
+.familyStudyIntro strong { font-size: 0.78rem; }
+.familyStudyIntro span { color: var(--research-muted); font-size: 0.68rem; }
+.familyRows { border-top: 1px solid var(--research-line); }
+.familyRows > div {
+  display: grid;
+  grid-template-columns: minmax(280px, 1fr) auto;
+  align-items: center;
+  gap: 24px;
+  min-height: 68px;
+  padding: 10px 20px;
+  border-bottom: 1px solid var(--research-line);
+}
+.familyRows > div:last-child { border-bottom: 0; }
+.familyRows > div[data-winner="true"] { box-shadow: inset 3px 0 0 var(--research-positive); }
+.familyRows > div > div { min-width: 0; }
+.familyRows > div > div strong { display: block; font-size: 0.76rem; }
+.familyRows > div > div span { display: block; margin-top: 5px; color: var(--research-muted); font-family: var(--font-mono); font-size: 0.64rem; line-height: 1.45; }
+.familyRows dl { display: grid; grid-template-columns: repeat(2, minmax(86px, 1fr)); gap: 20px; margin: 0; }
+.familyRows dl div { text-align: right; }
+.familyRows dt { color: var(--research-muted); font-size: 0.58rem; }
+.familyRows dd { margin: 5px 0 0; font-family: var(--font-mono); font-size: 0.72rem; }
 .studyNote { max-width: 92ch; margin: 0; padding: 15px 20px; border-bottom: 1px solid var(--research-line); color: var(--research-muted); font-size: 0.72rem; line-height: 1.55; }
 .study td:nth-child(2) { min-width: 320px; text-align: left; }
 .study td small { display: block; margin-top: 4px; color: var(--research-muted); font-size: 0.58rem; }
@@ -600,9 +629,13 @@
   .explanationHeader h2 { font-size: 1.65rem; }
   .explanationLead { font-size: 0.84rem; }
   .readoutRows > div { grid-template-columns: 1fr; gap: 5px; }
-  .study > header { grid-template-columns: 1fr; }
+  .studyWinner { grid-template-columns: 1fr; }
   .study header strong,
   .study header p { grid-column: auto; }
+  .familyStudyIntro { align-items: flex-start; flex-direction: column; gap: 5px; }
+  .familyRows > div { grid-template-columns: 1fr; gap: 12px; }
+  .familyRows dl { width: 100%; }
+  .familyRows dl div { text-align: left; }
   .tabs { gap: 22px; }
   .tabs button { justify-content: center; font-size: 0.68rem; }
   .tabs button svg { display: none; }

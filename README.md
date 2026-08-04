@@ -27,6 +27,7 @@ claim of future profitability.
 - Executes every signal at the following bar's open to avoid same-bar leakage.
 - Reports return, volatility, Sharpe ratio, drawdown, and realized win rate.
 - Explains each result in plain language without turning old signals into trading advice.
+- Finds the strongest tested settings for each strategy with a chronological 70/30 study.
 - Compares strategies against an equal-weight benchmark in Streamlit.
 - Presents a responsive Next.js terminal with real SamQuant charts and exports.
 - Keeps deterministic public demos separate from opt-in local Yahoo downloads.
@@ -119,6 +120,11 @@ For a signal calculated after bar `t` closes, SamQuant shifts the target by one
 bar and first permits execution at bar `t+1`'s open. Tests also change future
 prices and verify that earlier signals remain unchanged.
 
+The parameter study chooses one setup per strategy on the first 70% of the
+dates. It then compares those frozen setups on the final 30%. Mean reversion and
+momentum keep the entered lookback fixed while testing z-scores or rebalance
+frequency. Moving average tests bounded short/long window pairs.
+
 The simulator includes configurable commissions, fixed fees, and adverse
 slippage. Yahoo downloads use adjusted OHLC prices by default so stock splits
 and distributions do not create artificial price jumps. Adjusted and unadjusted
@@ -131,7 +137,8 @@ Important limitations remain:
 - Fills do not model volume limits, bid-ask spreads, market impact, latency,
   taxes, or partial execution.
 - Strategies are examples for testing system design, not validated alpha claims.
-- Results are in-sample unless the researcher creates an out-of-sample process.
+- Main backtest metrics use the full selected range. Only the parameter study's
+  final 30% acts as a chronological holdout, and it is not a future forecast.
 
 ## Strategies And Metrics
 

@@ -70,23 +70,96 @@ def test_equal_weight_benchmark_uses_the_same_execution_engine() -> None:
 def test_strategy_study_ranks_fixed_trials_on_the_earlier_period() -> None:
     market_data = generate_demo_market_data(("AAPL", "MSFT"), periods=260)
 
-    trials = run_strategy_study(
+    study = run_strategy_study(
         market_data,
         BacktestConfig(initial_cash=25_000.0),
-        selected_strategy=MOVING_AVERAGE,
-        selected_parameters={"short_window": 12, "long_window": 48},
+        study_parameters={
+            "short_window": 12,
+            "long_window": 48,
+            "lookback_window": 30,
+            "entry_z_score": -1.5,
+            "exit_z_score": 0.0,
+            "top_n": 1,
+            "rebalance_frequency": 15,
+            "require_positive_returns": True,
+        },
     )
 
-    assert len(trials) == 11
-    assert {trial.strategy_name for trial in trials} == {
+    assert len(study.trials) == 19
+    assert {trial.strategy_name for trial in study.trials} == {
         "Moving average crossover",
         "Mean reversion",
         "Momentum",
     }
-    assert [trial.selection_return for trial in trials] == sorted(
-        (trial.selection_return for trial in trials), reverse=True
+    assert [trial.selection_return for trial in study.trials] == sorted(
+        (trial.selection_return for trial in study.trials), reverse=True
     )
-    assert any(trial.parameters == {"short_window": 12, "long_window": 48} for trial in trials)
+    assert any(
+        trial.parameters == {"short_window": 12, "long_window": 48}
+        for trial in study.trials
+    )
+    assert len(study.best_by_strategy) == 3
+    assert study.holdout_winner in study.best_by_strategy
+    for winner in study.best_by_strategy:
+        family_trials = (
+            trial
+            for trial in study.trials
+            if trial.strategy_name == winner.strategy_name
+        )
+        assert winner.selection_return == max(
+            trial.selection_return for trial in family_trials
+        )
+
+    mean_reversion_trials = [
+        trial
+        for trial in study.trials
+        if trial.strategy_name == "Mean reversion"
+    ]
+    momentum_trials = [
+        trial for trial in study.trials if trial.strategy_name == "Momentum"
+    ]
+    assert {trial.parameters["lookback_window"] for trial in mean_reversion_trials} == {30}
+    assert {trial.parameters["lookback_window"] for trial in momentum_trials} == {30}
+    assert {trial.parameters["rebalance_frequency"] for trial in momentum_trials} == {
+        5,
+        10,
+        15,
+        21,
+        42,
+        63,
+    }
+
+
+def test_strategy_study_training_choices_ignore_later_price_changes() -> None:
+    original = generate_demo_market_data(("AAPL", "MSFT"), periods=260)
+    changed = {symbol: frame.copy() for symbol, frame in original.items()}
+    for frame in changed.values():
+        frame.loc[frame.index[190]:, ["Open", "High", "Low", "Close"]] *= 4.0
+    parameters = {
+        "short_window": 12,
+        "long_window": 48,
+        "lookback_window": 30,
+        "entry_z_score": -1.5,
+        "exit_z_score": 0.0,
+        "top_n": 1,
+        "rebalance_frequency": 15,
+        "require_positive_returns": True,
+    }
+
+    original_study = run_strategy_study(
+        original,
+        BacktestConfig(initial_cash=25_000.0),
+        study_parameters=parameters,
+    )
+    changed_study = run_strategy_study(
+        changed,
+        BacktestConfig(initial_cash=25_000.0),
+        study_parameters=parameters,
+    )
+
+    assert [trial.parameters for trial in original_study.best_by_strategy] == [
+        trial.parameters for trial in changed_study.best_by_strategy
+    ]
 
 
 def test_application_bounds_symbols_and_date_ranges() -> None:

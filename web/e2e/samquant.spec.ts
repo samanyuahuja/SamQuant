@@ -50,6 +50,8 @@ test("research terminal runs the primary backtest journey", async ({ page }) => 
   await expect((await responsePromise).status()).toBe(200);
   await expect(page.getByText("Backtest research / AAPL + MSFT", { exact: true })).toBeVisible();
   await page.getByRole("tab", { name: /Parameter study/ }).click();
+  await expect(page.getByText("Best settings found for each strategy")).toBeVisible();
+  await expect(page.getByText("Best on the final 30%")).toBeVisible();
   await expect(page.getByRole("table", { name: "Historical strategy parameter study" })).toBeVisible();
   await page.getByTitle("Export results").click();
   await expect(page.getByRole("button", { name: "Trades CSV" })).toBeVisible();

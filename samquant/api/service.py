@@ -17,6 +17,7 @@ from samquant.application import (
     MOVING_AVERAGE,
     BacktestConfig,
     ResearchRun,
+    StrategyStudy,
     StrategyStudyTrial,
     load_market_data,
     parse_symbols,
@@ -62,8 +63,7 @@ def run_request(
     strategy_study = run_strategy_study(
         market_data,
         config,
-        selected_strategy=strategy_name,
-        selected_parameters=parameters,
+        study_parameters=request.parameters.model_dump(),
     )
     return _serialize_report(
         request,
@@ -104,11 +104,14 @@ def _serialize_report(
     primary: ResearchRun,
     benchmark: ResearchRun,
     parameters: Mapping[str, int | float | bool],
-    strategy_study: tuple[StrategyStudyTrial, ...],
+    strategy_study: StrategyStudy,
 ) -> dict[str, Any]:
     first_index = next(iter(market_data.values())).index
     drawdown = primary.result.equity_curve / primary.result.equity_curve.cummax() - 1.0
     signals = _signal_records(primary.target_weights)
+    trial_ranks = {
+        id(trial): rank for rank, trial in enumerate(strategy_study.trials, start=1)
+    }
     return {
         "metadata": {
             "requestId": request_id,
@@ -156,18 +159,18 @@ def _serialize_report(
         "strategyStudy": {
             "selectionPercent": 70,
             "validationPercent": 30,
+            "sharedLookback": request.parameters.lookback_window,
+            "historicalWinner": _serialize_study_trial(
+                strategy_study.holdout_winner,
+                trial_ranks[id(strategy_study.holdout_winner)],
+            ),
+            "bestByStrategy": [
+                _serialize_study_trial(trial, trial_ranks[id(trial)])
+                for trial in strategy_study.best_by_strategy
+            ],
             "trials": [
-                {
-                    "rank": rank,
-                    "strategy": trial.strategy_name,
-                    "parameters": trial.parameters,
-                    "selectionReturn": trial.selection_return,
-                    "validationReturn": trial.validation_return,
-                    "fullPeriodReturn": trial.full_period_return,
-                    "maximumDrawdown": trial.maximum_drawdown,
-                    "tradeCount": trial.trade_count,
-                }
-                for rank, trial in enumerate(strategy_study, start=1)
+                _serialize_study_trial(trial, rank)
+                for rank, trial in enumerate(strategy_study.trials, start=1)
             ],
         },
         "trades": [
@@ -197,6 +200,22 @@ def _serialize_report(
             "Backtested results are hypothetical and are not investment advice.",
             "Taxes, liquidity limits, market impact, and partial fills are not modeled.",
         ],
+    }
+
+
+def _serialize_study_trial(
+    trial: StrategyStudyTrial,
+    rank: int,
+) -> dict[str, Any]:
+    return {
+        "rank": rank,
+        "strategy": trial.strategy_name,
+        "parameters": trial.parameters,
+        "selectionReturn": trial.selection_return,
+        "validationReturn": trial.validation_return,
+        "fullPeriodReturn": trial.full_period_return,
+        "maximumDrawdown": trial.maximum_drawdown,
+        "tradeCount": trial.trade_count,
     }
 
 
