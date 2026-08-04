@@ -270,10 +270,10 @@ export function ResearchTerminal({ initialReport }: { initialReport: BacktestRes
                   </FormField>
                   <div className={styles.twoColumns}>
                     <FormField label="Start" htmlFor="start">
-                      <DateInput key={request.start} id="start" value={request.start} max={latestDate} ariaInvalid={errorFields.includes("start")} onValueChange={(value) => updateRequest("start", value)} />
+                      <DateInput id="start" value={request.start} max={latestDate} ariaInvalid={errorFields.includes("start")} onValueChange={(value) => updateRequest("start", value)} />
                     </FormField>
                     <FormField label="End" htmlFor="end" hint={`Latest allowed date: ${formatDate(latestDate)}.`}>
-                      <DateInput key={request.end} id="end" value={request.end} max={latestDate} ariaInvalid={errorFields.includes("end")} onValueChange={(value) => updateRequest("end", value)} />
+                      <DateInput id="end" value={request.end} max={latestDate} ariaInvalid={errorFields.includes("end")} onValueChange={(value) => updateRequest("end", value)} />
                     </FormField>
                   </div>
                 </fieldset>
@@ -463,6 +463,10 @@ function DateInput({
   ariaInvalid?: boolean;
 }) {
   const [draft, setDraft] = useState(value);
+
+  useEffect(() => {
+    setDraft(value);
+  }, [value]);
 
   return (
     <input
