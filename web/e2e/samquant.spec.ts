@@ -49,11 +49,11 @@ test("research terminal runs the primary backtest journey", async ({ page }) => 
   await page.getByRole("button", { name: "Run backtest" }).click();
   await expect((await responsePromise).status()).toBe(200);
   await expect(page.getByText("Backtest research / AAPL + MSFT", { exact: true })).toBeVisible();
-  const chartTicker = page.getByLabel("Chart ticker");
-  await expect(chartTicker).toHaveValue("AAPL");
-  await chartTicker.selectOption("MSFT");
+  const chartTicker = page.getByRole("group", { name: "Chart ticker" });
+  await expect(chartTicker.getByRole("button", { name: "AAPL" })).toHaveAttribute("aria-pressed", "true");
+  await chartTicker.getByRole("button", { name: "MSFT" }).click();
   await expect(page.getByRole("heading", { name: "MSFT daily bars" })).toBeVisible();
-  await expect(page.getByText("Chart view only. Portfolio results combine all 2 tickers.")).toBeVisible();
+  await expect(page.getByText("Portfolio metrics", { exact: true })).toBeVisible();
   await page.getByRole("tab", { name: /Parameter study/ }).click();
   await expect(page.getByText("Best settings found for each strategy")).toBeVisible();
   await expect(page.getByText("Best on the final 30%")).toBeVisible();

@@ -291,7 +291,6 @@ export function ResearchTerminal({ initialReport }: { initialReport: BacktestRes
                     </select>
                   </FormField>
                   <StrategyFields key={request.strategy} request={request} update={updateParameter} errorFields={errorFields} />
-                  <p className={styles.universeNote}>{strategyUniverseSummary(request)}</p>
                 </fieldset>
 
                 <fieldset>
@@ -331,19 +330,18 @@ export function ResearchTerminal({ initialReport }: { initialReport: BacktestRes
         <section className={styles.pricePanel} aria-labelledby="price-heading">
           <div className={styles.panelHeader}>
             <div><span>Price, indicators, and fills</span><h2 id="price-heading">{symbol} daily bars</h2></div>
-            <div className={styles.chartControls}>
-              {report.metadata.symbols.length > 1 && (
-                <label className={styles.chartSelector}>
-                  <span>Chart ticker</span>
-                  <select value={symbol} onChange={(event) => setChartSymbol(event.target.value)}>
-                    {report.metadata.symbols.map((ticker) => <option key={ticker}>{ticker}</option>)}
-                  </select>
-                </label>
-              )}
-              <span className={styles.tradeCount}>{symbolTradeCount} {symbol} trades</span>
-            </div>
+            <span className={styles.tradeCount}>{symbolTradeCount} fills</span>
           </div>
-          <p className={styles.chartScope}>Chart view only. Portfolio results combine all {report.metadata.symbols.length} {tickerWord(report.metadata.symbols.length)}.</p>
+          {report.metadata.symbols.length > 1 && (
+            <div className={styles.tickerRail} role="group" aria-label="Chart ticker">
+              <span>Instrument</span>
+              <div>
+                {report.metadata.symbols.map((ticker) => (
+                  <button key={ticker} type="button" aria-pressed={symbol === ticker} onClick={() => setChartSymbol(ticker)}>{ticker}</button>
+                ))}
+              </div>
+            </div>
+          )}
           <div className={styles.priceChart}><FinancialChart report={report} mode="price" symbol={symbol} /></div>
           {loading && <LoadingOverlay />}
         </section>
@@ -351,8 +349,8 @@ export function ResearchTerminal({ initialReport }: { initialReport: BacktestRes
         <PriceDataTable report={report} symbol={symbol} />
 
         <div className={styles.portfolioScope}>
-          <span>Combined portfolio</span>
-          <strong>{report.metadata.symbols.length} {tickerWord(report.metadata.symbols.length)} · {report.trades.length} total trades</strong>
+          <span>Portfolio metrics</span>
+          <strong>{report.metadata.symbols.length} {assetWord(report.metadata.symbols.length)} · {report.trades.length} fills</strong>
         </div>
 
         <section className={styles.metrics} aria-label="Performance metrics">
@@ -546,7 +544,7 @@ function StrategyFields({
   return <>
     <div className={styles.twoColumns}>
       <FormField label="Lookback" htmlFor="momentum-lookback"><NumberInput id="momentum-lookback" min={2} max={750} value={parameters.lookback_window} onValueChange={(value) => update("lookback_window", value)} /></FormField>
-      <FormField label="Top assets" htmlFor="top-assets" hint={`Chooses winners from all ${request.symbols.length} selected ${tickerWord(request.symbols.length)}.`}><NumberInput id="top-assets" min={1} max={Math.max(1, request.symbols.length)} value={parameters.top_n} onValueChange={(value) => update("top_n", value)} /></FormField>
+      <FormField label={`Top assets (of ${request.symbols.length})`} htmlFor="top-assets"><NumberInput id="top-assets" min={1} max={Math.max(1, request.symbols.length)} value={parameters.top_n} onValueChange={(value) => update("top_n", value)} /></FormField>
     </div>
     <FormField label="Rebalance frequency" htmlFor="rebalance-frequency"><NumberInput id="rebalance-frequency" min={1} max={252} value={parameters.rebalance_frequency} onValueChange={(value) => update("rebalance_frequency", value)} /></FormField>
     <label className={styles.checkbox}><input type="checkbox" checked={parameters.require_positive_returns} onChange={(event) => update("require_positive_returns", event.target.checked)} /><span>Require positive trailing returns</span></label>
@@ -712,16 +710,8 @@ function PriceDataTable({ report, symbol }: { report: BacktestResponse; symbol: 
   );
 }
 
-function strategyUniverseSummary(request: BacktestRequest): string {
-  const count = request.symbols.length;
-  if (request.strategy === "momentum") {
-    return `Ranks all ${count} selected ${tickerWord(count)} together.`;
-  }
-  return `Calculates signals across all ${count} selected ${tickerWord(count)}.`;
-}
-
-function tickerWord(count: number): string {
-  return count === 1 ? "ticker" : "tickers";
+function assetWord(count: number): string {
+  return count === 1 ? "asset" : "assets";
 }
 
 function focusFirstField(fields: string[]) {

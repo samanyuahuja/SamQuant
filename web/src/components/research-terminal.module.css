@@ -254,13 +254,6 @@
 .formField select:focus { border-bottom-color: var(--research-accent); outline: 0; box-shadow: 0 2px 0 var(--research-accent); }
 .formField input[aria-invalid="true"] { border-bottom-color: var(--research-negative); box-shadow: 0 2px 0 var(--research-negative); }
 
-.universeNote {
-  margin: 2px 0 0;
-  color: var(--research-muted);
-  font-size: 0.66rem;
-  line-height: 1.45;
-}
-
 .twoColumns {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -329,21 +322,35 @@
 .panelHeader span { color: var(--research-muted); font-size: 0.64rem; }
 .panelHeader h2 { margin: 5px 0 0; font-size: 1rem; font-weight: 650; }
 .panelHeader .tradeCount { font-size: 0.72rem; font-weight: 500; }
-.chartControls { display: flex; align-items: flex-end; gap: 18px; }
-.chartSelector { display: grid; gap: 4px; color: var(--research-muted); font-size: 0.64rem; }
-.chartSelector select {
-  min-width: 112px;
-  height: 30px;
-  border: 0;
+.tickerRail {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 20px;
+  padding: 0 22px;
+  border-top: 1px solid var(--research-line);
   border-bottom: 1px solid var(--research-line);
-  border-radius: 0;
-  background: transparent;
-  color: var(--research-ink);
-  font-family: var(--font-mono);
-  font-size: 0.72rem;
 }
-.chartSelector select:focus { border-bottom-color: var(--research-accent); outline: 0; box-shadow: 0 2px 0 var(--research-accent); }
-.chartScope { margin: 0; padding: 0 22px 12px; color: var(--research-muted); font-size: 0.66rem; }
+.tickerRail > span { flex: 0 0 auto; color: var(--research-muted); font-size: 0.58rem; text-transform: uppercase; }
+.tickerRail > div { display: flex; min-width: 0; overflow-x: auto; scrollbar-width: none; }
+.tickerRail > div::-webkit-scrollbar { display: none; }
+.tickerRail button {
+  position: relative;
+  height: 40px;
+  flex: 0 0 auto;
+  padding: 0 13px;
+  border: 0;
+  background: transparent;
+  color: var(--research-muted);
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  cursor: pointer;
+}
+.tickerRail button::after { position: absolute; right: 13px; bottom: -1px; left: 13px; height: 2px; background: transparent; content: ""; }
+.tickerRail button:hover { color: var(--research-ink); }
+.tickerRail button[aria-pressed="true"] { color: var(--research-ink); font-weight: 600; }
+.tickerRail button[aria-pressed="true"]::after { background: var(--research-accent); }
+.tickerRail button:focus-visible { outline: 2px solid var(--research-accent); outline-offset: -3px; }
 .priceChart { height: clamp(390px, 46vw, 590px); }
 
 .chartData { margin-bottom: 0; background: var(--research-surface); }
@@ -653,10 +660,8 @@
   .disclaimer span { flex: 1; min-width: calc(100% - 26px); }
   .disclaimer a { margin-left: 25px; }
   .panelHeader { align-items: flex-start; padding-inline: 14px; }
-  .chartControls { align-items: flex-end; flex-direction: column; gap: 8px; }
-  .chartSelector { justify-items: end; }
   .panelHeader .tradeCount { max-width: 18ch; text-align: right; line-height: 1.5; }
-  .chartScope { padding-inline: 14px; }
+  .tickerRail { gap: 8px; padding-inline: 14px 0; }
   .priceChart { height: 340px; }
   .chartData summary { padding-inline: 14px; }
   .portfolioScope { align-items: flex-start; flex-direction: column; gap: 5px; padding-inline: 2px; }

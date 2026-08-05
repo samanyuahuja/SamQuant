@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import demoReport from "@/data/demo-backtest.json";
@@ -79,17 +79,16 @@ describe("ResearchTerminal", () => {
   it("switches the displayed ticker without changing the combined portfolio", () => {
     render(<ResearchTerminal initialReport={reportWithSymbols(["AAPL", "MSFT"])} />);
 
-    const selector = screen.getByLabelText("Chart ticker");
-    expect(selector).toHaveValue("AAPL");
+    const selector = screen.getByRole("group", { name: "Chart ticker" });
+    expect(within(selector).getByRole("button", { name: "AAPL" })).toHaveAttribute("aria-pressed", "true");
     expect(screen.getByTestId("chart-price")).toHaveAttribute("data-symbol", "AAPL");
-    expect(screen.getByText("2 tickers · 5 total trades")).toBeInTheDocument();
+    expect(screen.getByText("2 assets · 5 fills")).toBeInTheDocument();
 
-    fireEvent.change(selector, { target: { value: "MSFT" } });
+    fireEvent.click(within(selector).getByRole("button", { name: "MSFT" }));
 
     expect(screen.getByRole("heading", { name: "MSFT daily bars" })).toBeInTheDocument();
     expect(screen.getByTestId("chart-price")).toHaveAttribute("data-symbol", "MSFT");
     expect(screen.getByText("Twenty most recent MSFT price bars shown in the chart")).toBeInTheDocument();
-    expect(screen.getByText("Chart view only. Portfolio results combine all 2 tickers.")).toBeInTheDocument();
   });
 
   it("applies momentum top assets to the complete ticker universe", async () => {
@@ -102,10 +101,8 @@ describe("ResearchTerminal", () => {
 
     fireEvent.change(screen.getByLabelText("Tickers"), { target: { value: "AAPL, MSFT, NVDA" } });
     fireEvent.change(screen.getByLabelText("Model"), { target: { value: "momentum" } });
-    const topAssets = screen.getByLabelText("Top assets");
+    const topAssets = screen.getByLabelText("Top assets (of 3)");
     expect(topAssets).toHaveAttribute("max", "3");
-    expect(screen.getByText("Ranks all 3 selected tickers together.")).toBeInTheDocument();
-    expect(screen.getByText("Chooses winners from all 3 selected tickers.")).toBeInTheDocument();
 
     fireEvent.change(topAssets, { target: { value: "2" } });
     fireEvent.click(screen.getByRole("button", { name: "Run backtest" }));
