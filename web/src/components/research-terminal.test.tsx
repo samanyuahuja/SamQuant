@@ -18,6 +18,26 @@ function reportWithSymbols(symbols: string[]): BacktestResponse {
   };
 }
 
+function momentumAttributionReport(): BacktestResponse {
+  const base = reportWithSymbols(["AAPL", "MSFT", "NVDA"]);
+  return {
+    ...base,
+    metadata: { ...base.metadata, strategy: "momentum", strategyLabel: "Momentum" },
+    portfolio: {
+      ...base.portfolio,
+      positions: {
+        AAPL: [{ time: "2024-01-03", value: 10 }],
+        MSFT: [{ time: "2024-01-03", value: 0 }],
+        NVDA: [{ time: "2024-01-03", value: 8 }],
+      },
+    },
+    trades: [
+      { ...base.trades[0], symbol: "AAPL", cashEffect: -1_000 },
+      { ...base.trades[0], symbol: "NVDA", cashEffect: -800 },
+    ],
+  };
+}
+
 describe("ResearchTerminal", () => {
   afterEach(() => vi.restoreAllMocks());
 
@@ -112,6 +132,19 @@ describe("ResearchTerminal", () => {
     expect(body.symbols).toEqual(["AAPL", "MSFT", "NVDA"]);
     expect(body.strategy).toBe("momentum");
     expect(body.parameters.top_n).toBe(2);
+  });
+
+  it("names momentum holdings and ranks every input asset", () => {
+    render(<ResearchTerminal initialReport={momentumAttributionReport()} />);
+
+    expect(screen.getByText("Latest selection")).toBeInTheDocument();
+    expect(screen.getByText("AAPL · NVDA")).toBeInTheDocument();
+    const table = screen.getByRole("table", { name: "Asset attribution for this backtest" });
+    expect(within(table).getAllByRole("row")).toHaveLength(4);
+    expect(within(table).getAllByText("Selected")).toHaveLength(2);
+    expect(within(table).getByText("MSFT")).toBeInTheDocument();
+    expect(within(table).getByText("Stock return")).toBeInTheDocument();
+    expect(within(table).getByText("Contribution")).toBeInTheDocument();
   });
 
   it("lets a number stay empty while it is being replaced", () => {

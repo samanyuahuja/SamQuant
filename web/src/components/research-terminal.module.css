@@ -402,6 +402,46 @@
   font-weight: 500;
 }
 
+.attribution {
+  margin: 0 0 30px;
+  border-block: 1px solid var(--research-line);
+  background: var(--research-surface);
+}
+
+.attributionHeader {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 20px 18px 16px;
+}
+.attributionHeader span { color: var(--research-muted); font-size: 0.62rem; font-weight: 600; }
+.attributionHeader h2 { margin: 5px 0 0; font-family: var(--font-display); font-size: 1.3rem; font-weight: 550; }
+.attributionHeader p { margin: 0; color: var(--research-muted); font-size: 0.68rem; }
+
+.latestSelection {
+  display: flex;
+  align-items: baseline;
+  gap: 18px;
+  padding: 12px 18px;
+  border-top: 1px solid var(--research-line);
+  background: var(--research-paper-deep);
+}
+.latestSelection span { color: var(--research-muted); font-size: 0.62rem; }
+.latestSelection strong { font-family: var(--font-mono); font-size: 0.72rem; font-weight: 600; }
+
+.attributionTable { max-height: none; border-top: 1px solid var(--research-line); }
+.attributionTable th:nth-child(n),
+.attributionTable td:nth-child(n) { text-align: right; }
+.attributionTable th:first-child,
+.attributionTable td:first-child,
+.attributionTable th:nth-child(2),
+.attributionTable td:nth-child(2) { text-align: left; }
+.attributionTable td strong { font-size: 0.69rem; font-weight: 650; }
+.attributionTable td small { display: block; margin-top: 3px; color: var(--research-accent); font-size: 0.54rem; }
+.attributionTable td[data-tone="gain"] { color: var(--research-positive); }
+.attributionTable td[data-tone="loss"] { color: var(--research-negative); }
+
 .explanation {
   margin: 0 0 30px;
   padding: 28px 0 30px;
@@ -667,6 +707,10 @@
   .portfolioScope { align-items: flex-start; flex-direction: column; gap: 5px; padding-inline: 2px; }
   .metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px 20px; padding-inline: 2px; }
   .metrics span { font-size: 0.69rem; }
+  .attributionHeader { align-items: flex-start; flex-direction: column; gap: 6px; padding-inline: 14px; }
+  .latestSelection { align-items: flex-start; flex-direction: column; gap: 5px; padding-inline: 14px; }
+  .attributionTable th,
+  .attributionTable td { padding-inline: 12px; }
   .explanation { margin-bottom: 30px; padding-block: 30px; }
   .explanationHeader { align-items: flex-start; flex-direction: column; gap: 18px; }
   .explanationHeader h2 { font-size: 1.65rem; }

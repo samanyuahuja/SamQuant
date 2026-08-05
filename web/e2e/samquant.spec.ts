@@ -54,6 +54,7 @@ test("research terminal runs the primary backtest journey", async ({ page }) => 
   await chartTicker.getByRole("button", { name: "MSFT" }).click();
   await expect(page.getByRole("heading", { name: "MSFT daily bars" })).toBeVisible();
   await expect(page.getByText("Portfolio metrics", { exact: true })).toBeVisible();
+  await expect(page.getByRole("table", { name: "Asset attribution for this backtest" })).toBeVisible();
   await page.getByRole("tab", { name: /Parameter study/ }).click();
   await expect(page.getByText("Best settings found for each strategy")).toBeVisible();
   await expect(page.getByText("Best on the final 30%")).toBeVisible();

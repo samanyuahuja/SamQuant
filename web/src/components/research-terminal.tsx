@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 
 import { ResearchApiError, runBacktest } from "@/lib/api";
+import { calculateAssetAttribution } from "@/lib/asset-attribution";
 import { explainResults } from "@/lib/explain-results";
 import { formatMoney, formatNumber, formatPercent } from "@/lib/format";
 import {
@@ -363,6 +364,8 @@ export function ResearchTerminal({ initialReport }: { initialReport: BacktestRes
           <Metric label="Final value" value={formatMoney(report.metrics.finalValue, resultCurrency)} />
         </section>
 
+        <AssetAttributionTable report={report} currency={resultCurrency} />
+
         <ResultReadout report={report} currency={resultCurrency} />
 
         <div className={styles.tabs} role="tablist" aria-label="Research results">
@@ -553,6 +556,68 @@ function StrategyFields({
 
 function Metric({ label, value }: { label: string; value: string }) {
   return <div><span>{label}<Link href="/methodology" title={`${label} methodology`} aria-label={`Read ${label} methodology`}><Info size={12} /></Link></span><strong>{value}</strong></div>;
+}
+
+function AssetAttributionTable({ report, currency }: { report: BacktestResponse; currency: string }) {
+  const rows = calculateAssetAttribution(report);
+  const selected = rows.filter((row) => row.selected);
+
+  return (
+    <section className={styles.attribution} aria-labelledby="asset-attribution-heading">
+      <header className={styles.attributionHeader}>
+        <div>
+          <span>Portfolio breakdown</span>
+          <h2 id="asset-attribution-heading">Asset attribution</h2>
+        </div>
+        <p>Ranked by net strategy P&amp;L.</p>
+      </header>
+
+      {report.metadata.strategy === "momentum" && (
+        <div className={styles.latestSelection}>
+          <span>Latest selection</span>
+          <strong>{selected.length ? selected.map((row) => row.symbol).join(" · ") : "Cash"}</strong>
+        </div>
+      )}
+
+      <div className={`${styles.tableWrap} ${styles.attributionTable}`}>
+        <table>
+          <caption>Asset attribution for this backtest</caption>
+          <thead>
+            <tr>
+              <th>Rank</th>
+              <th>Ticker</th>
+              <th title="Price change from the first close to the final close.">Stock return</th>
+              <th>Final price</th>
+              <th title="Realized and unrealized profit or loss after trading costs.">Strategy P&amp;L</th>
+              <th title="The asset's strategy P&amp;L divided by starting cash.">Contribution</th>
+              <th title="Ending holding value divided by final portfolio value.">End weight</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((row) => (
+              <tr key={row.symbol}>
+                <td>{row.rank}</td>
+                <td>
+                  <strong>{row.symbol}</strong>
+                  {report.metadata.strategy === "momentum" && row.selected && <small>Selected</small>}
+                </td>
+                <ToneCell value={row.periodReturn}>{formatPercent(row.periodReturn)}</ToneCell>
+                <td>{formatMoney(row.finalPrice, currency)}</td>
+                <ToneCell value={row.netPnl}>{formatMoney(row.netPnl, currency)}</ToneCell>
+                <ToneCell value={row.returnContribution}>{formatPercent(row.returnContribution)}</ToneCell>
+                <td>{formatPercent(row.portfolioWeight)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  );
+}
+
+function ToneCell({ value, children }: { value: number | null; children: React.ReactNode }) {
+  const tone = value === null || Math.abs(value) < 1e-10 ? "flat" : value > 0 ? "gain" : "loss";
+  return <td data-tone={tone}>{children}</td>;
 }
 
 function ResultReadout({ report, currency }: { report: BacktestResponse; currency: string }) {
