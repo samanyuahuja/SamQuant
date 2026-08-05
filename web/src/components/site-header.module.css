@@ -11,9 +11,7 @@
 }
 
 body:has(main[data-route="research"]) .header {
-  border-color: color-mix(in srgb, var(--ink) 16%, transparent);
-  background: rgb(244 241 233 / 92%);
-  color: var(--ink);
+  display: none;
 }
 
 .inner {

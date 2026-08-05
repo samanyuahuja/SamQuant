@@ -17,7 +17,7 @@ import {
 import type { BacktestResponse, TimeValue } from "@/lib/types";
 import styles from "./financial-chart.module.css";
 
-export type ChartMode = "price" | "performance" | "drawdown" | "comparison";
+export type ChartMode = "market" | "price" | "performance" | "drawdown" | "comparison";
 
 export function FinancialChart({
   report,
@@ -32,14 +32,21 @@ export function FinancialChart({
     if (!container.current) return;
     const theme = readTheme(container.current);
     const chart = createBaseChart(container.current, theme);
-    if (mode === "price") addPriceSeries(chart, report, theme);
+    if (mode === "market") addPriceSeries(chart, report, theme, false);
+    if (mode === "price") addPriceSeries(chart, report, theme, true);
     if (mode === "performance") addEquitySeries(chart, report.portfolio.equity, theme);
     if (mode === "drawdown") addDrawdownSeries(chart, report.portfolio.drawdown, theme);
     if (mode === "comparison") addComparisonSeries(chart, report, theme);
-    chart.timeScale().fitContent();
+    let fitted = false;
 
     const observer = new ResizeObserver(([entry]) => {
-      chart.applyOptions({ width: entry.contentRect.width });
+      const width = Math.max(1, entry.contentRect.width);
+      const height = Math.max(1, entry.contentRect.height);
+      chart.applyOptions({ width, height });
+      if (!fitted && width > 40 && height > 40) {
+        chart.timeScale().fitContent();
+        fitted = true;
+      }
     });
     observer.observe(container.current);
     return () => {
@@ -89,8 +96,8 @@ function readTheme(container: HTMLDivElement): ChartTheme {
 
 function createBaseChart(container: HTMLDivElement, theme: ChartTheme): IChartApi {
   return createChart(container, {
-    width: container.clientWidth,
-    height: container.clientHeight,
+    width: Math.max(1, container.clientWidth),
+    height: Math.max(1, container.clientHeight),
     autoSize: false,
     layout: {
       background: { type: ColorType.Solid, color: theme.background },
@@ -114,7 +121,7 @@ function createBaseChart(container: HTMLDivElement, theme: ChartTheme): IChartAp
   });
 }
 
-function addPriceSeries(chart: IChartApi, report: BacktestResponse, theme: ChartTheme) {
+function addPriceSeries(chart: IChartApi, report: BacktestResponse, theme: ChartTheme, includeOverlays: boolean) {
   const symbol = report.metadata.symbols[0];
   const bars = report.market[symbol];
   const candles = chart.addSeries(CandlestickSeries, {
@@ -132,32 +139,34 @@ function addPriceSeries(chart: IChartApi, report: BacktestResponse, theme: Chart
     close: bar.close,
   })));
 
-  const colors = [theme.accent, theme.accentSecondary, theme.text];
-  Object.entries(report.indicators).forEach(([name, symbols], index) => {
-    if (name === "z_score" || name === "trailing_return") return;
-    const series = chart.addSeries(LineSeries, {
-      color: colors[index % colors.length],
-      lineWidth: 2,
-      priceLineVisible: false,
-      lastValueVisible: false,
+  if (includeOverlays) {
+    const colors = [theme.accent, theme.accentSecondary, theme.text];
+    Object.entries(report.indicators).forEach(([name, symbols], index) => {
+      if (name === "z_score" || name === "trailing_return") return;
+      const series = chart.addSeries(LineSeries, {
+        color: colors[index % colors.length],
+        lineWidth: 2,
+        priceLineVisible: false,
+        lastValueVisible: false,
+      });
+      series.setData(
+        (symbols[symbol] ?? []).flatMap((point) =>
+          point.value === null ? [] : [{ time: point.time as Time, value: point.value }],
+        ),
+      );
     });
-    series.setData(
-      (symbols[symbol] ?? []).flatMap((point) =>
-        point.value === null ? [] : [{ time: point.time as Time, value: point.value }],
-      ),
-    );
-  });
 
-  const markers: SeriesMarker<Time>[] = report.trades
-    .filter((trade) => trade.symbol === symbol)
-    .map((trade) => ({
-      time: trade.time as Time,
-      position: trade.side === "BUY" ? "belowBar" : "aboveBar",
-      color: trade.side === "BUY" ? theme.positive : theme.negative,
-      shape: trade.side === "BUY" ? "arrowUp" : "arrowDown",
-      text: trade.side,
-    }));
-  createSeriesMarkers(candles, markers);
+    const markers: SeriesMarker<Time>[] = report.trades
+      .filter((trade) => trade.symbol === symbol)
+      .map((trade) => ({
+        time: trade.time as Time,
+        position: trade.side === "BUY" ? "belowBar" : "aboveBar",
+        color: trade.side === "BUY" ? theme.positive : theme.negative,
+        shape: trade.side === "BUY" ? "arrowUp" : "arrowDown",
+        text: trade.side,
+      }));
+    createSeriesMarkers(candles, markers);
+  }
 }
 
 function addEquitySeries(chart: IChartApi, values: TimeValue[], theme: ChartTheme) {
@@ -213,6 +222,9 @@ function toLineData(values: TimeValue[], multiplier = 1) {
 
 function chartSummary(report: BacktestResponse, mode: ChartMode): string {
   const symbol = report.metadata.symbols[0];
+  if (mode === "market") {
+    return `${symbol} daily candlesticks without strategy overlays.`;
+  }
   if (mode === "price") {
     return `${symbol} daily candlesticks with strategy indicators and ${report.trades.length} executed trade markers.`;
   }

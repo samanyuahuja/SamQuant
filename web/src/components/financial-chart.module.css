@@ -1,14 +1,14 @@
 .figure {
-  --chart-background: #fffdf8;
-  --chart-text: #657069;
-  --chart-grid: #e8e2d6;
-  --chart-crosshair: #7f8983;
-  --chart-crosshair-label: #315f69;
-  --chart-border: #cbc7bd;
-  --chart-accent: #315f69;
-  --chart-accent-secondary: #92713a;
-  --chart-positive: #21674c;
-  --chart-negative: #a8473d;
+  --chart-background: var(--samquant-chart-background, #fffdf8);
+  --chart-text: var(--samquant-chart-text, #657069);
+  --chart-grid: var(--samquant-chart-grid, #e8e2d6);
+  --chart-crosshair: var(--samquant-chart-crosshair, #7f8983);
+  --chart-crosshair-label: var(--samquant-chart-crosshair-label, #315f69);
+  --chart-border: var(--samquant-chart-border, #cbc7bd);
+  --chart-accent: var(--samquant-chart-accent, #315f69);
+  --chart-accent-secondary: var(--samquant-chart-accent-secondary, #92713a);
+  --chart-positive: var(--samquant-chart-positive, #21674c);
+  --chart-negative: var(--samquant-chart-negative, #a8473d);
   position: relative;
   width: 100%;
   height: 100%;

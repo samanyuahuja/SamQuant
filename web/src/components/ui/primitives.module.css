@@ -1,0 +1,92 @@
+.dialogOverlay {
+  position: fixed;
+  z-index: 300;
+  inset: 0;
+  background: rgb(4 6 7 / 78%);
+  backdrop-filter: blur(5px);
+  animation: overlay-in 140ms ease-out;
+}
+
+.dialogContent {
+  position: fixed;
+  z-index: 301;
+  top: 50%;
+  left: 50%;
+  width: min(calc(100vw - 32px), 980px);
+  max-height: min(86dvh, 900px);
+  overflow: auto;
+  transform: translate(-50%, -50%);
+  border: 1px solid #30363b;
+  border-radius: 4px;
+  background: #111417;
+  color: #ece9e2;
+  box-shadow: 0 28px 90px rgb(0 0 0 / 48%);
+  animation: dialog-in 160ms ease-out;
+}
+
+.dialogTitle {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}
+
+.dialogClose {
+  position: absolute;
+  z-index: 2;
+  top: 10px;
+  right: 10px;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid #30363b;
+  border-radius: 3px;
+  background: #171b1f;
+  color: #aeb5ba;
+  cursor: pointer;
+}
+
+.dialogClose:hover { color: #f3f0e9; border-color: #56616a; }
+
+.tooltip {
+  z-index: 500;
+  max-width: 240px;
+  padding: 6px 8px;
+  border: 1px solid #394047;
+  border-radius: 3px;
+  background: #1a1e22;
+  color: #eeeae3;
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  line-height: 1.4;
+  box-shadow: 0 8px 28px rgb(0 0 0 / 32%);
+}
+
+.tooltipArrow { fill: #394047; }
+
+@keyframes overlay-in { from { opacity: 0; } }
+@keyframes dialog-in { from { opacity: 0; transform: translate(-50%, -48%); } }
+
+@media (max-width: 640px) {
+  .dialogContent {
+    top: auto;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    max-height: 92dvh;
+    transform: none;
+    border-right: 0;
+    border-bottom: 0;
+    border-left: 0;
+    animation-name: sheet-in;
+  }
+}
+
+@keyframes sheet-in { from { opacity: 0; transform: translateY(24px); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .dialogOverlay,
+  .dialogContent { animation: none; }
+}
