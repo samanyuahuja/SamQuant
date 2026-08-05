@@ -254,6 +254,13 @@
 .formField select:focus { border-bottom-color: var(--research-accent); outline: 0; box-shadow: 0 2px 0 var(--research-accent); }
 .formField input[aria-invalid="true"] { border-bottom-color: var(--research-negative); box-shadow: 0 2px 0 var(--research-negative); }
 
+.universeNote {
+  margin: 2px 0 0;
+  color: var(--research-muted);
+  font-size: 0.66rem;
+  line-height: 1.45;
+}
+
 .twoColumns {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -322,6 +329,21 @@
 .panelHeader span { color: var(--research-muted); font-size: 0.64rem; }
 .panelHeader h2 { margin: 5px 0 0; font-size: 1rem; font-weight: 650; }
 .panelHeader .tradeCount { font-size: 0.72rem; font-weight: 500; }
+.chartControls { display: flex; align-items: flex-end; gap: 18px; }
+.chartSelector { display: grid; gap: 4px; color: var(--research-muted); font-size: 0.64rem; }
+.chartSelector select {
+  min-width: 112px;
+  height: 30px;
+  border: 0;
+  border-bottom: 1px solid var(--research-line);
+  border-radius: 0;
+  background: transparent;
+  color: var(--research-ink);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+}
+.chartSelector select:focus { border-bottom-color: var(--research-accent); outline: 0; box-shadow: 0 2px 0 var(--research-accent); }
+.chartScope { margin: 0; padding: 0 22px 12px; color: var(--research-muted); font-size: 0.66rem; }
 .priceChart { height: clamp(390px, 46vw, 590px); }
 
 .chartData { margin-bottom: 0; background: var(--research-surface); }
@@ -334,6 +356,18 @@
   font-size: 0.66rem;
   cursor: pointer;
 }
+
+.portfolioScope {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 24px 6px 0;
+  color: var(--research-muted);
+  font-size: 0.68rem;
+}
+.portfolioScope span { color: var(--research-ink); font-family: var(--font-display); font-size: 1rem; font-weight: 600; }
+.portfolioScope strong { font-family: var(--font-mono); font-size: 0.65rem; font-weight: 500; }
 
 .metrics {
   display: grid;
@@ -619,9 +653,13 @@
   .disclaimer span { flex: 1; min-width: calc(100% - 26px); }
   .disclaimer a { margin-left: 25px; }
   .panelHeader { align-items: flex-start; padding-inline: 14px; }
+  .chartControls { align-items: flex-end; flex-direction: column; gap: 8px; }
+  .chartSelector { justify-items: end; }
   .panelHeader .tradeCount { max-width: 18ch; text-align: right; line-height: 1.5; }
+  .chartScope { padding-inline: 14px; }
   .priceChart { height: 340px; }
   .chartData summary { padding-inline: 14px; }
+  .portfolioScope { align-items: flex-start; flex-direction: column; gap: 5px; padding-inline: 2px; }
   .metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px 20px; padding-inline: 2px; }
   .metrics span { font-size: 0.69rem; }
   .explanation { margin-bottom: 30px; padding-block: 30px; }

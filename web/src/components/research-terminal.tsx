@@ -74,6 +74,7 @@ export function ResearchTerminal({ initialReport }: { initialReport: BacktestRes
   const [symbolsInput, setSymbolsInput] = useState(DEFAULT_REQUEST.symbols.join(", "));
   const [inputRevision, setInputRevision] = useState(0);
   const [report, setReport] = useState<BacktestResponse>(initialReport);
+  const [chartSymbol, setChartSymbol] = useState(initialReport.metadata.symbols[0]);
   const [activeTab, setActiveTab] = useState<ResultTab>("performance");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -167,6 +168,7 @@ export function ResearchTerminal({ initialReport }: { initialReport: BacktestRes
     setSymbolsInput(DEFAULT_REQUEST.symbols.join(", "));
     setInputRevision((current) => current + 1);
     setReport(initialReport);
+    setChartSymbol(initialReport.metadata.symbols[0]);
     setError(null);
     setErrorFields([]);
     setLoading(false);
@@ -176,7 +178,10 @@ export function ResearchTerminal({ initialReport }: { initialReport: BacktestRes
   const inputCurrency = request.market === "US" ? "USD" : "INR";
   const resultCurrency = report.metadata.market === "US" ? "USD" : "INR";
   const latestDate = latestCompletedMarketDate(request.market);
-  const symbol = report.metadata.symbols[0];
+  const symbol = report.metadata.symbols.includes(chartSymbol)
+    ? chartSymbol
+    : report.metadata.symbols[0];
+  const symbolTradeCount = report.trades.filter((trade) => trade.symbol === symbol).length;
   const interactiveReady = ready && sessionReady;
   return (
     <main id="main-content" className={styles.main} data-ready={interactiveReady} data-route="research">
@@ -286,6 +291,7 @@ export function ResearchTerminal({ initialReport }: { initialReport: BacktestRes
                     </select>
                   </FormField>
                   <StrategyFields key={request.strategy} request={request} update={updateParameter} errorFields={errorFields} />
+                  <p className={styles.universeNote}>{strategyUniverseSummary(request)}</p>
                 </fieldset>
 
                 <fieldset>
@@ -325,13 +331,29 @@ export function ResearchTerminal({ initialReport }: { initialReport: BacktestRes
         <section className={styles.pricePanel} aria-labelledby="price-heading">
           <div className={styles.panelHeader}>
             <div><span>Price, indicators, and fills</span><h2 id="price-heading">{symbol} daily bars</h2></div>
-            <span className={styles.tradeCount}>{report.trades.length} executed trades</span>
+            <div className={styles.chartControls}>
+              {report.metadata.symbols.length > 1 && (
+                <label className={styles.chartSelector}>
+                  <span>Chart ticker</span>
+                  <select value={symbol} onChange={(event) => setChartSymbol(event.target.value)}>
+                    {report.metadata.symbols.map((ticker) => <option key={ticker}>{ticker}</option>)}
+                  </select>
+                </label>
+              )}
+              <span className={styles.tradeCount}>{symbolTradeCount} {symbol} trades</span>
+            </div>
           </div>
-          <div className={styles.priceChart}><FinancialChart report={report} mode="price" /></div>
+          <p className={styles.chartScope}>Chart view only. Portfolio results combine all {report.metadata.symbols.length} {tickerWord(report.metadata.symbols.length)}.</p>
+          <div className={styles.priceChart}><FinancialChart report={report} mode="price" symbol={symbol} /></div>
           {loading && <LoadingOverlay />}
         </section>
 
-        <PriceDataTable report={report} />
+        <PriceDataTable report={report} symbol={symbol} />
+
+        <div className={styles.portfolioScope}>
+          <span>Combined portfolio</span>
+          <strong>{report.metadata.symbols.length} {tickerWord(report.metadata.symbols.length)} · {report.trades.length} total trades</strong>
+        </div>
 
         <section className={styles.metrics} aria-label="Performance metrics">
           <Metric label="Total return" value={formatPercent(report.metrics.totalReturn)} />
@@ -465,6 +487,8 @@ function DateInput({
   const [draft, setDraft] = useState(value);
 
   useEffect(() => {
+    // Saved sessions and resets must replace an unfinished date draft.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setDraft(value);
   }, [value]);
 
@@ -522,7 +546,7 @@ function StrategyFields({
   return <>
     <div className={styles.twoColumns}>
       <FormField label="Lookback" htmlFor="momentum-lookback"><NumberInput id="momentum-lookback" min={2} max={750} value={parameters.lookback_window} onValueChange={(value) => update("lookback_window", value)} /></FormField>
-      <FormField label="Top assets" htmlFor="top-assets"><NumberInput id="top-assets" min={1} max={6} value={parameters.top_n} onValueChange={(value) => update("top_n", value)} /></FormField>
+      <FormField label="Top assets" htmlFor="top-assets" hint={`Chooses winners from all ${request.symbols.length} selected ${tickerWord(request.symbols.length)}.`}><NumberInput id="top-assets" min={1} max={Math.max(1, request.symbols.length)} value={parameters.top_n} onValueChange={(value) => update("top_n", value)} /></FormField>
     </div>
     <FormField label="Rebalance frequency" htmlFor="rebalance-frequency"><NumberInput id="rebalance-frequency" min={1} max={252} value={parameters.rebalance_frequency} onValueChange={(value) => update("rebalance_frequency", value)} /></FormField>
     <label className={styles.checkbox}><input type="checkbox" checked={parameters.require_positive_returns} onChange={(event) => update("require_positive_returns", event.target.checked)} /><span>Require positive trailing returns</span></label>
@@ -672,21 +696,32 @@ function sourceLabel(source: BacktestResponse["metadata"]["dataSource"]): string
   return source === "demo" ? "Demo data" : "Yahoo Finance";
 }
 
-function PriceDataTable({ report }: { report: BacktestResponse }) {
-  const symbol = report.metadata.symbols[0];
+function PriceDataTable({ report, symbol }: { report: BacktestResponse; symbol: string }) {
   const bars = report.market[symbol].slice(-20);
   return (
     <details className={styles.chartData}>
       <summary>View recent chart data</summary>
       <div className={styles.tableWrap}>
         <table>
-          <caption>Twenty most recent price bars shown in the chart</caption>
+          <caption>Twenty most recent {symbol} price bars shown in the chart</caption>
           <thead><tr><th>Date</th><th>Open</th><th>High</th><th>Low</th><th>Close</th><th>Volume</th></tr></thead>
           <tbody>{bars.map((bar) => <tr key={bar.time}><td>{bar.time}</td><td>{formatNumber(bar.open)}</td><td>{formatNumber(bar.high)}</td><td>{formatNumber(bar.low)}</td><td>{formatNumber(bar.close)}</td><td>{formatNumber(bar.volume, 0)}</td></tr>)}</tbody>
         </table>
       </div>
     </details>
   );
+}
+
+function strategyUniverseSummary(request: BacktestRequest): string {
+  const count = request.symbols.length;
+  if (request.strategy === "momentum") {
+    return `Ranks all ${count} selected ${tickerWord(count)} together.`;
+  }
+  return `Calculates signals across all ${count} selected ${tickerWord(count)}.`;
+}
+
+function tickerWord(count: number): string {
+  return count === 1 ? "ticker" : "tickers";
 }
 
 function focusFirstField(fields: string[]) {

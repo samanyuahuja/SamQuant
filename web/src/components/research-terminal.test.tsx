@@ -6,8 +6,17 @@ import type { BacktestResponse } from "@/lib/types";
 import { ResearchTerminal } from "./research-terminal";
 
 vi.mock("@/components/financial-chart", () => ({
-  FinancialChart: ({ mode }: { mode: string }) => <div data-testid={`chart-${mode}`} />,
+  FinancialChart: ({ mode, symbol }: { mode: string; symbol?: string }) => <div data-testid={`chart-${mode}`} data-symbol={symbol} />,
 }));
+
+function reportWithSymbols(symbols: string[]): BacktestResponse {
+  const base = demoReport as BacktestResponse;
+  return {
+    ...base,
+    metadata: { ...base.metadata, symbols },
+    market: Object.fromEntries(symbols.map((symbol) => [symbol, base.market.AAPL])),
+  };
+}
 
 describe("ResearchTerminal", () => {
   afterEach(() => vi.restoreAllMocks());
@@ -65,6 +74,47 @@ describe("ResearchTerminal", () => {
     await waitFor(() => expect(fetchSpy).toHaveBeenCalledOnce());
     const body = JSON.parse(String(fetchSpy.mock.calls[0][1]?.body));
     expect(body.symbols).toEqual(["AAPL", "MSFT"]);
+  });
+
+  it("switches the displayed ticker without changing the combined portfolio", () => {
+    render(<ResearchTerminal initialReport={reportWithSymbols(["AAPL", "MSFT"])} />);
+
+    const selector = screen.getByLabelText("Chart ticker");
+    expect(selector).toHaveValue("AAPL");
+    expect(screen.getByTestId("chart-price")).toHaveAttribute("data-symbol", "AAPL");
+    expect(screen.getByText("2 tickers · 5 total trades")).toBeInTheDocument();
+
+    fireEvent.change(selector, { target: { value: "MSFT" } });
+
+    expect(screen.getByRole("heading", { name: "MSFT daily bars" })).toBeInTheDocument();
+    expect(screen.getByTestId("chart-price")).toHaveAttribute("data-symbol", "MSFT");
+    expect(screen.getByText("Twenty most recent MSFT price bars shown in the chart")).toBeInTheDocument();
+    expect(screen.getByText("Chart view only. Portfolio results combine all 2 tickers.")).toBeInTheDocument();
+  });
+
+  it("applies momentum top assets to the complete ticker universe", async () => {
+    const response = reportWithSymbols(["AAPL", "MSFT", "NVDA"]);
+    const fetchSpy = vi.spyOn(global, "fetch").mockResolvedValue(new Response(JSON.stringify(response), {
+      status: 200,
+      headers: { "content-type": "application/json" },
+    }));
+    render(<ResearchTerminal initialReport={demoReport as BacktestResponse} />);
+
+    fireEvent.change(screen.getByLabelText("Tickers"), { target: { value: "AAPL, MSFT, NVDA" } });
+    fireEvent.change(screen.getByLabelText("Model"), { target: { value: "momentum" } });
+    const topAssets = screen.getByLabelText("Top assets");
+    expect(topAssets).toHaveAttribute("max", "3");
+    expect(screen.getByText("Ranks all 3 selected tickers together.")).toBeInTheDocument();
+    expect(screen.getByText("Chooses winners from all 3 selected tickers.")).toBeInTheDocument();
+
+    fireEvent.change(topAssets, { target: { value: "2" } });
+    fireEvent.click(screen.getByRole("button", { name: "Run backtest" }));
+
+    await waitFor(() => expect(fetchSpy).toHaveBeenCalledOnce());
+    const body = JSON.parse(String(fetchSpy.mock.calls[0][1]?.body));
+    expect(body.symbols).toEqual(["AAPL", "MSFT", "NVDA"]);
+    expect(body.strategy).toBe("momentum");
+    expect(body.parameters.top_n).toBe(2);
   });
 
   it("lets a number stay empty while it is being replaced", () => {

@@ -22,9 +22,11 @@ export type ChartMode = "price" | "performance" | "drawdown" | "comparison";
 export function FinancialChart({
   report,
   mode,
+  symbol,
 }: {
   report: BacktestResponse;
   mode: ChartMode;
+  symbol?: string;
 }) {
   const container = useRef<HTMLDivElement>(null);
 
@@ -32,7 +34,7 @@ export function FinancialChart({
     if (!container.current) return;
     const theme = readTheme(container.current);
     const chart = createBaseChart(container.current, theme);
-    if (mode === "price") addPriceSeries(chart, report, theme);
+    if (mode === "price") addPriceSeries(chart, report, theme, displayedSymbol(report, symbol));
     if (mode === "performance") addEquitySeries(chart, report.portfolio.equity, theme);
     if (mode === "drawdown") addDrawdownSeries(chart, report.portfolio.drawdown, theme);
     if (mode === "comparison") addComparisonSeries(chart, report, theme);
@@ -46,9 +48,9 @@ export function FinancialChart({
       observer.disconnect();
       chart.remove();
     };
-  }, [mode, report]);
+  }, [mode, report, symbol]);
 
-  const summary = chartSummary(report, mode);
+  const summary = chartSummary(report, mode, displayedSymbol(report, symbol));
   return (
     <figure className={styles.figure} aria-label={summary}>
       <div ref={container} className={styles.chart} />
@@ -114,8 +116,7 @@ function createBaseChart(container: HTMLDivElement, theme: ChartTheme): IChartAp
   });
 }
 
-function addPriceSeries(chart: IChartApi, report: BacktestResponse, theme: ChartTheme) {
-  const symbol = report.metadata.symbols[0];
+function addPriceSeries(chart: IChartApi, report: BacktestResponse, theme: ChartTheme, symbol: string) {
   const bars = report.market[symbol];
   const candles = chart.addSeries(CandlestickSeries, {
     upColor: theme.positive,
@@ -211,10 +212,10 @@ function toLineData(values: TimeValue[], multiplier = 1) {
     : [{ time: point.time as Time, value: point.value * multiplier }]);
 }
 
-function chartSummary(report: BacktestResponse, mode: ChartMode): string {
-  const symbol = report.metadata.symbols[0];
+function chartSummary(report: BacktestResponse, mode: ChartMode, symbol: string): string {
   if (mode === "price") {
-    return `${symbol} daily candlesticks with strategy indicators and ${report.trades.length} executed trade markers.`;
+    const tradeCount = report.trades.filter((trade) => trade.symbol === symbol).length;
+    return `${symbol} daily candlesticks with strategy indicators and ${tradeCount} executed trade markers.`;
   }
   if (mode === "drawdown") {
     return `Portfolio drawdown over time. Maximum drawdown was ${percent(report.metrics.maximumDrawdown)}.`;
@@ -223,6 +224,12 @@ function chartSummary(report: BacktestResponse, mode: ChartMode): string {
     return `${report.metadata.strategyLabel} performance compared with the equal-weight benchmark.`;
   }
   return `Portfolio equity over time, ending at ${Math.round(report.metrics.finalValue).toLocaleString("en-US")}.`;
+}
+
+function displayedSymbol(report: BacktestResponse, symbol?: string): string {
+  return symbol && report.metadata.symbols.includes(symbol)
+    ? symbol
+    : report.metadata.symbols[0];
 }
 
 function percent(value: number | null): string {
