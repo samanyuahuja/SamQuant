@@ -8,8 +8,6 @@ import "@fontsource/ibm-plex-mono/500.css";
 
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
-import { AppProviders } from "@/app/providers";
-import "react-grid-layout/css/styles.css";
 import "./globals.css";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
@@ -57,11 +55,9 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     <html lang="en" data-scroll-behavior="smooth">
       <body>
         <a className="skip-link" href="#main-content">Skip to content</a>
-        <AppProviders>
-          <SiteHeader />
-          {children}
-          <SiteFooter />
-        </AppProviders>
+        <SiteHeader />
+        {children}
+        <SiteFooter />
       </body>
     </html>
   );

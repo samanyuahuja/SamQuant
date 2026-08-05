@@ -1,19 +1,13 @@
-import { fireEvent, render as renderForTest, screen, waitFor } from "@testing-library/react";
-import type { ReactNode } from "react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import demoReport from "@/data/demo-backtest.json";
-import { AppProviders } from "@/app/providers";
 import type { BacktestResponse } from "@/lib/types";
 import { ResearchTerminal } from "./research-terminal";
 
 vi.mock("@/components/financial-chart", () => ({
   FinancialChart: ({ mode }: { mode: string }) => <div data-testid={`chart-${mode}`} />,
 }));
-
-function render(ui: ReactNode) {
-  return renderForTest(<AppProviders>{ui}</AppProviders>);
-}
 
 describe("ResearchTerminal", () => {
   afterEach(() => vi.restoreAllMocks());

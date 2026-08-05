@@ -46,10 +46,9 @@ body {
 }
 
 body:has(main[data-route="research"]) {
-  overflow: hidden;
-  background: #0a0c0e;
-  color: #ece9e2;
-  color-scheme: dark;
+  background: #f4f1e9;
+  color: var(--ink);
+  color-scheme: light;
 }
 
 body:has(main[data-route="research"]) footer { display: none; }

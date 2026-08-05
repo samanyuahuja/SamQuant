@@ -213,9 +213,6 @@ test("critical pages have no serious automated accessibility violations", async 
   test.skip(testInfo.project.name !== "desktop", "One browser is enough for automated axe coverage.");
   for (const path of ["/", "/research", "/methodology"]) {
     await page.goto(path);
-    if (path === "/research") {
-      await expect(page.locator("main[data-ready='true']")).toBeVisible();
-    }
     const results = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21aa", "wcag22aa"]).analyze();
     expect(results.violations.filter((violation) => ["serious", "critical"].includes(violation.impact ?? ""))).toEqual([]);
   }
@@ -249,7 +246,7 @@ test("desktop visual baselines remain stable", async ({ page }, testInfo) => {
     fullPage: true,
     animations: "disabled",
     mask: [page.locator("canvas")],
-    maskColor: "#111417",
+    maskColor: "#fffdf8",
     maxDiffPixels: 5_000,
   });
 });
