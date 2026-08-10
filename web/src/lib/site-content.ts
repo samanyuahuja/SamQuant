@@ -39,6 +39,19 @@ export const CONTENT_PAGES: Record<string, ContentPage> = {
         ],
       },
       {
+        title: "Advanced research",
+        body: [
+          "Position limits and optional exits use prices available at the current open. Portfolio estimates come from historical returns and covariance.",
+          "Monte Carlo paths reuse those historical estimates. They show how the assumptions behave, not where prices will go.",
+        ],
+        points: [
+          "Chronological 70/30 parameter study",
+          "Long-only sampled frontier",
+          "Seeded equal-weight simulation",
+          "Equal-weight buy-and-hold benchmark",
+        ],
+      },
+      {
         title: "Known limits",
         body: [
           "The simulator does not model taxes, bid-ask spreads, volume limits, latency, partial fills, or market impact. A chosen symbol list can also create survivorship bias.",

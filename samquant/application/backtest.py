@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from pathlib import Path
 from typing import Protocol
 
@@ -12,7 +12,7 @@ import pandas as pd
 
 from samquant.analytics import PerformanceMetrics, calculate_metrics
 from samquant.data.market_data import get_ohlcv, normalize_symbol, validate_ohlcv
-from samquant.engine import Backtester, BacktestResult
+from samquant.engine import Backtester, BacktestResult, SizingMethod
 from samquant.strategies import (
     MeanReversionStrategy,
     MomentumStrategy,
@@ -66,6 +66,12 @@ class BacktestConfig:
     slippage_bps: float = 5.0
     periods_per_year: int = 252
     risk_free_rate: float = 0.0
+    sizing_method: SizingMethod | str = SizingMethod.PERCENTAGE
+    position_size: float = 1.0
+    stop_loss: float | None = None
+    take_profit: float | None = None
+    max_position_allocation: float = 1.0
+    max_portfolio_exposure: float = 1.0
 
 
 @dataclass(frozen=True)
@@ -315,15 +321,24 @@ def run_equal_weight_benchmark(
         dtype=float,
     )
     evaluation = StrategyEvaluation(weights, indicators={})
-    result = _run_engine(aligned_data, weights, config)
+    benchmark_config = replace(
+        config,
+        sizing_method=SizingMethod.PERCENTAGE,
+        position_size=1.0,
+        stop_loss=None,
+        take_profit=None,
+        max_position_allocation=1.0,
+        max_portfolio_exposure=1.0,
+    )
+    result = _run_engine(aligned_data, weights, benchmark_config)
     return ResearchRun(
         strategy_name=EQUAL_WEIGHT_BENCHMARK,
         evaluation=evaluation,
         result=result,
         metrics=calculate_metrics(
             result,
-            periods_per_year=config.periods_per_year,
-            risk_free_rate=config.risk_free_rate,
+            periods_per_year=benchmark_config.periods_per_year,
+            risk_free_rate=benchmark_config.risk_free_rate,
         ),
     )
 
@@ -374,14 +389,14 @@ def run_strategy_study(
     ranked_trials = tuple(
         sorted(
             trials,
-            key=lambda trial: (trial.selection_return, trial.validation_return),
+            key=lambda trial: trial.selection_return,
             reverse=True,
         )
     )
     best_by_strategy = tuple(
         max(
             (trial for trial in trials if trial.strategy_name == strategy_name),
-            key=lambda trial: (trial.selection_return, trial.validation_return),
+            key=lambda trial: trial.selection_return,
         )
         for strategy_name in STRATEGY_NAMES
     )
@@ -473,4 +488,10 @@ def _run_engine(
         commission_rate=config.commission_rate,
         fixed_fee=config.fixed_fee,
         slippage_bps=config.slippage_bps,
+        sizing_method=config.sizing_method,
+        position_size=config.position_size,
+        stop_loss=config.stop_loss,
+        take_profit=config.take_profit,
+        max_position_allocation=config.max_position_allocation,
+        max_portfolio_exposure=config.max_portfolio_exposure,
     ).run(market_data, target_weights)

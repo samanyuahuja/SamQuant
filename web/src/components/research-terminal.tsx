@@ -6,11 +6,13 @@ import Link from "next/link";
 import {
   AlertTriangle,
   ArrowRight,
+  BarChart3,
   CandlestickChart,
   ChevronDown,
   Download,
   Info,
   LineChart,
+  Network,
   Play,
   RotateCcw,
   SlidersHorizontal,
@@ -40,13 +42,14 @@ import {
   type StrategyId,
 } from "@/lib/types";
 import styles from "./research-terminal.module.css";
+import { MonteCarloLab, PortfolioLab } from "./advanced-analysis";
 
 const FinancialChart = dynamic(
   () => import("@/components/financial-chart").then((module) => module.FinancialChart),
   { ssr: false, loading: () => <ChartSkeleton /> },
 );
 
-type ResultTab = "performance" | "drawdown" | "trades" | "comparison" | "study";
+type ResultTab = "performance" | "drawdown" | "trades" | "comparison" | "study" | "portfolio" | "simulation";
 
 const MARKET_DEFAULTS: Record<Market, string[]> = {
   US: ["AAPL"],
@@ -66,6 +69,8 @@ const TABS: { id: ResultTab; label: string; icon: React.ReactNode }[] = [
   { id: "trades", label: "Trades", icon: <Table2 size={15} /> },
   { id: "comparison", label: "Comparison", icon: <CandlestickChart size={15} /> },
   { id: "study", label: "Parameter study", icon: <SlidersHorizontal size={15} /> },
+  { id: "portfolio", label: "Portfolio lab", icon: <Network size={15} /> },
+  { id: "simulation", label: "Monte Carlo", icon: <BarChart3 size={15} /> },
 ];
 
 const subscribeToHydration = () => () => undefined;
@@ -92,10 +97,15 @@ export function ResearchTerminal({ initialReport }: { initialReport: BacktestRes
       const savedRequest = loadResearchRequest();
       const savedReport = loadResearchReport();
       if (savedRequest) {
-        const latestDate = latestCompletedMarketDate(savedRequest.market);
-        const restoredRequest = savedRequest.end > latestDate
-          ? { ...savedRequest, end: latestDate }
-          : savedRequest;
+        const migratedRequest = {
+          ...DEFAULT_REQUEST,
+          ...savedRequest,
+          parameters: { ...DEFAULT_REQUEST.parameters, ...savedRequest.parameters },
+        };
+        const latestDate = latestCompletedMarketDate(migratedRequest.market);
+        const restoredRequest = migratedRequest.end > latestDate
+          ? { ...migratedRequest, end: latestDate }
+          : migratedRequest;
         setRequest(restoredRequest);
         setSymbolsInput(restoredRequest.symbols.join(", "));
       }
@@ -216,7 +226,7 @@ export function ResearchTerminal({ initialReport }: { initialReport: BacktestRes
                 <SlidersHorizontal aria-hidden="true" size={16} />{controlsOpen ? "Close setup" : "Edit setup"}
               </button>
               <button className={styles.iconButton} type="button" onClick={reset} title="Reset controls" aria-label="Reset controls"><RotateCcw aria-hidden="true" size={17} /></button>
-              <button className={styles.runButton} type="submit" form="backtest-form" disabled={!ready || loading}>
+              <button className={styles.runButton} data-magnetic type="submit" form="backtest-form" disabled={!ready || loading}>
                 <Play aria-hidden="true" size={15} fill="currentColor" />
                 {loading ? "Running backtest" : "Run backtest"}
               </button>
@@ -311,10 +321,51 @@ export function ResearchTerminal({ initialReport }: { initialReport: BacktestRes
                     <NumberInput id="fixed-fee" min={0} step={0.01} value={request.fixed_fee} onValueChange={(value) => updateRequest("fixed_fee", value)} />
                   </FormField>
                   <details className={styles.advanced}>
+                    <summary>Position and risk</summary>
+                    <FormField label="Sizing method" htmlFor="sizing-method">
+                      <select
+                        id="sizing-method"
+                        value={request.sizing_method}
+                        onChange={(event) => {
+                          const method = event.target.value as BacktestRequest["sizing_method"];
+                          const positionSize = method === "fixed_dollar" ? 10_000 : method === "fixed_shares" ? 10 : 1;
+                          setRequest((current) => ({ ...current, sizing_method: method, position_size: positionSize }));
+                        }}
+                      >
+                        <option value="percentage">Portfolio percentage</option>
+                        <option value="fixed_dollar">Fixed dollar</option>
+                        <option value="fixed_shares">Fixed shares</option>
+                      </select>
+                    </FormField>
+                    <FormField label={positionSizeLabel(request, inputCurrency)} htmlFor="position-size">
+                      <NumberInput
+                        id="position-size"
+                        min={request.sizing_method === "fixed_shares" ? 1 : 0.1}
+                        max={request.sizing_method === "percentage" ? 100 : undefined}
+                        step={request.sizing_method === "fixed_shares" ? 1 : request.sizing_method === "percentage" ? 0.1 : 0.01}
+                        value={request.sizing_method === "percentage" ? request.position_size * 100 : request.position_size}
+                        onValueChange={(value) => updateRequest("position_size", request.sizing_method === "percentage" ? value / 100 : value)}
+                      />
+                    </FormField>
+                    <div className={styles.twoColumns}>
+                      <OptionalRateField id="stop-loss" label="Stop loss (%)" value={request.stop_loss} onValueChange={(value) => updateRequest("stop_loss", value)} />
+                      <OptionalRateField id="take-profit" label="Take profit (%)" value={request.take_profit} onValueChange={(value) => updateRequest("take_profit", value)} />
+                    </div>
+                    <div className={styles.twoColumns}>
+                      <FormField label="Max position (%)" htmlFor="max-position"><NumberInput id="max-position" min={0.1} max={100} step={0.1} value={request.max_position_allocation * 100} onValueChange={(value) => updateRequest("max_position_allocation", value / 100)} /></FormField>
+                      <FormField label="Max exposure (%)" htmlFor="max-exposure"><NumberInput id="max-exposure" min={0.1} max={100} step={0.1} value={request.max_portfolio_exposure * 100} onValueChange={(value) => updateRequest("max_portfolio_exposure", value / 100)} /></FormField>
+                    </div>
+                  </details>
+                  <details className={styles.advanced}>
                     <summary>Analytics setting</summary>
                     <FormField label="Risk-free rate (%)" htmlFor="risk-free-rate">
                       <NumberInput id="risk-free-rate" min={-99} max={100} step={0.1} value={request.risk_free_rate * 100} onValueChange={(value) => updateRequest("risk_free_rate", value / 100)} />
                     </FormField>
+                    <div className={styles.twoColumns}>
+                      <FormField label="Simulation days" htmlFor="simulation-days"><NumberInput id="simulation-days" min={20} max={756} step={1} value={request.monte_carlo_horizon} onValueChange={(value) => updateRequest("monte_carlo_horizon", value)} /></FormField>
+                      <FormField label="Simulations" htmlFor="simulation-count"><NumberInput id="simulation-count" min={50} max={1000} step={50} value={request.monte_carlo_simulations} onValueChange={(value) => updateRequest("monte_carlo_simulations", value)} /></FormField>
+                    </div>
+                    <FormField label="Random seed" htmlFor="simulation-seed"><NumberInput id="simulation-seed" min={0} max={4294967295} step={1} value={request.monte_carlo_seed} onValueChange={(value) => updateRequest("monte_carlo_seed", value)} /></FormField>
                   </details>
                 </fieldset>
               </div>
@@ -328,7 +379,7 @@ export function ResearchTerminal({ initialReport }: { initialReport: BacktestRes
           <Link href="/disclaimer">Read disclaimer</Link>
         </div>
 
-        <section className={styles.pricePanel} aria-labelledby="price-heading">
+        <section className={styles.pricePanel} data-motion-reveal="chart" aria-labelledby="price-heading">
           <div className={styles.panelHeader}>
             <div><span>Price, indicators, and fills</span><h2 id="price-heading">{symbol} daily bars</h2></div>
             <span className={styles.tradeCount}>{symbolTradeCount} fills</span>
@@ -354,7 +405,7 @@ export function ResearchTerminal({ initialReport }: { initialReport: BacktestRes
           <strong>{report.metadata.symbols.length} {assetWord(report.metadata.symbols.length)} · {report.trades.length} fills</strong>
         </div>
 
-        <section className={styles.metrics} aria-label="Performance metrics">
+        <section className={styles.metrics} data-motion-reveal="text" aria-label="Performance metrics">
           <Metric label="Total return" value={formatPercent(report.metrics.totalReturn)} />
           <Metric label="Annualized" value={formatPercent(report.metrics.annualizedReturn)} />
           <Metric label="Volatility" value={formatPercent(report.metrics.annualizedVolatility)} />
@@ -384,19 +435,25 @@ export function ResearchTerminal({ initialReport }: { initialReport: BacktestRes
           ))}
         </div>
 
-        <section className={styles.resultPanel} id={`panel-${activeTab}`} role="tabpanel" aria-labelledby={`tab-${activeTab}`}>
+        <section className={styles.resultPanel} data-motion-reveal="chart" id={`panel-${activeTab}`} role="tabpanel" aria-labelledby={`tab-${activeTab}`}>
+          <div key={activeTab} className={styles.tabStage}>
           {activeTab === "trades" ? (
             <TradeTable report={report} currency={resultCurrency} />
           ) : activeTab === "study" ? (
             <StrategyStudy report={report} />
+          ) : activeTab === "portfolio" ? (
+            <PortfolioLab report={report} />
+          ) : activeTab === "simulation" ? (
+            <MonteCarloLab report={report} currency={resultCurrency} />
           ) : (
             <div className={styles.resultChart}>
               <FinancialChart report={report} mode={activeTab} />
             </div>
           )}
+          </div>
         </section>
 
-        <details className={styles.assumptions}>
+        <details className={styles.assumptions} data-motion-reveal="text">
           <summary>
             <span><strong>Methodology and assumptions</strong><small>Review the rules behind this result.</small></span>
             <ChevronDown aria-hidden="true" size={18} />
@@ -469,6 +526,36 @@ function NumberInput({
         if (Number.isFinite(nextValue)) onValueChange(nextValue);
       }}
     />
+  );
+}
+
+function OptionalRateField({
+  id,
+  label,
+  value,
+  onValueChange,
+}: {
+  id: string;
+  label: string;
+  value: number | null;
+  onValueChange: (value: number | null) => void;
+}) {
+  return (
+    <FormField label={label} htmlFor={id}>
+      <input
+        id={id}
+        type="number"
+        min={0.1}
+        max={1000}
+        step={0.1}
+        placeholder="Off"
+        value={value === null ? "" : value * 100}
+        onChange={(event) => {
+          const draft = event.target.value;
+          onValueChange(draft === "" ? null : Number(draft) / 100);
+        }}
+      />
+    </FormField>
   );
 }
 
@@ -563,7 +650,7 @@ function AssetAttributionTable({ report, currency }: { report: BacktestResponse;
   const selected = rows.filter((row) => row.selected);
 
   return (
-    <section className={styles.attribution} aria-labelledby="asset-attribution-heading">
+    <section className={styles.attribution} data-motion-reveal="text" aria-labelledby="asset-attribution-heading">
       <header className={styles.attributionHeader}>
         <div>
           <span>Portfolio breakdown</span>
@@ -623,7 +710,7 @@ function ToneCell({ value, children }: { value: number | null; children: React.R
 function ResultReadout({ report, currency }: { report: BacktestResponse; currency: string }) {
   const explanation = explainResults(report, currency);
   return (
-    <section className={styles.explanation} aria-labelledby="result-explanation-heading">
+    <section className={styles.explanation} data-motion-reveal="text" aria-labelledby="result-explanation-heading">
       <header className={styles.explanationHeader}>
         <div>
           <span>Research readout</span>
@@ -779,6 +866,12 @@ function assetWord(count: number): string {
   return count === 1 ? "asset" : "assets";
 }
 
+function positionSizeLabel(request: BacktestRequest, currency: string): string {
+  if (request.sizing_method === "fixed_dollar") return `Amount per active asset (${currency})`;
+  if (request.sizing_method === "fixed_shares") return "Shares per active asset";
+  return "Portfolio allocation (%)";
+}
+
 function focusFirstField(fields: string[]) {
   const ids: Record<string, string> = {
     symbols: "symbols", start: "start", end: "end", short_window: "short-window",
@@ -802,6 +895,12 @@ function validateRequest(request: BacktestRequest): { message: string; fields: s
   }
   if (request.strategy === "momentum" && request.parameters.top_n > request.symbols.length) {
     return { message: "Top assets cannot exceed the ticker count.", fields: ["top_n", "symbols"] };
+  }
+  if (request.sizing_method === "percentage" && request.position_size > 1) {
+    return { message: "Portfolio allocation cannot exceed 100%.", fields: ["position-size"] };
+  }
+  if (request.max_position_allocation > request.max_portfolio_exposure) {
+    return { message: "Maximum position cannot exceed maximum portfolio exposure.", fields: ["max-position", "max-exposure"] };
   }
   return null;
 }

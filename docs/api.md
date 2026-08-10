@@ -64,11 +64,16 @@ Owns mutable cash, long positions, and executed trades. `execute(order, price,
 timestamp)` fills an order completely or raises a portfolio error. `total_value`
 marks cash and holdings using supplied prices.
 
-### `Backtester(initial_cash=100000, commission_rate=0.001, fixed_fee=0, slippage_bps=0)`
+### `Backtester(...)`
 
 `run(market_data, target_weights)` validates aligned inputs, shifts targets by
 one bar, executes at the next opening price, values holdings at each close, and
 returns `BacktestResult`.
+
+Execution options include `sizing_method`, `position_size`, `stop_loss`,
+`take_profit`, `max_position_allocation`, and `max_portfolio_exposure`.
+Percentage sizing scales strategy weights; fixed-dollar and fixed-share modes
+apply the same amount to every active target. Risk exits use the current open.
 
 ### `BacktestResult`
 
@@ -96,6 +101,14 @@ Individual metric functions are also public. Undefined quantities such as a
 Sharpe ratio with zero volatility or win rate with no completed sale return
 `NaN`, not a misleading zero.
 
+`analyze_portfolio(...)` returns annualized asset returns, correlation and
+covariance matrices, a sampled long-only efficient frontier, and the highest
+historical Sharpe allocation found in that sample.
+
+`simulate_portfolio(...)` returns reproducible correlated hypothetical paths,
+ending values, median and mean endings, downside frequency, and 5th/95th
+percentiles. It uses historical mean and covariance rather than a forecast.
+
 ## Application Service
 
 - `parse_symbols` normalizes comma-separated US, NSE, or BSE tickers.
@@ -113,7 +126,12 @@ Sharpe ratio with zero volatility or win rate with no completed sale return
 - `GET /api/v1/catalog` lists enabled markets, strategies, sources, and limits.
 - `POST /api/v1/backtests` accepts validated research inputs and returns OHLCV,
   indicators, signals, portfolio history, metrics, per-strategy best settings,
-  a historical holdout winner, trades, assumptions, and warnings.
+  a historical holdout winner, portfolio analysis, Monte Carlo output, trades,
+  assumptions, and warnings.
+
+Phase 8 request fields include `sizing_method`, `position_size`, `stop_loss`,
+`take_profit`, `max_position_allocation`, `max_portfolio_exposure`,
+`monte_carlo_horizon`, `monte_carlo_simulations`, and `monte_carlo_seed`.
 
 Dates use ISO `YYYY-MM-DD` strings. Undefined metrics become JSON `null` rather
 than invalid `NaN` values. The HTTP end date is inclusive and cannot extend

@@ -7,14 +7,14 @@ import styles from "./editorial-page.module.css";
 export function EditorialPage({ page }: { page: ContentPage }) {
   return (
     <main id="main-content" className={styles.main}>
-      <header className={styles.hero}>
+      <header className={styles.hero} data-motion-reveal="text">
         <p className="eyebrow">{page.eyebrow}</p>
         <h1>{page.title}</h1>
         <p>{page.summary}</p>
       </header>
       <div className={styles.sections}>
         {page.sections.map((section, index) => (
-          <section key={section.title} className={styles.section}>
+          <section key={section.title} className={styles.section} data-motion-reveal="text">
             <p className={styles.index}>{String(index + 1).padStart(2, "0")}</p>
             <div>
               <h2>{section.title}</h2>

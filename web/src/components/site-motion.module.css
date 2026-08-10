@@ -1,0 +1,39 @@
+.progress {
+  position: fixed;
+  z-index: 500;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  transform: scaleX(0);
+  transform-origin: left center;
+  background: var(--accent);
+  pointer-events: none;
+}
+
+.cursor {
+  position: fixed;
+  z-index: 490;
+  top: 0;
+  left: 0;
+  width: 14px;
+  height: 14px;
+  border: 1px solid color-mix(in srgb, var(--accent) 72%, transparent);
+  border-radius: 50%;
+  opacity: 0;
+  transform: translate(-50%, -50%);
+  transition: width 160ms ease, height 160ms ease, opacity 160ms ease, background 160ms ease;
+  pointer-events: none;
+}
+
+.cursor[data-visible="true"] { opacity: 0.66; }
+.cursor[data-active="true"] {
+  width: 28px;
+  height: 28px;
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+}
+
+@media (pointer: coarse), (prefers-reduced-motion: reduce) {
+  .cursor,
+  .progress { display: none; }
+}

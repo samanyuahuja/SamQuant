@@ -87,8 +87,29 @@ export function LandingStory({ report, strategyDemos }: { report: BacktestRespon
         addScrollZoomReveals(false);
 
         gsap.timeline()
+          .fromTo(`.${styles.heroContent} > *`, { y: 28, opacity: 0 }, { y: 0, opacity: 1, duration: 0.65, stagger: 0.09, ease: "power3.out" })
           .fromTo(`.${styles.heroLine}`, { strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: 1.55, ease: "power2.out" })
           .fromTo(`.${styles.heroReadout}`, { y: 8, opacity: 0 }, { y: 0, opacity: 1, duration: 0.45 }, "-=0.3");
+
+        gsap.utils.toArray<HTMLElement>(`.${styles.sectionLead}, .${styles.strategyHeading}, .${styles.analyticsLead}, .${styles.revealCopy}, .${styles.trustLead}, .${styles.projectLead}`).forEach((heading) => {
+          gsap.fromTo(Array.from(heading.children), { y: 34, opacity: 0 }, {
+            y: 0,
+            opacity: 1,
+            duration: 0.72,
+            stagger: 0.1,
+            ease: "power3.out",
+            scrollTrigger: { trigger: heading, start: "top 84%", once: true },
+          });
+        });
+
+        gsap.fromTo(`.${styles.architectureFlow} span`, { x: -18, opacity: 0 }, {
+          x: 0,
+          opacity: 1,
+          stagger: 0.1,
+          duration: 0.5,
+          ease: "power2.out",
+          scrollTrigger: { trigger: `.${styles.architectureFlow}`, start: "top 86%", once: true },
+        });
 
         gsap.timeline({
           scrollTrigger: { trigger: `.${styles.strategyCanvas}`, start: "top 82%", end: "center 48%", scrub: 0.45 },
@@ -114,6 +135,46 @@ export function LandingStory({ report, strategyDemos }: { report: BacktestRespon
 
       media.add("(prefers-reduced-motion: no-preference) and (max-width: 720px)", () => {
         addScrollZoomReveals(true);
+
+        gsap.timeline()
+          .fromTo(`.${styles.heroContent} > *`, { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, stagger: 0.07, ease: "power3.out" })
+          .fromTo(`.${styles.heroLine}`, { strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: 1.1, ease: "power2.out" }, "-=0.2")
+          .fromTo(`.${styles.heroReadout}`, { y: 6, opacity: 0 }, { y: 0, opacity: 1, duration: 0.35 }, "-=0.25");
+
+        gsap.utils.toArray<HTMLElement>(`.${styles.sectionLead}, .${styles.strategyHeading}, .${styles.analyticsLead}, .${styles.revealCopy}, .${styles.trustLead}, .${styles.projectLead}`).forEach((heading) => {
+          gsap.fromTo(Array.from(heading.children), { y: 22, opacity: 0 }, {
+            y: 0,
+            opacity: 1,
+            duration: 0.52,
+            stagger: 0.07,
+            ease: "power3.out",
+            scrollTrigger: { trigger: heading, start: "top 91%", once: true },
+          });
+        });
+
+        gsap.fromTo(`.${styles.architectureFlow} span`, { x: -12, opacity: 0 }, {
+          x: 0,
+          opacity: 1,
+          stagger: 0.07,
+          duration: 0.4,
+          ease: "power2.out",
+          scrollTrigger: { trigger: `.${styles.architectureFlow}`, start: "top 92%", once: true },
+        });
+
+        gsap.timeline({ scrollTrigger: { trigger: `.${styles.strategyCanvas}`, start: "top 88%", once: true } })
+          .fromTo(`.${styles.strategyPrice}`, { strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: 0.85 })
+          .fromTo(`.${styles.indicatorLine}`, { strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: 0.7, stagger: 0.06 }, "-=0.45")
+          .fromTo(`.${styles.signalOutput}`, { scale: 0.9, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.35 }, "-=0.2");
+
+        gsap.timeline({ scrollTrigger: { trigger: `.${styles.executionFlow}`, start: "top 89%", once: true } })
+          .fromTo(`.${styles.executionProgress}`, { scaleX: 0 }, { scaleX: 1, duration: 0.65, ease: "power2.out" })
+          .fromTo(`.${styles.executionStep}`, { y: 10, opacity: 0 }, { y: 0, opacity: 1, duration: 0.35, stagger: 0.06 }, "-=0.35");
+
+        gsap.timeline({ scrollTrigger: { trigger: `.${styles.analyticsChart}`, start: "top 89%", once: true } })
+          .fromTo(`.${styles.benchmarkLine}`, { strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: 0.7 })
+          .fromTo(`.${styles.equityLine}`, { strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: 0.85 }, "-=0.5")
+          .fromTo(`.${styles.drawdownArea}`, { opacity: 0 }, { opacity: 1, duration: 0.4 }, "-=0.3")
+          .fromTo(`.${styles.metricStrip} > div`, { y: 8, opacity: 0 }, { y: 0, opacity: 1, duration: 0.3, stagger: 0.04 }, "-=0.25");
       });
     }, root);
     return () => {
@@ -125,7 +186,7 @@ export function LandingStory({ report, strategyDemos }: { report: BacktestRespon
   return (
     <main id="main-content" ref={root} className={styles.main} data-route="home">
       <section className={styles.hero} aria-labelledby="hero-title">
-        <svg className={styles.heroChart} viewBox="0 0 1200 480" preserveAspectRatio="none" role="img" aria-label="Deterministic SamQuant demonstration price series">
+        <svg className={styles.heroChart} data-motion-parallax viewBox="0 0 1200 480" preserveAspectRatio="none" role="img" aria-label="Deterministic SamQuant demonstration price series">
           <path className={styles.heroLineGhost} d={pricePath} />
           <path className={styles.heroLine} pathLength="1" d={pricePath} />
         </svg>
@@ -137,7 +198,7 @@ export function LandingStory({ report, strategyDemos }: { report: BacktestRespon
           <h1 id="hero-title">Test the strategy.<br />Not your luck.</h1>
           <p className={styles.heroCopy}>Follow one market line from raw prices to measured risk.</p>
           <div className={styles.heroActions}>
-            <Link className={styles.primaryAction} href="/research">Open research terminal <ArrowRight aria-hidden="true" size={16} /></Link>
+            <Link className={styles.primaryAction} data-magnetic href="/research">Open research terminal <ArrowRight aria-hidden="true" size={16} /></Link>
             <Link href="/methodology">Read methodology</Link>
           </div>
         </div>
@@ -264,7 +325,7 @@ export function LandingStory({ report, strategyDemos }: { report: BacktestRespon
         <div className={styles.revealCopy}>
           <h2 id="product-title">Run the complete system.</h2>
           <p>Choose the market, dates, strategy, costs, and starting capital.</p>
-          <Link className={styles.primaryAction} href="/research">Open research terminal <ArrowRight aria-hidden="true" size={16} /></Link>
+          <Link className={styles.primaryAction} data-magnetic href="/research">Open research terminal <ArrowRight aria-hidden="true" size={16} /></Link>
         </div>
         <div className={`${styles.terminalReveal} ${styles.scrollZoom}`} data-scroll-zoom="research-terminal" aria-label="Research terminal preview using real demonstration output">
           <div className={styles.terminalTop}><span>RESEARCH / {symbol}</span><span>RUN COMPLETE</span></div>

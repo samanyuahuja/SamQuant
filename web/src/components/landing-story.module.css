@@ -141,6 +141,15 @@
   text-transform: uppercase;
 }
 
+@media (min-width: 901px) {
+  .stageLabel {
+    position: sticky;
+    z-index: 2;
+    top: 86px;
+    width: max-content;
+  }
+}
+
 .darkBand .stageLabel,
 .project .stageLabel {
   color: #86a6ad;

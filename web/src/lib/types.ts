@@ -1,6 +1,7 @@
 export type DataSource = "demo" | "yahoo";
 export type Market = "US" | "India (NSE)" | "India (BSE)";
 export type StrategyId = "moving_average" | "mean_reversion" | "momentum";
+export type SizingMethod = "percentage" | "fixed_dollar" | "fixed_shares";
 
 export interface StrategyParameters {
   short_window: number;
@@ -27,6 +28,15 @@ export interface BacktestRequest {
   slippage_bps: number;
   periods_per_year: number;
   risk_free_rate: number;
+  sizing_method: SizingMethod;
+  position_size: number;
+  stop_loss: number | null;
+  take_profit: number | null;
+  max_position_allocation: number;
+  max_portfolio_exposure: number;
+  monte_carlo_horizon: number;
+  monte_carlo_simulations: number;
+  monte_carlo_seed: number;
 }
 
 export interface TimeValue {
@@ -116,6 +126,29 @@ export interface BacktestResponse {
     bestByStrategy?: StrategyStudyTrial[];
     trials: StrategyStudyTrial[];
   };
+  portfolioAnalysis?: {
+    assetReturns: Record<string, number | null>;
+    correlation: Record<string, Record<string, number | null>>;
+    covariance: Record<string, Record<string, number | null>>;
+    frontier: Array<{ volatility: number | null; expectedReturn: number | null }>;
+    maxSharpe: {
+      weights: Record<string, number | null>;
+      expectedReturn: number | null;
+      volatility: number | null;
+      sharpeRatio: number | null;
+      diversificationRatio: number | null;
+    };
+  };
+  monteCarlo?: {
+    days: number[];
+    displayPaths: Array<Array<number | null>>;
+    endingValues: Array<number | null>;
+    medianEndingValue: number | null;
+    meanEndingValue: number | null;
+    probabilityBelowStart: number | null;
+    percentile5: number | null;
+    percentile95: number | null;
+  };
   trades: TradeRecord[];
   assumptions: Record<string, string>;
   warnings: string[];
@@ -153,4 +186,13 @@ export const DEFAULT_REQUEST: BacktestRequest = {
   slippage_bps: 5,
   periods_per_year: 252,
   risk_free_rate: 0,
+  sizing_method: "percentage",
+  position_size: 1,
+  stop_loss: null,
+  take_profit: null,
+  max_position_allocation: 1,
+  max_portfolio_exposure: 1,
+  monte_carlo_horizon: 252,
+  monte_carlo_simulations: 250,
+  monte_carlo_seed: 42,
 };

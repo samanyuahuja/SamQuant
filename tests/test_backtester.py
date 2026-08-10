@@ -5,7 +5,7 @@ from __future__ import annotations
 import pandas as pd
 import pytest
 
-from samquant.engine.backtester import BacktestError, Backtester
+from samquant.engine.backtester import BacktestError, Backtester, SizingMethod
 from samquant.engine.order import OrderSide
 
 
@@ -146,3 +146,72 @@ def test_backtester_rejects_invalid_long_only_weights() -> None:
 
     with pytest.raises(BacktestError, match="sum to more than 1.0"):
         Backtester().run({"AAPL": prices}, targets)
+
+
+@pytest.mark.parametrize(
+    ("method", "size", "expected_quantity"),
+    [
+        (SizingMethod.FIXED_SHARES, 3.0, 3.0),
+        (SizingMethod.FIXED_DOLLAR, 220.0, 2.0),
+        (SizingMethod.PERCENTAGE, 0.5, 1_100.0 * 0.5 / 110.0),
+    ],
+)
+def test_backtester_supports_configurable_position_sizing(
+    method: SizingMethod,
+    size: float,
+    expected_quantity: float,
+) -> None:
+    prices = _market_data()
+    targets = pd.DataFrame({"AAPL": [1.0] * 4}, index=prices.index)
+
+    result = Backtester(
+        initial_cash=1_100.0,
+        commission_rate=0.0,
+        sizing_method=method,
+        position_size=size,
+    ).run({"AAPL": prices}, targets)
+
+    assert result.positions.iloc[1]["AAPL"] == pytest.approx(expected_quantity)
+
+
+def test_stop_loss_uses_current_open_and_does_not_reenter_on_same_bar() -> None:
+    prices = _market_data(
+        opens=[100.0, 100.0, 80.0, 80.0],
+        closes=[100.0, 100.0, 80.0, 80.0],
+    )
+    targets = pd.DataFrame({"AAPL": [1.0] * 4}, index=prices.index)
+
+    result = Backtester(
+        initial_cash=1_000.0,
+        commission_rate=0.0,
+        stop_loss=0.1,
+    ).run({"AAPL": prices}, targets)
+
+    assert [trade.order.side for trade in result.trades[:2]] == [
+        OrderSide.BUY,
+        OrderSide.SELL,
+    ]
+    assert result.trades[1].timestamp == prices.index[2]
+    assert result.positions.iloc[2]["AAPL"] == 0.0
+
+
+def test_position_and_exposure_limits_cap_multi_asset_value() -> None:
+    aapl = _market_data(opens=[100.0] * 4, closes=[100.0] * 4)
+    msft = _market_data(opens=[50.0] * 4, closes=[50.0] * 4)
+    targets = pd.DataFrame(
+        {"AAPL": [0.5] * 4, "MSFT": [0.5] * 4}, index=aapl.index
+    )
+
+    result = Backtester(
+        initial_cash=1_000.0,
+        commission_rate=0.0,
+        max_position_allocation=0.3,
+        max_portfolio_exposure=0.5,
+    ).run({"AAPL": aapl, "MSFT": msft}, targets)
+
+    ending_value = (
+        result.positions.iloc[-1]["AAPL"] * 100.0
+        + result.positions.iloc[-1]["MSFT"] * 50.0
+    )
+    assert ending_value == pytest.approx(500.0)
+    assert result.positions.iloc[-1]["AAPL"] * 100.0 == pytest.approx(250.0)

@@ -3,6 +3,7 @@
 [![CI](https://github.com/samanyuahuja/SamQuant/actions/workflows/ci.yml/badge.svg)](https://github.com/samanyuahuja/SamQuant/actions/workflows/ci.yml)
 ![Python](https://img.shields.io/badge/python-3.10%2B-3776AB?logo=python&logoColor=white)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![Live App](https://img.shields.io/badge/live-samquant.vercel.app-111827?logo=vercel&logoColor=white)](https://samquant.vercel.app)
 
 **A transparent algorithmic-trading system with a tested Python engine and a
 purpose-built quantitative research interface.**
@@ -24,13 +25,17 @@ claim of future profitability.
 - Supports US, Indian NSE, and Indian BSE symbols through Yahoo Finance.
 - Implements moving-average crossover, mean-reversion, and momentum strategies.
 - Simulates long-only multi-asset portfolios with fees and adverse slippage.
+- Supports percentage, fixed-dollar, and fixed-share position sizing.
+- Applies stop-loss, take-profit, position, and total-exposure limits.
 - Executes every signal at the following bar's open to avoid same-bar leakage.
 - Reports return, volatility, Sharpe ratio, drawdown, and realized win rate.
+- Estimates historical correlation, covariance, efficient-frontier allocations,
+  and reproducible Monte Carlo ranges.
 - Explains each result in plain language without turning old signals into trading advice.
 - Finds the strongest tested settings for each strategy with a chronological 70/30 study.
 - Compares strategies against an equal-weight benchmark in Streamlit.
 - Presents a responsive Next.js terminal with real SamQuant charts and exports.
-- Keeps deterministic public demos separate from opt-in local Yahoo downloads.
+- Keeps deterministic public demos separate from opt-in Yahoo downloads.
 - Runs deterministic tests without depending on live network data.
 
 ## Architecture
@@ -125,6 +130,11 @@ dates. It then compares those frozen setups on the final 30%. Mean reversion and
 momentum keep the entered lookback fixed while testing z-scores or rebalance
 frequency. Moving average tests bounded short/long window pairs.
 
+Portfolio optimization samples long-only allocations from historical returns.
+Monte Carlo paths preserve the measured covariance between assets and use an
+equal-weight portfolio. Both tools describe historical assumptions, not future
+prices or recommended allocations.
+
 The simulator includes configurable commissions, fixed fees, and adverse
 slippage. Yahoo downloads use adjusted OHLC prices by default so stock splits
 and distributions do not create artificial price jumps. Adjusted and unadjusted
@@ -149,6 +159,8 @@ Important limitations remain:
 | Momentum | Rank trailing returns and equal-weight the strongest assets |
 | Benchmark | Buy and hold equal weights across the selected assets |
 | Analytics | Total and annualized return, volatility, Sharpe ratio, maximum drawdown, win rate |
+| Portfolio lab | Correlation, covariance, diversification, sampled efficient frontier, maximum historical Sharpe allocation |
+| Monte Carlo | Seeded hypothetical paths, ending-value distribution, percentiles, and downside frequency |
 
 ## Repository Structure
 
@@ -189,12 +201,13 @@ budgets, accessibility, and 1440, 1024, 768, and 375 pixel browser journeys.
 - [Web design system and asset plan](docs/web-design-system.md)
 - [Web quality, accessibility, and performance report](docs/web-quality-report.md)
 
-## Version 2 Candidates
+## Version 2 Scope
 
-Multi-asset optimization, point-in-time universes, walk-forward validation,
-position sizing, stop-loss rules, Monte Carlo analysis, paper trading, and broker
-integration are intentionally deferred until the Version 1 research foundation
-is stable.
+Version 2 adds configurable sizing and risk controls, historical portfolio
+optimization, Monte Carlo simulation, benchmark comparison, and chronological
+train/test strategy studies. Live data streaming, broker integration, short
+selling, leverage, exact constrained optimization, and live paper-trading state
+remain intentionally deferred.
 
 ## License
 

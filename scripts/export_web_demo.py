@@ -19,11 +19,13 @@ def main() -> None:
         start="2023-01-03",
         end="2024-01-03",
         parameters={"short_window": 20, "long_window": 60},
+        monte_carlo_horizon=40,
+        monte_carlo_simulations=50,
     )
-    report = run_request(request, request_id="demo-v1", allow_yahoo=False)
+    report = run_request(request, request_id="demo-v2", allow_yahoo=False)
     OUTPUT_PATH.parent.mkdir(parents=True, exist_ok=True)
     OUTPUT_PATH.write_text(
-        json.dumps(report, indent=2, sort_keys=True),
+        json.dumps(report, separators=(",", ":"), sort_keys=True),
         encoding="utf-8",
     )
     strategy_reports = {}
@@ -44,6 +46,8 @@ def main() -> None:
             end="2024-01-03",
             strategy=strategy,
             parameters=parameters,
+            monte_carlo_horizon=40,
+            monte_carlo_simulations=50,
         )
         strategy_report = run_request(
             strategy_request,
@@ -57,7 +61,7 @@ def main() -> None:
             "metrics": strategy_report["metrics"],
         }
     STRATEGY_OUTPUT_PATH.write_text(
-        json.dumps(strategy_reports, indent=2, sort_keys=True),
+        json.dumps(strategy_reports, separators=(",", ":"), sort_keys=True),
         encoding="utf-8",
     )
 
