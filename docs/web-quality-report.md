@@ -70,19 +70,6 @@ Public demonstrations use bundled synthetic data. Local Yahoo Finance access rem
 - The chart library renders to canvas, so the nearby summary and table carry the accessible alternative.
 - Version 1 does not model partial fills, market impact, taxes, or point-in-time universes.
 
-## Design Self-Evaluation
-
-| Pillar | Score | Evidence |
-| --- | ---: | --- |
-| Point of view | 9.4 | One market line becomes data, signal, execution, and risk |
-| Typography | 9.2 | Self-hosted editorial, interface, and numeric font roles |
-| Colour | 9.2 | Warm paper and graphite with strictly semantic gain and loss colors |
-| Hierarchy | 9.3 | Charts lead while controls and assumptions remain quiet |
-| Imagery | 9.1 | Real deterministic charts replace stock or decorative imagery |
-| Copy | 9.2 | Specific educational language without performance claims |
-| Motion | 9.0 | Four explanatory sequences with native scrolling and a static alternative |
-| Mobile and invisible finish | 9.2 | Purpose-built control flow, no overflow, tested states, and accessible alternatives |
-
 ## Version 2 Recommendations
 
 - Add opt-in privacy-preserving field performance monitoring after deployment.

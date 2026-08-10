@@ -11,6 +11,16 @@ from samquant.analytics.metrics import (
     total_return,
     trade_win_rate,
 )
+from samquant.analytics.monte_carlo import (
+    MonteCarloError,
+    MonteCarloResult,
+    simulate_portfolio,
+)
+from samquant.analytics.portfolio import (
+    PortfolioAnalysis,
+    PortfolioAnalysisError,
+    analyze_portfolio,
+)
 
 __all__ = [
     "AnalyticsError",
@@ -22,4 +32,10 @@ __all__ = [
     "sharpe_ratio",
     "total_return",
     "trade_win_rate",
+    "MonteCarloError",
+    "MonteCarloResult",
+    "simulate_portfolio",
+    "PortfolioAnalysis",
+    "PortfolioAnalysisError",
+    "analyze_portfolio",
 ]

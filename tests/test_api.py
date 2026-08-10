@@ -49,6 +49,9 @@ def test_backtest_response_contains_real_domain_outputs() -> None:
     assert body["portfolio"]["equity"]
     assert body["portfolio"]["benchmark"]
     assert body["metrics"]["finalValue"] > 0
+    assert body["portfolioAnalysis"]["maxSharpe"]["weights"]["AAPL"] == 1.0
+    assert len(body["monteCarlo"]["endingValues"]) == 250
+    assert len(body["monteCarlo"]["displayPaths"]) == 60
     assert body["metadata"]["end"] == "2024-06-28"
     assert body["strategyStudy"]["selectionPercent"] == 70
     assert body["strategyStudy"]["trials"][0]["rank"] == 1

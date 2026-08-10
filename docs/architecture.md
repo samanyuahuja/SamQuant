@@ -17,7 +17,8 @@ flowchart TD
     STRATEGY -->|daily target weights| ENGINE
     DATA -->|next-open and closing prices| ENGINE
     ENGINE -->|equity, cash, positions, trades| ANALYTICS
-    ANALYTICS -->|performance summary| APPLICATION
+    DATA -->|historical returns and covariance| ANALYTICS
+    ANALYTICS -->|metrics, frontier, simulations| APPLICATION
     ENGINE -->|simulation details| APPLICATION
     APPLICATION --> API
     APPLICATION --> STREAMLIT
@@ -30,8 +31,8 @@ flowchart TD
 | --- | --- | --- |
 | `data` | Downloading, schema normalization, validation, CSV caching | Signals or trading decisions |
 | `strategies` | Converting historical closes into target portfolio weights | Orders, fees, fills, or metrics |
-| `engine` | Delayed execution, orders, cash, positions, fees, slippage, valuation | Data downloading or strategy rules |
-| `analytics` | Validated calculations from completed backtest results | Signal generation or trade execution |
+| `engine` | Delayed execution, sizing, risk exits, cash, positions, fees, slippage, valuation | Data downloading or strategy rules |
+| `analytics` | Metrics, portfolio estimates, and hypothetical simulations | Signal generation or trade execution |
 | `application` | Research use cases shared by every interface | HTTP or visual presentation |
 | `api` | Request validation, bounded access, and JSON serialization | Financial calculations |
 | `dashboard` | Streamlit controls, charts, and tables | A second copy of domain logic |
@@ -84,9 +85,17 @@ download boundary; downstream modules continue to reject malformed inputs.
 
 ### Execution is intentionally conservative
 
-The engine is long-only, fully invested at most, executes sales before purchases,
-caps buys to available cash, and applies adverse slippage. Fractional quantities
-keep Version 1 accounting deterministic and focused.
+The engine is long-only, executes sales before purchases, caps buys to available
+cash, and applies adverse slippage. Targets can become percentage, fixed-dollar,
+or fixed-share positions. Position and exposure limits are applied before orders.
+Stop-loss and take-profit checks use only the current open and recorded entry cost.
+
+### Advanced analytics stay separate from execution
+
+Portfolio analysis derives annualized return, covariance, correlation, sampled
+long-only frontier points, and a maximum historical Sharpe allocation. Monte
+Carlo uses a seeded multivariate model so results are reproducible. Neither
+module mutates the backtest or claims to predict future returns.
 
 ### Interfaces are adapters
 
@@ -115,6 +124,9 @@ responsibility for strategy, execution, or analytics calculations.
 
 ## Current Boundaries
 
-Version 1 assumes aligned daily bars, a user-selected universe, complete fills,
-and no short selling or leverage. Point-in-time universes, corporate-action cash
-flows, market impact, partial fills, and broker connectivity belong in Version 2.
+Version 2 still assumes aligned daily bars, a user-selected universe, complete
+fills, stable historical distributions, and no short selling or leverage.
+Point-in-time universes, corporate-action cash flows, market impact, partial
+fills, streaming data, and broker connectivity remain future work. Existing
+data, order, and application boundaries provide adapter points without adding
+unused broker code or credentials.

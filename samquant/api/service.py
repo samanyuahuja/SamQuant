@@ -10,6 +10,12 @@ from typing import Any
 import pandas as pd
 
 from samquant import __version__
+from samquant.analytics import (
+    MonteCarloResult,
+    PortfolioAnalysis,
+    analyze_portfolio,
+    simulate_portfolio,
+)
 from samquant.api.models import BacktestRequest, StrategyId
 from samquant.application import (
     MEAN_REVERSION,
@@ -55,6 +61,12 @@ def run_request(
         slippage_bps=request.slippage_bps,
         periods_per_year=request.periods_per_year,
         risk_free_rate=request.risk_free_rate,
+        sizing_method=request.sizing_method.value,
+        position_size=request.position_size,
+        stop_loss=request.stop_loss,
+        take_profit=request.take_profit,
+        max_position_allocation=request.max_position_allocation,
+        max_portfolio_exposure=request.max_portfolio_exposure,
     )
     strategy_name = STRATEGY_LABELS[request.strategy]
     parameters = _strategy_parameters(request)
@@ -65,6 +77,26 @@ def run_request(
         config,
         study_parameters=request.parameters.model_dump(),
     )
+    portfolio_analysis = analyze_portfolio(
+        market_data,
+        periods_per_year=request.periods_per_year,
+        risk_free_rate=request.risk_free_rate,
+        seed=request.monte_carlo_seed,
+    )
+    asset_returns = pd.DataFrame(
+        {symbol: frame["Close"] for symbol, frame in market_data.items()}
+    ).pct_change(fill_method=None).dropna()
+    equal_weights = pd.Series(
+        1.0 / len(asset_returns.columns), index=asset_returns.columns
+    )
+    monte_carlo = simulate_portfolio(
+        asset_returns,
+        equal_weights,
+        initial_value=request.initial_cash,
+        horizon=request.monte_carlo_horizon,
+        simulations=request.monte_carlo_simulations,
+        seed=request.monte_carlo_seed,
+    )
     return _serialize_report(
         request,
         request_id,
@@ -73,6 +105,8 @@ def run_request(
         benchmark,
         parameters,
         strategy_study,
+        portfolio_analysis,
+        monte_carlo,
     )
 
 
@@ -105,6 +139,8 @@ def _serialize_report(
     benchmark: ResearchRun,
     parameters: Mapping[str, int | float | bool],
     strategy_study: StrategyStudy,
+    portfolio_analysis: PortfolioAnalysis,
+    monte_carlo: MonteCarloResult,
 ) -> dict[str, Any]:
     first_index = next(iter(market_data.values())).index
     drawdown = primary.result.equity_curve / primary.result.equity_curve.cummax() - 1.0
@@ -173,6 +209,8 @@ def _serialize_report(
                 for rank, trial in enumerate(strategy_study.trials, start=1)
             ],
         },
+        "portfolioAnalysis": _serialize_portfolio_analysis(portfolio_analysis),
+        "monteCarlo": _serialize_monte_carlo(monte_carlo),
         "trades": [
             {
                 "time": trade.timestamp.date().isoformat(),
@@ -195,11 +233,71 @@ def _serialize_report(
                 if request.data_source.value == "demo"
                 else "Yahoo Finance data is requested for local research use."
             ),
+            "riskControls": (
+                "Risk exits use the current bar's open and never its closing price."
+            ),
+            "optimization": (
+                "The long-only frontier is an approximate historical sample, not a forecast."
+            ),
+            "monteCarlo": (
+                "Simulations use historical daily mean and covariance with equal asset weights."
+            ),
         },
         "warnings": [
             "Backtested results are hypothetical and are not investment advice.",
             "Taxes, liquidity limits, market impact, and partial fills are not modeled.",
         ],
+    }
+
+
+def _serialize_portfolio_analysis(
+    analysis: PortfolioAnalysis,
+) -> dict[str, Any]:
+    return {
+        "assetReturns": {
+            symbol: _finite(value)
+            for symbol, value in analysis.annualized_asset_returns.items()
+        },
+        "correlation": {
+            row: {column: _finite(value) for column, value in values.items()}
+            for row, values in analysis.correlation_matrix.to_dict(orient="index").items()
+        },
+        "covariance": {
+            row: {column: _finite(value) for column, value in values.items()}
+            for row, values in analysis.covariance_matrix.to_dict(orient="index").items()
+        },
+        "frontier": [
+            {"volatility": _finite(row["Volatility"]), "expectedReturn": _finite(row["Expected return"])}
+            for _, row in analysis.frontier.iterrows()
+        ],
+        "maxSharpe": {
+            "weights": {
+                symbol: _finite(value)
+                for symbol, value in analysis.max_sharpe_weights.items()
+            },
+            "expectedReturn": _finite(analysis.expected_return),
+            "volatility": _finite(analysis.volatility),
+            "sharpeRatio": _finite(analysis.sharpe_ratio),
+            "diversificationRatio": _finite(analysis.diversification_ratio),
+        },
+    }
+
+
+def _serialize_monte_carlo(result: MonteCarloResult) -> dict[str, Any]:
+    path_count = min(60, len(result.paths.columns))
+    selected_columns = result.paths.columns[:path_count]
+    return {
+        "days": list(range(len(result.paths))),
+        "displayPaths": [
+            [_finite(value) for value in result.paths[column]]
+            for column in selected_columns
+        ],
+        "endingValues": [_finite(value) for value in result.ending_values],
+        "medianEndingValue": _finite(result.median_ending_value),
+        "meanEndingValue": _finite(result.mean_ending_value),
+        "probabilityBelowStart": _finite(result.probability_below_start),
+        "percentile5": _finite(result.percentile_5),
+        "percentile95": _finite(result.percentile_95),
     }
 
 

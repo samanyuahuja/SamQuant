@@ -1,6 +1,6 @@
 """Public components for order execution and historical backtesting."""
 
-from samquant.engine.backtester import BacktestError, BacktestResult, Backtester
+from samquant.engine.backtester import BacktestError, BacktestResult, Backtester, SizingMethod
 from samquant.engine.order import Order, OrderSide, OrderValidationError, Trade
 from samquant.engine.portfolio import (
     InsufficientCashError,
@@ -13,6 +13,7 @@ __all__ = [
     "BacktestError",
     "BacktestResult",
     "Backtester",
+    "SizingMethod",
     "InsufficientCashError",
     "InsufficientPositionError",
     "Order",

@@ -116,6 +116,6 @@ function socialSvg(width, height, line) {
     <g transform="translate(56 52)" fill="none" stroke="#f1efe8" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round">${markPaths}</g>
     <text x="142" y="101" fill="#111310" font-family="Arial Narrow, Arial, sans-serif" font-size="44" font-weight="600">SamQuant</text>
     <text x="56" y="${height - 116}" fill="#111310" font-family="Arial Narrow, Arial, sans-serif" font-size="78" font-weight="600">Test the strategy. Not your luck.</text>
-    <text x="58" y="${height - 62}" fill="#486a73" font-family="IBM Plex Mono, monospace" font-size="19">DATA / SIGNAL / ORDER / PORTFOLIO / RISK</text>
+    <text x="58" y="${height - 62}" fill="#486a73" font-family="IBM Plex Sans, Arial, sans-serif" font-size="19">DATA / SIGNAL / ORDER / PORTFOLIO / RISK</text>
   </svg>`;
 }

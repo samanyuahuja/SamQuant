@@ -97,7 +97,7 @@ function createBaseChart(container: HTMLDivElement, theme: ChartTheme): IChartAp
     layout: {
       background: { type: ColorType.Solid, color: theme.background },
       textColor: theme.text,
-      fontFamily: "IBM Plex Mono, monospace",
+      fontFamily: "IBM Plex Sans, Arial, sans-serif",
       fontSize: 11,
       attributionLogo: true,
     },

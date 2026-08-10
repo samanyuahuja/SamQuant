@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { ExternalLink, Menu } from "lucide-react";
 
+import { RESEARCH_PAPER_URL } from "@/lib/site-content";
 import { BrandMark } from "./brand-mark";
 import styles from "./site-header.module.css";
 
@@ -23,18 +23,20 @@ export function SiteHeader() {
         </nav>
         <div className={styles.actions}>
           <span className={styles.status}><i aria-hidden="true" /> Research only</span>
+          <a className={styles.paper} href={RESEARCH_PAPER_URL} target="_blank" rel="noreferrer">Research paper</a>
           <a
             className={styles.github}
             href="https://github.com/samanyuahuja/SamQuant"
             target="_blank"
             rel="noreferrer"
           >
-            GitHub <ExternalLink aria-hidden="true" size={13} />
+            GitHub
           </a>
           <details className={styles.mobileMenu}>
-            <summary aria-label="Open navigation"><Menu aria-hidden="true" size={20} /></summary>
+            <summary>Menu</summary>
             <nav aria-label="Mobile navigation">
               {navigation.map((item) => <Link key={item.href} href={item.href}>{item.label}</Link>)}
+              <a href={RESEARCH_PAPER_URL} target="_blank" rel="noreferrer">Research paper</a>
               <Link href="/about">About</Link>
               <Link href="/changelog">Changelog</Link>
             </nav>

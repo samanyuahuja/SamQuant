@@ -72,7 +72,15 @@ exchange holidays with no recorded bars.
 - **Commission:** Percentage fee charged on each trade's value.
 - **Fixed fee:** Flat amount charged per execution.
 - **Slippage:** Adverse price movement in basis points; 100 bps equals 1%.
+- **Sizing method:** Converts each active strategy target into a portfolio
+  percentage, fixed cash amount, or fixed number of shares.
+- **Position size:** The amount used by the selected sizing method.
+- **Stop loss / take profit:** Optional exits checked at the current bar's open.
+- **Maximum position:** Largest allowed value for one asset.
+- **Maximum exposure:** Largest allowed total value across all open assets.
 - **Risk-free rate:** Annual comparison rate used by the Sharpe ratio.
+- **Simulation days / count / seed:** Control Monte Carlo length, sample size,
+  and reproducibility.
 
 ## Reading Results
 
@@ -85,6 +93,10 @@ exchange holidays with no recorded bars.
 - **Trades:** Every simulated buy and sell, including quantity, fill, and fee.
 - **Strategy comparison:** All three strategies and an equal-weight benchmark,
   rebased to the same starting value.
+- **Portfolio lab:** Historical asset returns, correlations, a sampled efficient
+  frontier, and the highest-Sharpe sampled allocation.
+- **Monte Carlo:** Equal-weight hypothetical paths, ending-value ranges, and the
+  share of simulations finishing below the starting value.
 - **Data and signals:** Closing prices and the most recent target weights.
 - **Downloads:** Save the complete JSON result or executed trades as CSV.
 
@@ -92,6 +104,8 @@ The web terminal shows price and indicator charts, execution markers, an equity
 curve, drawdown, benchmark comparison, trade history, and the assumptions used.
 Its buy-or-sell explanation describes only the final state of the historical
 simulation. It does not recommend a trade or predict the next price move.
+Optimization and Monte Carlo results also depend on historical estimates; they
+are research tools rather than forecasts.
 The Streamlit prototype remains available with
 `python -m streamlit run samquant/dashboard/app.py`.
 

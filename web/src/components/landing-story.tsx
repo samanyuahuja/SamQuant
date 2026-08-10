@@ -2,11 +2,11 @@
 
 import { useLayoutEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { ArrowRight, Check, Code2, ShieldCheck } from "lucide-react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 import { formatMoney, formatNumber, formatPercent, humanizeKey } from "@/lib/format";
+import { RESEARCH_PAPER_URL } from "@/lib/site-content";
 import type { BacktestResponse, MetricValues, SignalRecord, StrategyId, TimeValue } from "@/lib/types";
 import styles from "./landing-story.module.css";
 
@@ -87,8 +87,29 @@ export function LandingStory({ report, strategyDemos }: { report: BacktestRespon
         addScrollZoomReveals(false);
 
         gsap.timeline()
+          .fromTo(`.${styles.heroContent} > *`, { y: 28, opacity: 0 }, { y: 0, opacity: 1, duration: 0.65, stagger: 0.09, ease: "power3.out" })
           .fromTo(`.${styles.heroLine}`, { strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: 1.55, ease: "power2.out" })
           .fromTo(`.${styles.heroReadout}`, { y: 8, opacity: 0 }, { y: 0, opacity: 1, duration: 0.45 }, "-=0.3");
+
+        gsap.utils.toArray<HTMLElement>(`.${styles.sectionLead}, .${styles.strategyHeading}, .${styles.analyticsLead}, .${styles.revealCopy}, .${styles.trustLead}, .${styles.projectLead}`).forEach((heading) => {
+          gsap.fromTo(Array.from(heading.children), { y: 34, opacity: 0 }, {
+            y: 0,
+            opacity: 1,
+            duration: 0.72,
+            stagger: 0.1,
+            ease: "power3.out",
+            scrollTrigger: { trigger: heading, start: "top 84%", once: true },
+          });
+        });
+
+        gsap.fromTo(`.${styles.architectureFlow} span`, { x: -18, opacity: 0 }, {
+          x: 0,
+          opacity: 1,
+          stagger: 0.1,
+          duration: 0.5,
+          ease: "power2.out",
+          scrollTrigger: { trigger: `.${styles.architectureFlow}`, start: "top 86%", once: true },
+        });
 
         gsap.timeline({
           scrollTrigger: { trigger: `.${styles.strategyCanvas}`, start: "top 82%", end: "center 48%", scrub: 0.45 },
@@ -114,6 +135,46 @@ export function LandingStory({ report, strategyDemos }: { report: BacktestRespon
 
       media.add("(prefers-reduced-motion: no-preference) and (max-width: 720px)", () => {
         addScrollZoomReveals(true);
+
+        gsap.timeline()
+          .fromTo(`.${styles.heroContent} > *`, { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, stagger: 0.07, ease: "power3.out" })
+          .fromTo(`.${styles.heroLine}`, { strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: 1.1, ease: "power2.out" }, "-=0.2")
+          .fromTo(`.${styles.heroReadout}`, { y: 6, opacity: 0 }, { y: 0, opacity: 1, duration: 0.35 }, "-=0.25");
+
+        gsap.utils.toArray<HTMLElement>(`.${styles.sectionLead}, .${styles.strategyHeading}, .${styles.analyticsLead}, .${styles.revealCopy}, .${styles.trustLead}, .${styles.projectLead}`).forEach((heading) => {
+          gsap.fromTo(Array.from(heading.children), { y: 22, opacity: 0 }, {
+            y: 0,
+            opacity: 1,
+            duration: 0.52,
+            stagger: 0.07,
+            ease: "power3.out",
+            scrollTrigger: { trigger: heading, start: "top 91%", once: true },
+          });
+        });
+
+        gsap.fromTo(`.${styles.architectureFlow} span`, { x: -12, opacity: 0 }, {
+          x: 0,
+          opacity: 1,
+          stagger: 0.07,
+          duration: 0.4,
+          ease: "power2.out",
+          scrollTrigger: { trigger: `.${styles.architectureFlow}`, start: "top 92%", once: true },
+        });
+
+        gsap.timeline({ scrollTrigger: { trigger: `.${styles.strategyCanvas}`, start: "top 88%", once: true } })
+          .fromTo(`.${styles.strategyPrice}`, { strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: 0.85 })
+          .fromTo(`.${styles.indicatorLine}`, { strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: 0.7, stagger: 0.06 }, "-=0.45")
+          .fromTo(`.${styles.signalOutput}`, { scale: 0.9, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.35 }, "-=0.2");
+
+        gsap.timeline({ scrollTrigger: { trigger: `.${styles.executionFlow}`, start: "top 89%", once: true } })
+          .fromTo(`.${styles.executionProgress}`, { scaleX: 0 }, { scaleX: 1, duration: 0.65, ease: "power2.out" })
+          .fromTo(`.${styles.executionStep}`, { y: 10, opacity: 0 }, { y: 0, opacity: 1, duration: 0.35, stagger: 0.06 }, "-=0.35");
+
+        gsap.timeline({ scrollTrigger: { trigger: `.${styles.analyticsChart}`, start: "top 89%", once: true } })
+          .fromTo(`.${styles.benchmarkLine}`, { strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: 0.7 })
+          .fromTo(`.${styles.equityLine}`, { strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: 0.85 }, "-=0.5")
+          .fromTo(`.${styles.drawdownArea}`, { opacity: 0 }, { opacity: 1, duration: 0.4 }, "-=0.3")
+          .fromTo(`.${styles.metricStrip} > div`, { y: 8, opacity: 0 }, { y: 0, opacity: 1, duration: 0.3, stagger: 0.04 }, "-=0.25");
       });
     }, root);
     return () => {
@@ -125,7 +186,7 @@ export function LandingStory({ report, strategyDemos }: { report: BacktestRespon
   return (
     <main id="main-content" ref={root} className={styles.main} data-route="home">
       <section className={styles.hero} aria-labelledby="hero-title">
-        <svg className={styles.heroChart} viewBox="0 0 1200 480" preserveAspectRatio="none" role="img" aria-label="Deterministic SamQuant demonstration price series">
+        <svg className={styles.heroChart} data-motion-parallax viewBox="0 0 1200 480" preserveAspectRatio="none" role="img" aria-label="Deterministic SamQuant demonstration price series">
           <path className={styles.heroLineGhost} d={pricePath} />
           <path className={styles.heroLine} pathLength="1" d={pricePath} />
         </svg>
@@ -137,10 +198,17 @@ export function LandingStory({ report, strategyDemos }: { report: BacktestRespon
           <h1 id="hero-title">Test the strategy.<br />Not your luck.</h1>
           <p className={styles.heroCopy}>Follow one market line from raw prices to measured risk.</p>
           <div className={styles.heroActions}>
-            <Link className={styles.primaryAction} href="/research">Open research terminal <ArrowRight aria-hidden="true" size={16} /></Link>
-            <Link href="/methodology">Read methodology</Link>
+            <Link className={styles.primaryAction} data-magnetic href="/research">Open research terminal</Link>
+            <a href={RESEARCH_PAPER_URL} target="_blank" rel="noreferrer">Read research paper</a>
           </div>
         </div>
+      </section>
+
+      <section className={styles.paperBand} aria-labelledby="paper-title">
+        <p>SamQuantResearch</p>
+        <h2 id="paper-title">Read the complete research paper.</h2>
+        <span>Methods, tests, assumptions, and limitations.</span>
+        <a href={RESEARCH_PAPER_URL} target="_blank" rel="noreferrer">Open research paper</a>
       </section>
 
       <section className={`${styles.band} ${styles.data}`} aria-labelledby="data-title">
@@ -153,7 +221,7 @@ export function LandingStory({ report, strategyDemos }: { report: BacktestRespon
           <div className={styles.auditHeader}>
             <div><span>Input</span><strong>{symbol}.daily.csv</strong></div>
             <div><span>Output</span><strong>{market.length} valid bars</strong></div>
-            <div className={styles.auditStatus}><Check aria-hidden="true" size={14} /><strong>Passed</strong></div>
+            <div className={styles.auditStatus}><strong>Passed</strong></div>
           </div>
           <div className={styles.dataRows} role="table" aria-label="Validated sample market bars">
             <div role="row" className={styles.dataLabels}>
@@ -226,8 +294,8 @@ export function LandingStory({ report, strategyDemos }: { report: BacktestRespon
             <span><small>Final value</small><strong>{formatMoney(report.metrics.finalValue)}</strong></span>
           </div>
           <div className={styles.guardrails}>
-            <span><ShieldCheck aria-hidden="true" size={16} />Reject unaffordable buys</span>
-            <span><ShieldCheck aria-hidden="true" size={16} />Reject oversized sells</span>
+            <span>Reject unaffordable buys</span>
+            <span>Reject oversized sells</span>
           </div>
         </div>
       </section>
@@ -264,7 +332,7 @@ export function LandingStory({ report, strategyDemos }: { report: BacktestRespon
         <div className={styles.revealCopy}>
           <h2 id="product-title">Run the complete system.</h2>
           <p>Choose the market, dates, strategy, costs, and starting capital.</p>
-          <Link className={styles.primaryAction} href="/research">Open research terminal <ArrowRight aria-hidden="true" size={16} /></Link>
+          <Link className={styles.primaryAction} data-magnetic href="/research">Open research terminal</Link>
         </div>
         <div className={`${styles.terminalReveal} ${styles.scrollZoom}`} data-scroll-zoom="research-terminal" aria-label="Research terminal preview using real demonstration output">
           <div className={styles.terminalTop}><span>RESEARCH / {symbol}</span><span>RUN COMPLETE</span></div>
@@ -284,7 +352,8 @@ export function LandingStory({ report, strategyDemos }: { report: BacktestRespon
           <span><b>Bias control</b> Delayed signals and causality tests</span>
           <span><b>Public data</b> Deterministic synthetic OHLCV</span>
           <span><b>Current version</b> SamQuant {report.metadata.version}</span>
-          <Link href="/methodology">Inspect the method <ArrowRight aria-hidden="true" size={15} /></Link>
+          <Link href="/methodology">Inspect the method</Link>
+          <a href={RESEARCH_PAPER_URL} target="_blank" rel="noreferrer">Read the research paper</a>
         </div>
         <p className={styles.fullDisclaimer}>SamQuant is an educational research tool. Backtested results are hypothetical, depend on historical data and stated assumptions, and do not represent actual trading or guarantee future results. Nothing presented constitutes investment advice.</p>
       </section>
@@ -300,7 +369,8 @@ export function LandingStory({ report, strategyDemos }: { report: BacktestRespon
         </div>
         <div className={styles.projectLinks}>
           <Link href="/architecture">Architecture</Link><Link href="/docs">Documentation</Link><Link href="/changelog">Changelog</Link>
-          <a href="https://github.com/samanyuahuja/SamQuant"><Code2 aria-hidden="true" size={15} />GitHub repository</a>
+          <a href={RESEARCH_PAPER_URL} target="_blank" rel="noreferrer">Research paper</a>
+          <a href="https://github.com/samanyuahuja/SamQuant">GitHub repository</a>
         </div>
       </section>
     </main>

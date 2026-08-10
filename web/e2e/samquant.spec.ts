@@ -36,6 +36,7 @@ test("visualizations rise and zoom into place while scrolling", async ({ page },
 test("research terminal runs the primary backtest journey", async ({ page }) => {
   await page.goto("/research");
   await expect(page.locator("main[data-ready='true']")).toBeVisible();
+  await page.locator("#result-explanation-heading").scrollIntoViewIfNeeded();
   await expect(page.getByRole("heading", { name: "What this run actually says" })).toBeVisible();
   await page.getByRole("button", { name: "Edit setup" }).click();
   await page.getByLabel("Tickers").fill("AAPL, MSFT");
@@ -217,6 +218,7 @@ test("local web vitals stay within product budgets", async ({ page }, testInfo) 
 
 test("critical pages have no serious automated accessibility violations", async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== "desktop", "One browser is enough for automated axe coverage.");
+  await page.emulateMedia({ reducedMotion: "reduce" });
   for (const path of ["/", "/research", "/methodology"]) {
     await page.goto(path);
     const results = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21aa", "wcag22aa"]).analyze();

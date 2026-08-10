@@ -51,6 +51,8 @@ describe("ResearchTerminal", () => {
     expect(screen.getByRole("tab", { name: /Performance/ })).toHaveAttribute("aria-selected", "true");
     expect(screen.getByRole("tab", { name: /Trades/ })).toBeInTheDocument();
     expect(screen.getByRole("tab", { name: /Parameter study/ })).toBeInTheDocument();
+    expect(screen.getByRole("tab", { name: /Portfolio lab/ })).toBeInTheDocument();
+    expect(screen.getByRole("tab", { name: /Monte Carlo/ })).toBeInTheDocument();
     expect(await screen.findByTestId("chart-price")).toBeInTheDocument();
   });
 

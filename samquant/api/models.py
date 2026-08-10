@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from datetime import date, datetime, time, timedelta, timezone
 from enum import Enum
+from typing import Optional
 from zoneinfo import ZoneInfo
 
 from pydantic import BaseModel, Field, field_validator, model_validator
@@ -30,6 +31,14 @@ class StrategyId(str, Enum):
     MOVING_AVERAGE = "moving_average"
     MEAN_REVERSION = "mean_reversion"
     MOMENTUM = "momentum"
+
+
+class SizingMethod(str, Enum):
+    """Position-sizing choices exposed by the research API."""
+
+    PERCENTAGE = "percentage"
+    FIXED_DOLLAR = "fixed_dollar"
+    FIXED_SHARES = "fixed_shares"
 
 
 class StrategyParameters(BaseModel):
@@ -65,6 +74,15 @@ class BacktestRequest(BaseModel):
     slippage_bps: float = Field(default=5.0, ge=0.0, lt=10_000.0)
     periods_per_year: int = Field(default=252, ge=1, le=366)
     risk_free_rate: float = Field(default=0.0, gt=-1.0, le=1.0)
+    sizing_method: SizingMethod = SizingMethod.PERCENTAGE
+    position_size: float = Field(default=1.0, gt=0.0, le=1_000_000_000.0)
+    stop_loss: Optional[float] = Field(default=None, gt=0.0, le=10.0)
+    take_profit: Optional[float] = Field(default=None, gt=0.0, le=10.0)
+    max_position_allocation: float = Field(default=1.0, gt=0.0, le=1.0)
+    max_portfolio_exposure: float = Field(default=1.0, gt=0.0, le=1.0)
+    monte_carlo_horizon: int = Field(default=252, ge=20, le=756)
+    monte_carlo_simulations: int = Field(default=250, ge=50, le=1_000)
+    monte_carlo_seed: int = Field(default=42, ge=0, le=4_294_967_295)
 
     @field_validator("symbols")
     @classmethod
@@ -99,6 +117,12 @@ class BacktestRequest(BaseModel):
             raise ValueError("Entry z-score must be smaller than exit z-score.")
         if self.parameters.top_n > len(self.symbols):
             raise ValueError("Top asset count cannot exceed the symbol count.")
+        if self.sizing_method is SizingMethod.PERCENTAGE and self.position_size > 1.0:
+            raise ValueError("Percentage position size cannot exceed 1.0.")
+        if self.max_position_allocation > self.max_portfolio_exposure:
+            raise ValueError(
+                "Maximum position allocation cannot exceed portfolio exposure."
+            )
         return self
 
 
