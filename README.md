@@ -205,7 +205,6 @@ budgets, accessibility, and 1440, 1024, 768, and 375 pixel browser journeys.
 - [Usage and installation](docs/usage.md)
 - [Architecture and design decisions](docs/architecture.md)
 - [Important public APIs](docs/api.md)
-- [Elevator pitch, resume bullets, and interview notes](docs/portfolio.md)
 - [Web design system and asset plan](docs/web-design-system.md)
 - [Web quality, accessibility, and performance report](docs/web-quality-report.md)
 

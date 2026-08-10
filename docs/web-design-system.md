@@ -11,10 +11,9 @@ Charts carry the visual weight. Section labels provide quiet orientation, headin
 ## Typography
 
 - Barlow Condensed: headlines and the SamQuant wordmark
-- IBM Plex Sans: interface and editorial text
-- IBM Plex Mono: prices, dates, metrics, and system status
+- IBM Plex Sans: interface, editorial text, prices, dates, metrics, and system status
 
-All three font families are self-hosted from Fontsource packages licensed under SIL Open Font License 1.1.
+Both font families are self-hosted from Fontsource packages licensed under SIL Open Font License 1.1.
 
 ## Color Tokens
 
