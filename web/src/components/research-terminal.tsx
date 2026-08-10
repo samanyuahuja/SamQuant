@@ -3,22 +3,6 @@
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import {
-  AlertTriangle,
-  ArrowRight,
-  BarChart3,
-  CandlestickChart,
-  ChevronDown,
-  Download,
-  Info,
-  LineChart,
-  Network,
-  Play,
-  RotateCcw,
-  SlidersHorizontal,
-  Table2,
-  Waves,
-} from "lucide-react";
 
 import { ResearchApiError, runBacktest } from "@/lib/api";
 import { calculateAssetAttribution } from "@/lib/asset-attribution";
@@ -63,14 +47,14 @@ const STRATEGIES: { id: StrategyId; label: string }[] = [
   { id: "momentum", label: "Momentum" },
 ];
 
-const TABS: { id: ResultTab; label: string; icon: React.ReactNode }[] = [
-  { id: "performance", label: "Performance", icon: <LineChart size={15} /> },
-  { id: "drawdown", label: "Drawdown", icon: <Waves size={15} /> },
-  { id: "trades", label: "Trades", icon: <Table2 size={15} /> },
-  { id: "comparison", label: "Comparison", icon: <CandlestickChart size={15} /> },
-  { id: "study", label: "Parameter study", icon: <SlidersHorizontal size={15} /> },
-  { id: "portfolio", label: "Portfolio lab", icon: <Network size={15} /> },
-  { id: "simulation", label: "Monte Carlo", icon: <BarChart3 size={15} /> },
+const TABS: { id: ResultTab; label: string }[] = [
+  { id: "performance", label: "Performance" },
+  { id: "drawdown", label: "Drawdown" },
+  { id: "trades", label: "Trades" },
+  { id: "comparison", label: "Comparison" },
+  { id: "study", label: "Parameter study" },
+  { id: "portfolio", label: "Portfolio lab" },
+  { id: "simulation", label: "Monte Carlo" },
 ];
 
 const subscribeToHydration = () => () => undefined;
@@ -204,10 +188,7 @@ export function ResearchTerminal({ initialReport }: { initialReport: BacktestRes
             <p>{formatDate(report.metadata.start)} to {formatDate(report.metadata.end)} · {report.metadata.market} · {sourceLabel(report.metadata.dataSource)}</p>
           </div>
           <details className={styles.exportMenu}>
-            <summary title="Export results">
-              <Download aria-hidden="true" size={18} />
-              <span className={styles.visuallyHidden}>Export results</span>
-            </summary>
+            <summary title="Export results">Export</summary>
             <div>
               <button type="button" onClick={() => downloadJson(report)}>JSON report</button>
               <button type="button" onClick={() => downloadTrades(report)}>Trades CSV</button>
@@ -223,25 +204,19 @@ export function ResearchTerminal({ initialReport }: { initialReport: BacktestRes
             </div>
             <div className={styles.experimentActions}>
               <button className={styles.setupButton} type="button" aria-expanded={controlsOpen} aria-controls="backtest-control-body" onClick={() => setControlsOpen((current) => !current)}>
-                <SlidersHorizontal aria-hidden="true" size={16} />{controlsOpen ? "Close setup" : "Edit setup"}
+                {controlsOpen ? "Close setup" : "Edit setup"}
               </button>
-              <button className={styles.iconButton} type="button" onClick={reset} title="Reset controls" aria-label="Reset controls"><RotateCcw aria-hidden="true" size={17} /></button>
+              <button className={styles.resetButton} type="button" onClick={reset}>Reset</button>
               <button className={styles.runButton} data-magnetic type="submit" form="backtest-form" disabled={!ready || loading}>
-                <Play aria-hidden="true" size={15} fill="currentColor" />
                 {loading ? "Running backtest" : "Run backtest"}
               </button>
             </div>
           </header>
 
-          <div className={styles.executionPath} aria-label="Backtest execution timing">
-            <span>Signal at close</span><ArrowRight aria-hidden="true" size={15} />
-            <span>Fill at next open</span><ArrowRight aria-hidden="true" size={15} />
-            <span>Costs applied</span>
-          </div>
+          <p className={styles.executionPath}>Signal at close · Fill at next open · Costs applied</p>
 
           {error && (
             <div className={styles.errorBanner} role="alert">
-              <AlertTriangle aria-hidden="true" size={18} />
               <div><strong>Backtest not run</strong><span>{error}</span></div>
             </div>
           )}
@@ -374,7 +349,6 @@ export function ResearchTerminal({ initialReport }: { initialReport: BacktestRes
         </section>
 
         <div className={styles.disclaimer} role="note">
-          <Info aria-hidden="true" size={15} />
           <span>Results are hypothetical and depend on the data and assumptions shown here. They are not investment advice or a promise of future performance.</span>
           <Link href="/disclaimer">Read disclaimer</Link>
         </div>
@@ -430,7 +404,7 @@ export function ResearchTerminal({ initialReport }: { initialReport: BacktestRes
               aria-selected={activeTab === tab.id}
               onClick={() => setActiveTab(tab.id)}
             >
-              {tab.icon}{tab.label}
+              {tab.label}
             </button>
           ))}
         </div>
@@ -456,7 +430,6 @@ export function ResearchTerminal({ initialReport }: { initialReport: BacktestRes
         <details className={styles.assumptions} data-motion-reveal="text">
           <summary>
             <span><strong>Methodology and assumptions</strong><small>Review the rules behind this result.</small></span>
-            <ChevronDown aria-hidden="true" size={18} />
           </summary>
           <dl>
             {Object.entries(report.assumptions).map(([key, value]) => (
@@ -642,7 +615,7 @@ function StrategyFields({
 }
 
 function Metric({ label, value }: { label: string; value: string }) {
-  return <div><span>{label}<Link href="/methodology" title={`${label} methodology`} aria-label={`Read ${label} methodology`}><Info size={12} /></Link></span><strong>{value}</strong></div>;
+  return <div><span>{label}<Link href="/methodology" aria-label={`Read ${label} methodology`}>Method</Link></span><strong>{value}</strong></div>;
 }
 
 function AssetAttributionTable({ report, currency }: { report: BacktestResponse; currency: string }) {
@@ -735,7 +708,7 @@ function StrategyStudy({ report }: { report: BacktestResponse }) {
   const study = report.strategyStudy;
   const trials = study?.trials ?? [];
   if (!trials.length) {
-    return <div className={styles.emptyState}><SlidersHorizontal aria-hidden="true" size={24} /><h3>No parameter study yet</h3><p>Run the backtest once to compare the fixed strategy setups.</p></div>;
+    return <div className={styles.emptyState}><h3>No parameter study yet</h3><p>Run the backtest once to compare the fixed strategy setups.</p></div>;
   }
   const bestByStrategy = study?.bestByStrategy?.length
     ? study.bestByStrategy
@@ -777,7 +750,7 @@ function StrategyStudy({ report }: { report: BacktestResponse }) {
 
 function TradeTable({ report, currency }: { report: BacktestResponse; currency: string }) {
   if (!report.trades.length) {
-    return <div className={styles.emptyState}><Table2 aria-hidden="true" size={24} /><h3>No trades executed</h3><p>The selected strategy held cash for this period.</p></div>;
+    return <div className={styles.emptyState}><h3>No trades executed</h3><p>The selected strategy held cash for this period.</p></div>;
   }
   return <div className={styles.tableWrap}>
     <table>

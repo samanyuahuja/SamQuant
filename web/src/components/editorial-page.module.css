@@ -46,7 +46,7 @@
 .index {
   margin: 5px 0 0;
   color: var(--accent);
-  font-family: var(--font-mono);
+  font-family: var(--font-data);
   font-size: 0.62rem;
 }
 
@@ -83,7 +83,6 @@
 
 .section li:nth-child(odd) { border-right: 1px solid var(--line); }
 .section li:nth-child(even) { padding-left: 16px; }
-.section li svg { flex: 0 0 auto; color: var(--positive); }
 .section pre {
   overflow-x: auto;
   margin: 30px 0 0;
@@ -91,7 +90,7 @@
   border-left: 3px solid var(--accent);
   background: var(--ink-soft);
   color: var(--paper);
-  font-family: var(--font-mono);
+  font-family: var(--font-data);
   font-size: 0.74rem;
   line-height: 1.8;
 }

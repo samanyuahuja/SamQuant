@@ -29,6 +29,7 @@ body:has(main[data-route="research"]) .header {
 .desktopNav,
 .actions,
 .github,
+.paper,
 .status { display: flex; align-items: center; }
 
 .brand { width: max-content; }
@@ -36,43 +37,54 @@ body:has(main[data-route="research"]) .header {
 .desktopNav { gap: 30px; }
 
 .desktopNav a,
-.github {
+.github,
+.paper {
   color: color-mix(in srgb, currentColor 68%, transparent);
   font-size: 0.75rem;
   transition: color 160ms ease;
 }
 
 .desktopNav a:hover,
-.github:hover { color: currentColor; }
+.github:hover,
+.paper:hover { color: currentColor; }
 
 .actions { justify-content: flex-end; gap: 20px; }
 
 .status {
   gap: 7px;
   color: color-mix(in srgb, currentColor 76%, transparent);
-  font-family: var(--font-mono);
+  font-family: var(--font-data);
   font-size: 0.61rem;
   text-transform: uppercase;
 }
 
 .status i { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
 body:has(main[data-route="research"]) .status i { background: var(--accent); }
-.github { gap: 6px; }
+.paper {
+  padding-bottom: 3px;
+  border-bottom: 1px solid var(--accent);
+  color: currentColor;
+  font-weight: 600;
+}
 .mobileMenu { display: none; }
 
 @media (max-width: 800px) {
   .inner { grid-template-columns: 1fr auto; width: min(100% - 28px, var(--content-wide)); }
   .desktopNav,
   .status,
+  .paper,
   .github { display: none; }
   .mobileMenu { position: relative; display: block; }
   .mobileMenu summary {
-    display: grid;
-    place-items: center;
-    width: 44px;
+    display: flex;
+    align-items: center;
+    width: auto;
     height: 44px;
+    padding: 0 4px;
     color: currentColor;
     cursor: pointer;
+    font-size: 0.75rem;
+    font-weight: 600;
     list-style: none;
   }
   .mobileMenu summary::-webkit-details-marker { display: none; }

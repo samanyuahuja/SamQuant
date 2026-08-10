@@ -23,7 +23,7 @@
   --shadow-deep: 0 28px 80px rgb(17 19 16 / 16%);
   --font-display: "Barlow Condensed", "Arial Narrow", sans-serif;
   --font-sans: "IBM Plex Sans Variable", Arial, sans-serif;
-  --font-mono: "IBM Plex Mono", monospace;
+  --font-data: "IBM Plex Sans Variable", Arial, sans-serif;
 }
 
 * { box-sizing: border-box; }
@@ -87,7 +87,7 @@ summary { outline-offset: 4px; }
 .eyebrow {
   margin: 0;
   color: var(--accent);
-  font-family: var(--font-mono);
+  font-family: var(--font-data);
   font-size: 0.68rem;
   line-height: 1.5;
   text-transform: uppercase;

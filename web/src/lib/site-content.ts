@@ -13,6 +13,8 @@ export interface ContentPage {
   sections: ContentSection[];
 }
 
+export const RESEARCH_PAPER_URL = "https://docs.google.com/document/d/1lSlu87iYgoT5s39RK3BOaDHfhelHS8txKvTm_hgPefM/view";
+
 export const CONTENT_PAGES: Record<string, ContentPage> = {
   methodology: {
     title: "Methodology",
@@ -79,6 +81,7 @@ export const CONTENT_PAGES: Record<string, ContentPage> = {
         title: "Reference guides",
         body: ["The repository includes module contracts, architecture decisions, and detailed usage notes."],
         links: [
+          { label: "Research paper", href: RESEARCH_PAPER_URL },
           { label: "Python API", href: "https://github.com/samanyuahuja/SamQuant/blob/main/docs/api.md" },
           { label: "Usage guide", href: "https://github.com/samanyuahuja/SamQuant/blob/main/docs/usage.md" },
         ],
@@ -129,8 +132,11 @@ export const CONTENT_PAGES: Record<string, ContentPage> = {
       },
       {
         title: "Source",
-        body: ["The complete project is public under the MIT License."],
-        links: [{ label: "View GitHub", href: "https://github.com/samanyuahuja/SamQuant" }],
+        body: ["The project and its formal research paper are public."],
+        links: [
+          { label: "Research paper", href: RESEARCH_PAPER_URL },
+          { label: "View GitHub", href: "https://github.com/samanyuahuja/SamQuant" },
+        ],
       },
     ],
   },

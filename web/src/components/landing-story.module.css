@@ -48,7 +48,7 @@
   display: grid;
   justify-items: end;
   color: var(--muted);
-  font-family: var(--font-mono);
+  font-family: var(--font-data);
   font-size: 0.62rem;
   text-transform: uppercase;
 }
@@ -110,6 +110,43 @@
   background: var(--accent-strong);
 }
 
+.paperBand {
+  display: grid;
+  grid-template-columns: minmax(160px, 0.55fr) minmax(320px, 1.4fr) minmax(220px, 0.8fr) auto;
+  align-items: center;
+  gap: 30px;
+  padding: 30px max(24px, calc((100% - var(--content)) / 2));
+  border-block: 1px solid var(--ink);
+  background: var(--paper-bright);
+}
+
+.paperBand p,
+.paperBand h2,
+.paperBand span { margin: 0; }
+
+.paperBand p {
+  color: var(--accent-strong);
+  font-size: 0.72rem;
+  font-weight: 650;
+}
+
+.paperBand h2 {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  font-weight: 500;
+}
+
+.paperBand span { color: var(--muted); font-size: 0.8rem; }
+
+.paperBand a {
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--accent-strong);
+  color: var(--accent-strong);
+  font-size: 0.8rem;
+  font-weight: 650;
+  white-space: nowrap;
+}
+
 .band {
   position: relative;
   padding: 118px max(24px, calc((100% - var(--content)) / 2)) 124px;
@@ -135,7 +172,7 @@
 .stageLabel {
   margin: 0 0 34px;
   color: var(--accent-strong);
-  font-family: var(--font-mono);
+  font-family: var(--font-data);
   font-size: 0.66rem;
   font-weight: 500;
   text-transform: uppercase;
@@ -220,13 +257,13 @@
 
 .auditHeader span {
   color: var(--muted);
-  font-family: var(--font-mono);
+  font-family: var(--font-data);
   font-size: 0.56rem;
   text-transform: uppercase;
 }
 
 .auditHeader strong {
-  font-family: var(--font-mono);
+  font-family: var(--font-data);
   font-size: 0.73rem;
   font-weight: 500;
 }
@@ -258,7 +295,7 @@
 .dataRows span {
   padding: 12px 10px;
   color: #49504c;
-  font-family: var(--font-mono);
+  font-family: var(--font-data);
   font-size: 0.66rem;
   text-align: right;
 }
@@ -297,7 +334,7 @@
 }
 
 .validationRail strong {
-  font-family: var(--font-mono);
+  font-family: var(--font-data);
   font-size: 0.7rem;
   font-weight: 500;
 }
@@ -355,7 +392,7 @@
   display: flex;
   justify-content: space-between;
   color: var(--muted-2);
-  font-family: var(--font-mono);
+  font-family: var(--font-data);
   font-size: 0.56rem;
   text-transform: uppercase;
 }
@@ -397,7 +434,7 @@
   flex-wrap: wrap;
   gap: 18px;
   color: var(--muted-2);
-  font-family: var(--font-mono);
+  font-family: var(--font-data);
   font-size: 0.58rem;
 }
 
@@ -441,7 +478,7 @@
 }
 
 .signalOutput strong {
-  font-family: var(--font-mono);
+  font-family: var(--font-data);
   font-size: 1.5rem;
   font-weight: 400;
 }
@@ -494,7 +531,7 @@
   display: block;
   margin-bottom: 20px;
   color: var(--muted);
-  font-family: var(--font-mono);
+  font-family: var(--font-data);
   font-size: 0.58rem;
   text-transform: uppercase;
 }
@@ -533,7 +570,7 @@
 }
 
 .portfolioEquation strong {
-  font-family: var(--font-mono);
+  font-family: var(--font-data);
   font-size: 0.78rem;
   font-weight: 500;
 }
@@ -610,7 +647,7 @@
 
 .analyticsReadout strong {
   margin: 5px 0;
-  font-family: var(--font-mono);
+  font-family: var(--font-data);
   font-size: 1.35rem;
   font-weight: 400;
 }
@@ -642,7 +679,7 @@
   display: block;
   margin-top: 8px;
   overflow-wrap: anywhere;
-  font-family: var(--font-mono);
+  font-family: var(--font-data);
   font-size: 0.86rem;
   font-weight: 500;
 }
@@ -683,7 +720,7 @@
   justify-content: space-between;
   padding: 18px 20px;
   color: var(--muted-2);
-  font-family: var(--font-mono);
+  font-family: var(--font-data);
   font-size: 0.56rem;
 }
 
@@ -716,7 +753,7 @@
 
 .terminalMetrics b {
   color: var(--paper);
-  font-family: var(--font-mono);
+  font-family: var(--font-data);
   font-weight: 500;
 }
 
@@ -813,6 +850,10 @@
 }
 
 @media (max-width: 900px) {
+  .paperBand { grid-template-columns: 1fr 1.5fr; }
+  .paperBand span { grid-column: 1; }
+  .paperBand a { grid-column: 2; grid-row: 2; justify-self: start; }
+
   .band {
     padding-inline: 28px;
   }
@@ -879,6 +920,15 @@
     right: 14px;
     bottom: 25%;
   }
+
+  .paperBand {
+    grid-template-columns: 1fr;
+    gap: 12px;
+    padding: 28px 14px 32px;
+  }
+
+  .paperBand span,
+  .paperBand a { grid-column: 1; grid-row: auto; }
 
   .band {
     padding: 82px 14px 88px;

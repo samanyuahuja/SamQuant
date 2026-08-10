@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { RESEARCH_PAPER_URL } from "@/lib/site-content";
 import { BrandMark } from "./brand-mark";
 import styles from "./site-footer.module.css";
 
@@ -19,6 +20,7 @@ export function SiteFooter() {
           <a className={styles.logoDownload} href="/brand/samquant-logo.jpg" download>Download logo (JPEG)</a>
         </div>
         <div className={styles.links}>
+          <a href={RESEARCH_PAPER_URL} target="_blank" rel="noreferrer">Research paper</a>
           <Link href="/research">Research terminal</Link>
           <Link href="/methodology">Methodology</Link>
           <Link href="/architecture">Architecture</Link>

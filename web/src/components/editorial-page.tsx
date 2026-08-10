@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { ArrowUpRight, Check } from "lucide-react";
 
 import type { ContentPage } from "@/lib/site-content";
 import styles from "./editorial-page.module.css";
@@ -22,7 +21,7 @@ export function EditorialPage({ page }: { page: ContentPage }) {
               {section.points && (
                 <ul>
                   {section.points.map((point) => (
-                    <li key={point}><Check aria-hidden="true" size={15} />{point}</li>
+                    <li key={point}>{point}</li>
                   ))}
                 </ul>
               )}
@@ -31,7 +30,7 @@ export function EditorialPage({ page }: { page: ContentPage }) {
                 <div className={styles.links}>
                   {section.links.map((link) => (
                     <Link key={link.href} href={link.href} target={link.href.startsWith("http") ? "_blank" : undefined}>
-                      {link.label}<ArrowUpRight aria-hidden="true" size={15} />
+                      {link.label}
                     </Link>
                   ))}
                 </div>

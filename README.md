@@ -4,6 +4,7 @@
 ![Python](https://img.shields.io/badge/python-3.10%2B-3776AB?logo=python&logoColor=white)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Live App](https://img.shields.io/badge/live-samquant.vercel.app-111827?logo=vercel&logoColor=white)](https://samquant.vercel.app)
+[![Research Paper](https://img.shields.io/badge/read-SamQuantResearch-315760)](https://docs.google.com/document/d/1lSlu87iYgoT5s39RK3BOaDHfhelHS8txKvTm_hgPefM/view)
 
 **A transparent algorithmic-trading system with a tested Python engine and a
 purpose-built quantitative research interface.**
@@ -14,6 +15,13 @@ costs, calculates risk metrics, and presents the results in an interactive
 dashboard. A FastAPI boundary serves the Next.js research terminal without
 duplicating financial logic in TypeScript. It is an education project, not a
 claim of future profitability.
+
+## Research Paper
+
+**[Read the complete SamQuant research paper](https://docs.google.com/document/d/1lSlu87iYgoT5s39RK3BOaDHfhelHS8txKvTm_hgPefM/view)**
+
+The paper presents the system design, methodology, assumptions, evaluation,
+advanced Phase 8 research tools, and limitations in a formal academic format.
 
 ![SamQuant public research story](docs/images/samquant-home-web.png)
 
