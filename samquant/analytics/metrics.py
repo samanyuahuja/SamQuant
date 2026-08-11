@@ -197,6 +197,8 @@ def _validated_equity_curve(equity_curve: pd.Series) -> pd.Series:
         raise AnalyticsError("Equity curve index cannot contain duplicates.")
     if not pd.api.types.is_numeric_dtype(equity_curve):
         raise AnalyticsError("Equity curve values must be numeric.")
+    if np.iscomplexobj(equity_curve.to_numpy()):
+        raise AnalyticsError("Equity curve values must be real-valued.")
 
     equity = equity_curve.astype(float)
     values = equity.to_numpy(dtype=float)
