@@ -6,7 +6,11 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from samquant.analytics import analyze_portfolio, simulate_portfolio
+from samquant.analytics import (
+    MonteCarloError,
+    analyze_portfolio,
+    simulate_portfolio,
+)
 
 
 def _market_data() -> dict[str, pd.DataFrame]:
@@ -67,3 +71,18 @@ def test_monte_carlo_is_reproducible_and_reports_tail_statistics() -> None:
     assert first.paths.shape == (41, 100)
     assert first.percentile_5 <= first.median_ending_value <= first.percentile_95
     assert 0.0 <= first.probability_below_start <= 1.0
+
+
+def test_monte_carlo_rejects_non_finite_initial_value() -> None:
+    returns = pd.DataFrame({"AAPL": [0.01, -0.01]})
+    weights = pd.Series({"AAPL": 1.0})
+
+    with pytest.raises(MonteCarloError, match="must be positive"):
+        simulate_portfolio(
+            returns,
+            weights,
+            initial_value=float("nan"),
+            horizon=10,
+            simulations=10,
+            seed=1,
+        )
