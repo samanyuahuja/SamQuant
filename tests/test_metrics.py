@@ -165,6 +165,13 @@ def test_metrics_reject_invalid_equity_curves(
         total_return(equity)
 
 
+def test_metrics_reject_complex_equity_values() -> None:
+    equity = pd.Series([100.0 + 0.0j, 110.0 + 1.0j])
+
+    with pytest.raises(AnalyticsError, match="real-valued"):
+        total_return(equity)
+
+
 def test_metrics_reject_invalid_annualization_and_risk_free_rate() -> None:
     equity = _equity([100.0, 101.0, 99.0])
 
