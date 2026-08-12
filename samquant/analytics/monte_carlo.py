@@ -37,7 +37,12 @@ def simulate_portfolio(
     """Simulate correlated daily returns using historical mean and covariance."""
     if asset_returns.empty or len(asset_returns) < 2:
         raise MonteCarloError("Monte Carlo simulation needs historical returns.")
-    if initial_value <= 0 or horizon <= 0 or simulations <= 0:
+    if (
+        not np.isfinite(initial_value)
+        or initial_value <= 0
+        or horizon <= 0
+        or simulations <= 0
+    ):
         raise MonteCarloError(
             "Initial value, horizon, and simulations must be positive."
         )
