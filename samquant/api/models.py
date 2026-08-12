@@ -4,10 +4,10 @@ from __future__ import annotations
 
 from datetime import date, datetime, time, timedelta, timezone
 from enum import Enum
-from typing import Optional
+from typing import Literal, Optional
 from zoneinfo import ZoneInfo
 
-from pydantic import BaseModel, Field, field_validator, model_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 
 class DataSource(str, Enum):
@@ -44,6 +44,8 @@ class SizingMethod(str, Enum):
 class StrategyParameters(BaseModel):
     """Bounded parameters for all supported strategy families."""
 
+    model_config = ConfigDict(extra="forbid")
+
     short_window: int = Field(default=20, ge=2, le=500)
     long_window: int = Field(default=60, ge=3, le=750)
     lookback_window: int = Field(default=20, ge=2, le=750)
@@ -57,6 +59,9 @@ class StrategyParameters(BaseModel):
 class BacktestRequest(BaseModel):
     """Complete user-controlled input for a bounded historical backtest."""
 
+    model_config = ConfigDict(extra="forbid")
+
+    mode: Literal["historical_research"] = "historical_research"
     data_source: DataSource = DataSource.DEMO
     market: Market = Market.US
     symbols: list[str] = Field(

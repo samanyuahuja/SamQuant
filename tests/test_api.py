@@ -23,6 +23,7 @@ def test_health_and_catalog_expose_bounded_capabilities() -> None:
     assert client.get("/api/v1/health").json() == {
         "status": "ok",
         "service": "samquant",
+        "mode": "historical-research",
     }
     catalog = client.get("/api/v1/catalog").json()
     assert catalog["dataSources"] == ["demo"]
@@ -113,6 +114,31 @@ def test_disabled_yahoo_source_returns_a_natural_error() -> None:
         "Yahoo Finance is not available on this server. "
         "Use demo data, or enable it in your local API."
     )
+
+
+def test_private_engine_rejects_direct_requests_without_internal_key() -> None:
+    client = TestClient(create_app(internal_key="server-only-secret"))
+
+    rejected = client.post("/api/v1/backtests", json={})
+    accepted = client.post(
+        "/api/v1/backtests",
+        headers={"x-samquant-internal-key": "server-only-secret"},
+        json={"symbols": ["AAPL"], "start": "2024-01-02", "end": "2024-06-28"},
+    )
+
+    assert rejected.status_code == 401
+    assert rejected.json()["error"]["code"] == "PRIVATE_API"
+    assert accepted.status_code == 200
+
+
+def test_live_trading_and_personal_advice_fields_are_forbidden() -> None:
+    response = _client().post(
+        "/api/v1/backtests",
+        json={"mode": "live_trading", "risk_tolerance": "high", "broker_token": "secret"},
+    )
+
+    assert response.status_code == 422
+    assert response.json()["error"]["code"] == "INVALID_REQUEST"
 
 
 def test_unexpected_backend_failure_does_not_expose_a_traceback(monkeypatch) -> None:
