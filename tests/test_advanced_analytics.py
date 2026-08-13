@@ -8,6 +8,7 @@ import pytest
 
 from samquant.analytics import (
     MonteCarloError,
+    PortfolioAnalysisError,
     analyze_portfolio,
     simulate_portfolio,
 )
@@ -41,6 +42,11 @@ def test_portfolio_analysis_returns_valid_long_only_weights() -> None:
     assert analysis.covariance_matrix.shape == (2, 2)
     assert not analysis.frontier.empty
     assert analysis.volatility >= 0.0
+
+
+def test_portfolio_analysis_rejects_non_finite_risk_free_rate() -> None:
+    with pytest.raises(PortfolioAnalysisError, match="must be finite"):
+        analyze_portfolio(_market_data(), risk_free_rate=float("nan"))
 
 
 def test_monte_carlo_is_reproducible_and_reports_tail_statistics() -> None:
