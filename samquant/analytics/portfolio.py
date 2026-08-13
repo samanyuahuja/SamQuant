@@ -43,6 +43,8 @@ def analyze_portfolio(
         raise PortfolioAnalysisError("Portfolio analysis requires market data.")
     if periods_per_year <= 0 or samples < 100:
         raise PortfolioAnalysisError("Periods must be positive and samples at least 100.")
+    if not np.isfinite(risk_free_rate):
+        raise PortfolioAnalysisError("Risk-free rate must be finite.")
 
     closes: dict[str, pd.Series] = {}
     for symbol, frame in market_data.items():
