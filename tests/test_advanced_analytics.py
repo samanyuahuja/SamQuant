@@ -86,3 +86,18 @@ def test_monte_carlo_rejects_non_finite_initial_value() -> None:
             simulations=10,
             seed=1,
         )
+
+
+def test_monte_carlo_rejects_non_finite_weights() -> None:
+    returns = pd.DataFrame({"AAPL": [0.01, -0.01], "MSFT": [0.02, -0.02]})
+    weights = pd.Series({"AAPL": float("nan"), "MSFT": 1.0})
+
+    with pytest.raises(MonteCarloError, match="non-negative and sum to one"):
+        simulate_portfolio(
+            returns,
+            weights,
+            initial_value=10_000.0,
+            horizon=10,
+            simulations=10,
+            seed=1,
+        )

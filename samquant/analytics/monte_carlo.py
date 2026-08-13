@@ -49,8 +49,10 @@ def simulate_portfolio(
     if set(weights.index) != set(asset_returns.columns):
         raise MonteCarloError("Weights must match the asset-return columns.")
     normalized_weights = weights.reindex(asset_returns.columns).astype(float)
-    if (normalized_weights < 0).any() or not np.isclose(
-        normalized_weights.sum(), 1.0
+    if (
+        not np.isfinite(normalized_weights).all()
+        or (normalized_weights < 0).any()
+        or not np.isclose(normalized_weights.sum(), 1.0)
     ):
         raise MonteCarloError("Weights must be non-negative and sum to one.")
 
