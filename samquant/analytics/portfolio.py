@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from dataclasses import dataclass
+from numbers import Integral
 
 import numpy as np
 import pandas as pd
@@ -41,7 +42,14 @@ def analyze_portfolio(
     """Estimate a reproducible long-only efficient frontier from historical returns."""
     if not market_data:
         raise PortfolioAnalysisError("Portfolio analysis requires market data.")
-    if periods_per_year <= 0 or samples < 100:
+    if (
+        isinstance(periods_per_year, bool)
+        or not isinstance(periods_per_year, Integral)
+        or isinstance(samples, bool)
+        or not isinstance(samples, Integral)
+        or periods_per_year <= 0
+        or samples < 100
+    ):
         raise PortfolioAnalysisError("Periods must be positive and samples at least 100.")
     if not np.isfinite(risk_free_rate):
         raise PortfolioAnalysisError("Risk-free rate must be finite.")

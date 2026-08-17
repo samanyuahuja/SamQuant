@@ -49,6 +49,17 @@ def test_portfolio_analysis_rejects_non_finite_risk_free_rate() -> None:
         analyze_portfolio(_market_data(), risk_free_rate=float("nan"))
 
 
+@pytest.mark.parametrize(
+    "settings",
+    ({"periods_per_year": True}, {"samples": 100.5}),
+)
+def test_portfolio_analysis_requires_integer_settings(
+    settings: dict[str, object],
+) -> None:
+    with pytest.raises(PortfolioAnalysisError, match="Periods must be positive"):
+        analyze_portfolio(_market_data(), **settings)
+
+
 def test_monte_carlo_is_reproducible_and_reports_tail_statistics() -> None:
     closes = pd.DataFrame(
         {symbol: frame["Close"] for symbol, frame in _market_data().items()}
