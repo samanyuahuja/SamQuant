@@ -118,3 +118,24 @@ def test_monte_carlo_rejects_non_finite_weights() -> None:
             simulations=10,
             seed=1,
         )
+
+
+@pytest.mark.parametrize(
+    "settings",
+    (
+        {"horizon": True, "simulations": 10},
+        {"horizon": 10, "simulations": 10.5},
+    ),
+)
+def test_monte_carlo_requires_integer_counts(settings: dict[str, object]) -> None:
+    returns = pd.DataFrame({"AAPL": [0.01, -0.01]})
+    weights = pd.Series({"AAPL": 1.0})
+
+    with pytest.raises(MonteCarloError, match="must be positive"):
+        simulate_portfolio(
+            returns,
+            weights,
+            initial_value=10_000.0,
+            seed=1,
+            **settings,
+        )
