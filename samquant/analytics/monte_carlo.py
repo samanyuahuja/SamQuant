@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from numbers import Integral
 
 import numpy as np
 import pandas as pd
@@ -40,7 +41,11 @@ def simulate_portfolio(
     if (
         not np.isfinite(initial_value)
         or initial_value <= 0
+        or isinstance(horizon, bool)
+        or not isinstance(horizon, Integral)
         or horizon <= 0
+        or isinstance(simulations, bool)
+        or not isinstance(simulations, Integral)
         or simulations <= 0
     ):
         raise MonteCarloError(
