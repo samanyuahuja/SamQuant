@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from dataclasses import dataclass
-from numbers import Integral
+from numbers import Integral, Real
 
 import numpy as np
 import pandas as pd
@@ -51,7 +51,11 @@ def analyze_portfolio(
         or samples < 100
     ):
         raise PortfolioAnalysisError("Periods must be positive and samples at least 100.")
-    if not np.isfinite(risk_free_rate):
+    if (
+        isinstance(risk_free_rate, bool)
+        or not isinstance(risk_free_rate, Real)
+        or not np.isfinite(risk_free_rate)
+    ):
         raise PortfolioAnalysisError("Risk-free rate must be finite.")
 
     closes: dict[str, pd.Series] = {}
