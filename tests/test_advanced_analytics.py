@@ -93,7 +93,8 @@ def test_monte_carlo_is_reproducible_and_reports_tail_statistics() -> None:
     assert 0.0 <= first.probability_below_start <= 1.0
 
 
-def test_monte_carlo_rejects_non_finite_initial_value() -> None:
+@pytest.mark.parametrize("initial_value", (float("nan"), True, "10000"))
+def test_monte_carlo_rejects_invalid_initial_value(initial_value: object) -> None:
     returns = pd.DataFrame({"AAPL": [0.01, -0.01]})
     weights = pd.Series({"AAPL": 1.0})
 
@@ -101,7 +102,7 @@ def test_monte_carlo_rejects_non_finite_initial_value() -> None:
         simulate_portfolio(
             returns,
             weights,
-            initial_value=float("nan"),
+            initial_value=initial_value,
             horizon=10,
             simulations=10,
             seed=1,

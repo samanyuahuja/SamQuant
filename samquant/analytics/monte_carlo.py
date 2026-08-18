@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from numbers import Integral
+from numbers import Integral, Real
 
 import numpy as np
 import pandas as pd
@@ -39,7 +39,9 @@ def simulate_portfolio(
     if asset_returns.empty or len(asset_returns) < 2:
         raise MonteCarloError("Monte Carlo simulation needs historical returns.")
     if (
-        not np.isfinite(initial_value)
+        isinstance(initial_value, bool)
+        or not isinstance(initial_value, Real)
+        or not np.isfinite(initial_value)
         or initial_value <= 0
         or isinstance(horizon, bool)
         or not isinstance(horizon, Integral)
