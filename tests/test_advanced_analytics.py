@@ -44,9 +44,12 @@ def test_portfolio_analysis_returns_valid_long_only_weights() -> None:
     assert analysis.volatility >= 0.0
 
 
-def test_portfolio_analysis_rejects_non_finite_risk_free_rate() -> None:
+@pytest.mark.parametrize("risk_free_rate", (float("nan"), True, "0.05"))
+def test_portfolio_analysis_rejects_invalid_risk_free_rate(
+    risk_free_rate: object,
+) -> None:
     with pytest.raises(PortfolioAnalysisError, match="must be finite"):
-        analyze_portfolio(_market_data(), risk_free_rate=float("nan"))
+        analyze_portfolio(_market_data(), risk_free_rate=risk_free_rate)
 
 
 @pytest.mark.parametrize(
