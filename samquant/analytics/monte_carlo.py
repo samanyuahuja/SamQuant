@@ -53,6 +53,8 @@ def simulate_portfolio(
         raise MonteCarloError(
             "Initial value, horizon, and simulations must be positive."
         )
+    if isinstance(seed, bool) or not isinstance(seed, Integral) or seed < 0:
+        raise MonteCarloError("Seed must be a non-negative integer.")
     if set(weights.index) != set(asset_returns.columns):
         raise MonteCarloError("Weights must match the asset-return columns.")
     normalized_weights = weights.reindex(asset_returns.columns).astype(float)

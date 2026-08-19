@@ -143,3 +143,19 @@ def test_monte_carlo_requires_integer_counts(settings: dict[str, object]) -> Non
             seed=1,
             **settings,
         )
+
+
+@pytest.mark.parametrize("seed", (True, -1, 1.5))
+def test_monte_carlo_requires_non_negative_integer_seed(seed: object) -> None:
+    returns = pd.DataFrame({"AAPL": [0.01, -0.01]})
+    weights = pd.Series({"AAPL": 1.0})
+
+    with pytest.raises(MonteCarloError, match="non-negative integer"):
+        simulate_portfolio(
+            returns,
+            weights,
+            initial_value=10_000.0,
+            horizon=10,
+            simulations=10,
+            seed=seed,
+        )
