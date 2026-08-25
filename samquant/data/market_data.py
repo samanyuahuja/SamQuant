@@ -9,6 +9,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Final
 
+import numpy as np
 import pandas as pd
 import yfinance as yf
 
@@ -115,6 +116,9 @@ def validate_ohlcv(data: pd.DataFrame) -> None:
     for column in OHLCV_COLUMNS:
         if not pd.api.types.is_numeric_dtype(required[column]):
             raise MarketDataError(f"{column} must be numeric.")
+
+    if not np.isfinite(required.to_numpy(dtype=float)).all():
+        raise MarketDataError("OHLCV data must contain only finite values.")
 
     price_columns = ["Open", "High", "Low", "Close"]
     if (required.loc[:, price_columns] <= 0).any().any():
