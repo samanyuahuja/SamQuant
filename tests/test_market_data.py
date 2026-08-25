@@ -146,3 +146,9 @@ def test_build_data_path_rejects_non_boolean_adjustment_setting(tmp_path: Path) 
 def test_normalize_symbol_rejects_empty_symbol() -> None:
     with pytest.raises(MarketDataError, match="Symbol cannot be empty"):
         normalize_symbol("   ")
+
+
+@pytest.mark.parametrize("symbol", (None, 123))
+def test_normalize_symbol_rejects_non_text_values(symbol: object) -> None:
+    with pytest.raises(MarketDataError, match="Symbol must be text"):
+        normalize_symbol(symbol)  # type: ignore[arg-type]
