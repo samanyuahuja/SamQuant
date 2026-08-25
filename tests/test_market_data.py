@@ -65,6 +65,15 @@ def test_validate_ohlcv_rejects_negative_volume() -> None:
         validate_ohlcv(data)
 
 
+@pytest.mark.parametrize("column", ("Close", "Volume"))
+def test_validate_ohlcv_rejects_infinite_values(column: str) -> None:
+    data = _valid_ohlcv()
+    data.loc[pd.Timestamp("2024-01-03"), column] = float("inf")
+
+    with pytest.raises(MarketDataError, match="only finite values"):
+        validate_ohlcv(data)
+
+
 def test_download_ohlcv_drops_incomplete_provider_rows(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
