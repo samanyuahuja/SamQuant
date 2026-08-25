@@ -193,6 +193,8 @@ def build_data_path(
 
 def normalize_symbol(symbol: str) -> str:
     """Return a normalized ticker symbol suitable for provider requests and paths."""
+    if not isinstance(symbol, str):
+        raise MarketDataError("Symbol must be text.")
     cleaned = symbol.strip().upper()
     if not cleaned:
         raise MarketDataError("Symbol cannot be empty.")
