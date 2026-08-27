@@ -63,6 +63,12 @@ def test_portfolio_analysis_requires_integer_settings(
         analyze_portfolio(_market_data(), **settings)
 
 
+@pytest.mark.parametrize("seed", (True, -1, 1.5))
+def test_portfolio_analysis_requires_non_negative_integer_seed(seed: object) -> None:
+    with pytest.raises(PortfolioAnalysisError, match="non-negative integer"):
+        analyze_portfolio(_market_data(), seed=seed)
+
+
 def test_monte_carlo_is_reproducible_and_reports_tail_statistics() -> None:
     closes = pd.DataFrame(
         {symbol: frame["Close"] for symbol, frame in _market_data().items()}
