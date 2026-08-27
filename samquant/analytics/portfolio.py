@@ -57,6 +57,8 @@ def analyze_portfolio(
         or not np.isfinite(risk_free_rate)
     ):
         raise PortfolioAnalysisError("Risk-free rate must be finite.")
+    if isinstance(seed, bool) or not isinstance(seed, Integral) or seed < 0:
+        raise PortfolioAnalysisError("Seed must be a non-negative integer.")
 
     closes: dict[str, pd.Series] = {}
     for symbol, frame in market_data.items():
