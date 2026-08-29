@@ -61,6 +61,8 @@ def simulate_portfolio(
         )
     if isinstance(seed, bool) or not isinstance(seed, Integral) or seed < 0:
         raise MonteCarloError("Seed must be a non-negative integer.")
+    if asset_returns.columns.has_duplicates or weights.index.has_duplicates:
+        raise MonteCarloError("Asset labels must be unique.")
     if set(weights.index) != set(asset_returns.columns):
         raise MonteCarloError("Weights must match the asset-return columns.")
     normalized_weights = weights.reindex(asset_returns.columns).astype(float)
