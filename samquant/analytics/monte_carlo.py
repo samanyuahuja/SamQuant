@@ -38,6 +38,12 @@ def simulate_portfolio(
     """Simulate correlated daily returns using historical mean and covariance."""
     if asset_returns.empty or len(asset_returns) < 2:
         raise MonteCarloError("Monte Carlo simulation needs historical returns.")
+    if any(
+        not pd.api.types.is_numeric_dtype(dtype)
+        or pd.api.types.is_bool_dtype(dtype)
+        for dtype in asset_returns.dtypes
+    ) or not np.isfinite(asset_returns.to_numpy(dtype=float)).all():
+        raise MonteCarloError("Asset returns must contain finite numeric values.")
     if (
         isinstance(initial_value, bool)
         or not isinstance(initial_value, Real)
