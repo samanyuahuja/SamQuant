@@ -71,6 +71,17 @@ def test_portfolio_analysis_requires_non_negative_integer_seed(seed: object) -> 
         analyze_portfolio(_market_data(), seed=seed)
 
 
+def test_portfolio_analysis_rejects_flat_price_histories() -> None:
+    market_data = _market_data()
+    for frame in market_data.values():
+        frame.loc[:, ["Open", "Close"]] = 100.0
+        frame.loc[:, "High"] = 101.0
+        frame.loc[:, "Low"] = 99.0
+
+    with pytest.raises(PortfolioAnalysisError, match="price variability"):
+        analyze_portfolio(market_data)
+
+
 def test_monte_carlo_is_reproducible_and_reports_tail_statistics() -> None:
     closes = pd.DataFrame(
         {symbol: frame["Close"] for symbol, frame in _market_data().items()}
