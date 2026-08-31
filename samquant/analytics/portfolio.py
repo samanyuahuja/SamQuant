@@ -72,6 +72,10 @@ def analyze_portfolio(
     annual_returns = returns.mean() * periods_per_year
     covariance = returns.cov() * periods_per_year
     correlation = returns.corr()
+    if not (np.diag(covariance.to_numpy()) > 0.0).any():
+        raise PortfolioAnalysisError(
+            "Portfolio analysis needs price variability in at least one asset."
+        )
     asset_count = len(annual_returns)
     generator = np.random.default_rng(seed)
     weights = generator.dirichlet(np.ones(asset_count), size=samples)
