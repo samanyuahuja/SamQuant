@@ -55,8 +55,9 @@ def analyze_portfolio(
         isinstance(risk_free_rate, bool)
         or not isinstance(risk_free_rate, Real)
         or not np.isfinite(risk_free_rate)
+        or risk_free_rate <= -1.0
     ):
-        raise PortfolioAnalysisError("Risk-free rate must be finite.")
+        raise PortfolioAnalysisError("Risk-free rate must be finite and greater than -1.")
     if isinstance(seed, bool) or not isinstance(seed, Integral) or seed < 0:
         raise PortfolioAnalysisError("Seed must be a non-negative integer.")
 
