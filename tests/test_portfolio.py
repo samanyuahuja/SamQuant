@@ -78,3 +78,10 @@ def test_valuation_requires_a_valid_price_for_every_position() -> None:
 
     with pytest.raises(PortfolioError, match="finite and positive"):
         portfolio.total_value({"AAPL": float("nan")})
+
+
+def test_valuation_rejects_non_text_price_symbols() -> None:
+    portfolio = Portfolio(initial_cash=1_000.0)
+
+    with pytest.raises(PortfolioError, match="symbols must be strings"):
+        portfolio.total_value({1: 100.0})  # type: ignore[dict-item]
