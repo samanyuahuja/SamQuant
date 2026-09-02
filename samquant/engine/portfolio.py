@@ -107,6 +107,8 @@ class Portfolio:
 
     def market_value(self, prices: Mapping[str, float]) -> float:
         """Return the current value of all positions at supplied market prices."""
+        if any(not isinstance(symbol, str) for symbol in prices):
+            raise PortfolioError("Price symbols must be strings.")
         normalized_prices = {symbol.strip().upper(): price for symbol, price in prices.items()}
         missing_symbols = sorted(set(self._positions).difference(normalized_prices))
         if missing_symbols:
