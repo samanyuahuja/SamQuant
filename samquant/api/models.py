@@ -7,7 +7,7 @@ from enum import Enum
 from typing import Optional
 from zoneinfo import ZoneInfo
 
-from pydantic import BaseModel, Field, field_validator, model_validator
+from pydantic import BaseModel, Field, StrictInt, field_validator, model_validator
 
 
 class DataSource(str, Enum):
@@ -44,13 +44,13 @@ class SizingMethod(str, Enum):
 class StrategyParameters(BaseModel):
     """Bounded parameters for all supported strategy families."""
 
-    short_window: int = Field(default=20, ge=2, le=500)
-    long_window: int = Field(default=60, ge=3, le=750)
-    lookback_window: int = Field(default=20, ge=2, le=750)
+    short_window: StrictInt = Field(default=20, ge=2, le=500)
+    long_window: StrictInt = Field(default=60, ge=3, le=750)
+    lookback_window: StrictInt = Field(default=20, ge=2, le=750)
     entry_z_score: float = Field(default=-1.5, ge=-10.0, le=0.0)
     exit_z_score: float = Field(default=0.0, ge=-5.0, le=10.0)
-    top_n: int = Field(default=1, ge=1, le=6)
-    rebalance_frequency: int = Field(default=21, ge=1, le=252)
+    top_n: StrictInt = Field(default=1, ge=1, le=6)
+    rebalance_frequency: StrictInt = Field(default=21, ge=1, le=252)
     require_positive_returns: bool = True
 
 
@@ -72,7 +72,7 @@ class BacktestRequest(BaseModel):
     commission_rate: float = Field(default=0.001, ge=0.0, le=0.05)
     fixed_fee: float = Field(default=0.0, ge=0.0, le=10_000.0)
     slippage_bps: float = Field(default=5.0, ge=0.0, lt=10_000.0)
-    periods_per_year: int = Field(default=252, ge=1, le=366)
+    periods_per_year: StrictInt = Field(default=252, ge=1, le=366)
     risk_free_rate: float = Field(default=0.0, gt=-1.0, le=1.0)
     sizing_method: SizingMethod = SizingMethod.PERCENTAGE
     position_size: float = Field(default=1.0, gt=0.0, le=1_000_000_000.0)
@@ -80,9 +80,9 @@ class BacktestRequest(BaseModel):
     take_profit: Optional[float] = Field(default=None, gt=0.0, le=10.0)
     max_position_allocation: float = Field(default=1.0, gt=0.0, le=1.0)
     max_portfolio_exposure: float = Field(default=1.0, gt=0.0, le=1.0)
-    monte_carlo_horizon: int = Field(default=252, ge=20, le=756)
-    monte_carlo_simulations: int = Field(default=250, ge=50, le=1_000)
-    monte_carlo_seed: int = Field(default=42, ge=0, le=4_294_967_295)
+    monte_carlo_horizon: StrictInt = Field(default=252, ge=20, le=756)
+    monte_carlo_simulations: StrictInt = Field(default=250, ge=50, le=1_000)
+    monte_carlo_seed: StrictInt = Field(default=42, ge=0, le=4_294_967_295)
 
     @field_validator("symbols")
     @classmethod
