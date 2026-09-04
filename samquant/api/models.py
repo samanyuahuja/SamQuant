@@ -93,6 +93,8 @@ class BacktestRequest(BaseModel):
             raise ValueError("Ticker symbols cannot be blank.")
         if any(len(symbol) > 20 for symbol in cleaned):
             raise ValueError("Ticker symbols must contain at most 20 characters.")
+        if len({symbol.upper() for symbol in cleaned}) != len(cleaned):
+            raise ValueError("Ticker symbols must be unique.")
         return cleaned
 
     @model_validator(mode="after")
