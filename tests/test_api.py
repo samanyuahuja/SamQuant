@@ -96,6 +96,16 @@ def test_invalid_dates_return_structured_field_errors() -> None:
     assert error["requestId"]
 
 
+def test_duplicate_symbols_return_a_validation_error() -> None:
+    response = _client().post(
+        "/api/v1/backtests",
+        json={"symbols": ["AAPL", " aapl "]},
+    )
+
+    assert response.status_code == 422
+    assert response.json()["error"]["code"] == "INVALID_REQUEST"
+
+
 def test_disabled_yahoo_source_returns_a_natural_error() -> None:
     response = _client().post(
         "/api/v1/backtests",
