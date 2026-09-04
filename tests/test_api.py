@@ -106,6 +106,20 @@ def test_duplicate_symbols_return_a_validation_error() -> None:
     assert response.json()["error"]["code"] == "INVALID_REQUEST"
 
 
+def test_boolean_integer_settings_return_validation_errors() -> None:
+    payloads = (
+        {"parameters": {"short_window": True}},
+        {"periods_per_year": True},
+        {"monte_carlo_seed": True},
+    )
+
+    for payload in payloads:
+        response = _client().post("/api/v1/backtests", json=payload)
+
+        assert response.status_code == 422
+        assert response.json()["error"]["code"] == "INVALID_REQUEST"
+
+
 def test_disabled_yahoo_source_returns_a_natural_error() -> None:
     response = _client().post(
         "/api/v1/backtests",
