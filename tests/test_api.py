@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import importlib
 from datetime import datetime, timezone
+from uuid import UUID
 
 from fastapi.testclient import TestClient
 
@@ -94,6 +95,22 @@ def test_invalid_dates_return_structured_field_errors() -> None:
     error = response.json()["error"]
     assert error["code"] == "INVALID_REQUEST"
     assert error["requestId"]
+
+
+def test_request_ids_are_validated_before_reflection() -> None:
+    client = _client()
+    valid = client.get("/api/v1/health", headers={"x-request-id": "trace-123"})
+    assert valid.headers["x-request-id"] == "trace-123"
+
+    invalid = client.post(
+        "/api/v1/backtests",
+        headers={"x-request-id": "x" * 129},
+        json={"start": "2024-02-01", "end": "2024-01-01"},
+    )
+    generated_id = invalid.json()["error"]["requestId"]
+
+    UUID(generated_id)
+    assert generated_id == invalid.headers["x-request-id"]
 
 
 def test_duplicate_symbols_return_a_validation_error() -> None:

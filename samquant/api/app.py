@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os
+import re
 from typing import Any
 from uuid import uuid4
 
@@ -13,6 +14,8 @@ from fastapi.responses import JSONResponse
 from samquant.api.models import BacktestRequest
 from samquant.api.service import run_request
 from samquant.application import MARKET_NAMES, STRATEGY_NAMES, ResearchError
+
+_REQUEST_ID_PATTERN = re.compile(r"^[A-Za-z0-9._-]{1,128}$")
 
 
 def create_app(*, allow_yahoo: bool | None = None) -> FastAPI:
@@ -30,7 +33,12 @@ def create_app(*, allow_yahoo: bool | None = None) -> FastAPI:
 
     @api.middleware("http")
     async def add_request_id(request: Request, call_next: Any) -> Any:
-        request_id = request.headers.get("x-request-id", str(uuid4()))
+        supplied_request_id = request.headers.get("x-request-id", "")
+        request_id = (
+            supplied_request_id
+            if _REQUEST_ID_PATTERN.fullmatch(supplied_request_id)
+            else str(uuid4())
+        )
         request.state.request_id = request_id
         response = await call_next(request)
         response.headers["x-request-id"] = request_id
