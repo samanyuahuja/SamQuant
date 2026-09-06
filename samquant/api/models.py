@@ -53,6 +53,13 @@ class StrategyParameters(BaseModel):
     rebalance_frequency: StrictInt = Field(default=21, ge=1, le=252)
     require_positive_returns: bool = True
 
+    @field_validator("entry_z_score", "exit_z_score", mode="before")
+    @classmethod
+    def reject_boolean_numbers(cls, value: object) -> object:
+        if isinstance(value, bool):
+            raise ValueError("Numeric settings cannot be boolean.")
+        return value
+
 
 class BacktestRequest(BaseModel):
     """Complete user-controlled input for a bounded historical backtest."""
@@ -83,6 +90,25 @@ class BacktestRequest(BaseModel):
     monte_carlo_horizon: StrictInt = Field(default=252, ge=20, le=756)
     monte_carlo_simulations: StrictInt = Field(default=250, ge=50, le=1_000)
     monte_carlo_seed: StrictInt = Field(default=42, ge=0, le=4_294_967_295)
+
+    @field_validator(
+        "initial_cash",
+        "commission_rate",
+        "fixed_fee",
+        "slippage_bps",
+        "risk_free_rate",
+        "position_size",
+        "stop_loss",
+        "take_profit",
+        "max_position_allocation",
+        "max_portfolio_exposure",
+        mode="before",
+    )
+    @classmethod
+    def reject_boolean_numbers(cls, value: object) -> object:
+        if isinstance(value, bool):
+            raise ValueError("Numeric settings cannot be boolean.")
+        return value
 
     @field_validator("symbols")
     @classmethod
