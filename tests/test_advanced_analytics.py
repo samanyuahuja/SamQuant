@@ -71,6 +71,19 @@ def test_portfolio_analysis_requires_non_negative_integer_seed(seed: object) -> 
         analyze_portfolio(_market_data(), seed=seed)
 
 
+@pytest.mark.parametrize(
+    "market_data, message",
+    (({" ": _market_data()["AAPL"]}, "non-empty"),
+     ({"AAPL": _market_data()["AAPL"], " aapl ": _market_data()["MSFT"]}, "unique")),
+)
+def test_portfolio_analysis_validates_asset_symbols(
+    market_data: dict[str, pd.DataFrame],
+    message: str,
+) -> None:
+    with pytest.raises(PortfolioAnalysisError, match=message):
+        analyze_portfolio(market_data)
+
+
 def test_portfolio_analysis_rejects_flat_price_histories() -> None:
     market_data = _market_data()
     for frame in market_data.values():

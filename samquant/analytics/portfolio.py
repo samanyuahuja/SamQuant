@@ -42,6 +42,11 @@ def analyze_portfolio(
     """Estimate a reproducible long-only efficient frontier from historical returns."""
     if not market_data:
         raise PortfolioAnalysisError("Portfolio analysis requires market data.")
+    if any(not isinstance(symbol, str) or not symbol.strip() for symbol in market_data):
+        raise PortfolioAnalysisError("Asset symbols must be non-empty strings.")
+    symbols = [symbol.strip().upper() for symbol in market_data]
+    if len(symbols) != len(set(symbols)):
+        raise PortfolioAnalysisError("Asset symbols must be unique.")
     if (
         isinstance(periods_per_year, bool)
         or not isinstance(periods_per_year, Integral)
@@ -64,7 +69,7 @@ def analyze_portfolio(
     closes: dict[str, pd.Series] = {}
     for symbol, frame in market_data.items():
         validate_ohlcv(frame)
-        closes[symbol] = frame["Close"].astype(float)
+        closes[symbol.strip().upper()] = frame["Close"].astype(float)
     returns = pd.DataFrame(closes).pct_change(fill_method=None).dropna()
     if len(returns) < 2:
         raise PortfolioAnalysisError("Portfolio analysis needs at least three price bars.")
