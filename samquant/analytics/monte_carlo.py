@@ -65,6 +65,11 @@ def simulate_portfolio(
         raise MonteCarloError("Asset labels must be unique.")
     if set(weights.index) != set(asset_returns.columns):
         raise MonteCarloError("Weights must match the asset-return columns.")
+    if (
+        not pd.api.types.is_numeric_dtype(weights.dtype)
+        or pd.api.types.is_bool_dtype(weights.dtype)
+    ):
+        raise MonteCarloError("Weights must contain numeric values.")
     normalized_weights = weights.reindex(asset_returns.columns).astype(float)
     if (
         not np.isfinite(normalized_weights).all()

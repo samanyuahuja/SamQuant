@@ -156,6 +156,22 @@ def test_monte_carlo_rejects_non_finite_weights() -> None:
         )
 
 
+@pytest.mark.parametrize("invalid_weight", (True, "one"))
+def test_monte_carlo_rejects_non_numeric_weights(invalid_weight: object) -> None:
+    returns = pd.DataFrame({"AAPL": [0.01, -0.01]})
+    weights = pd.Series({"AAPL": invalid_weight})
+
+    with pytest.raises(MonteCarloError, match="numeric values"):
+        simulate_portfolio(
+            returns,
+            weights,
+            initial_value=10_000.0,
+            horizon=10,
+            simulations=10,
+            seed=1,
+        )
+
+
 @pytest.mark.parametrize("invalid_return", (float("nan"), float("inf"), "bad"))
 def test_monte_carlo_rejects_invalid_asset_returns(
     invalid_return: object,
