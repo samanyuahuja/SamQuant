@@ -111,7 +111,10 @@ class Portfolio:
         """Return the current value of all positions at supplied market prices."""
         if any(not isinstance(symbol, str) for symbol in prices):
             raise PortfolioError("Price symbols must be strings.")
-        normalized_prices = {symbol.strip().upper(): price for symbol, price in prices.items()}
+        normalized_symbols = [symbol.strip().upper() for symbol in prices]
+        if len(normalized_symbols) != len(set(normalized_symbols)):
+            raise PortfolioError("Price symbols must be unique after normalization.")
+        normalized_prices = dict(zip(normalized_symbols, prices.values()))
         missing_symbols = sorted(set(self._positions).difference(normalized_prices))
         if missing_symbols:
             raise PortfolioError(f"Missing prices for held symbols: {missing_symbols}.")
