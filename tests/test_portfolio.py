@@ -51,6 +51,17 @@ def test_sell_rejects_quantity_above_current_position() -> None:
         )
 
 
+def test_execute_rejects_non_order_input() -> None:
+    portfolio = Portfolio(initial_cash=1_000.0)
+
+    with pytest.raises(PortfolioError, match="must be an Order"):
+        portfolio.execute(  # type: ignore[arg-type]
+            "AAPL",
+            price=100.0,
+            timestamp=pd.Timestamp("2024-01-02"),
+        )
+
+
 def test_positions_property_cannot_mutate_portfolio_state() -> None:
     portfolio = Portfolio(initial_cash=1_000.0)
     portfolio.execute(

@@ -82,6 +82,8 @@ class Portfolio:
 
     def execute(self, order: Order, price: float, timestamp: pd.Timestamp) -> Trade:
         """Fill an order completely and update portfolio accounting atomically."""
+        if not isinstance(order, Order):
+            raise PortfolioError("Execution order must be an Order.")
         self._validate_positive_amount(price, "Execution price")
         normalized_timestamp = pd.Timestamp(timestamp)
         if pd.isna(normalized_timestamp):
