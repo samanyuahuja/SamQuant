@@ -36,3 +36,13 @@ def test_trade_reports_notional_and_cash_effect() -> None:
 
     assert trade.notional == 200.0
     assert trade.cash_effect == -201.5
+
+
+def test_trade_rejects_non_order_input() -> None:
+    with pytest.raises(OrderValidationError, match="must be an Order"):
+        Trade(  # type: ignore[arg-type]
+            order="AAPL",
+            timestamp=pd.Timestamp("2024-01-02"),
+            price=100.0,
+            fee=0.0,
+        )

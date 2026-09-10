@@ -56,6 +56,8 @@ class Trade:
     fee: float
 
     def __post_init__(self) -> None:
+        if not isinstance(self.order, Order):
+            raise OrderValidationError("Trade order must be an Order.")
         if not isinstance(self.timestamp, pd.Timestamp) or pd.isna(self.timestamp):
             raise OrderValidationError("Trade timestamp must be a valid pandas Timestamp.")
         if isinstance(self.price, bool) or not isinstance(self.price, Real):
