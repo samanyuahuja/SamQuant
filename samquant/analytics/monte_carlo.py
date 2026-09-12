@@ -38,6 +38,10 @@ def simulate_portfolio(
     """Simulate correlated daily returns using historical mean and covariance."""
     if asset_returns.empty or len(asset_returns) < 2:
         raise MonteCarloError("Monte Carlo simulation needs historical returns.")
+    if asset_returns.index.has_duplicates:
+        raise MonteCarloError("Asset returns cannot contain duplicate observations.")
+    if not asset_returns.index.is_monotonic_increasing:
+        raise MonteCarloError("Asset returns must be ordered by observation.")
     if any(
         not pd.api.types.is_numeric_dtype(dtype)
         or pd.api.types.is_bool_dtype(dtype)

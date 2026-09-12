@@ -190,6 +190,28 @@ def test_monte_carlo_rejects_invalid_asset_returns(
         )
 
 
+@pytest.mark.parametrize(
+    "index, message",
+    (([1, 1], "duplicate observations"), ([2, 1], "ordered by observation")),
+)
+def test_monte_carlo_rejects_invalid_observation_order(
+    index: list[int],
+    message: str,
+) -> None:
+    returns = pd.DataFrame({"AAPL": [0.01, -0.01]}, index=index)
+    weights = pd.Series({"AAPL": 1.0})
+
+    with pytest.raises(MonteCarloError, match=message):
+        simulate_portfolio(
+            returns,
+            weights,
+            initial_value=10_000.0,
+            horizon=10,
+            simulations=10,
+            seed=1,
+        )
+
+
 @pytest.mark.parametrize("duplicate_source", ("returns", "weights"))
 def test_monte_carlo_rejects_duplicate_asset_labels(
     duplicate_source: str,
