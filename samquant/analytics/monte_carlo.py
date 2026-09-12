@@ -63,6 +63,9 @@ def simulate_portfolio(
         raise MonteCarloError("Seed must be a non-negative integer.")
     if asset_returns.columns.has_duplicates or weights.index.has_duplicates:
         raise MonteCarloError("Asset labels must be unique.")
+    labels = (*asset_returns.columns, *weights.index)
+    if any(not isinstance(label, str) or not label.strip() for label in labels):
+        raise MonteCarloError("Asset labels must be non-empty strings.")
     if set(weights.index) != set(asset_returns.columns):
         raise MonteCarloError("Weights must match the asset-return columns.")
     if (
