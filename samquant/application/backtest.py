@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from dataclasses import dataclass, replace
+from numbers import Integral
 from pathlib import Path
 from typing import Protocol
 
@@ -145,7 +146,11 @@ def generate_demo_market_data(
     start: str = "2022-01-03",
 ) -> dict[str, pd.DataFrame]:
     """Create deterministic OHLCV bars for an offline research demonstration."""
-    if not 2 <= periods <= MAX_PERIODS:
+    if (
+        isinstance(periods, bool)
+        or not isinstance(periods, Integral)
+        or not 2 <= periods <= MAX_PERIODS
+    ):
         raise ResearchError(f"Demo data must contain 2 to {MAX_PERIODS} periods.")
     if not symbols:
         raise ResearchError("Demo data requires at least one symbol.")

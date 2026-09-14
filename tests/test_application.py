@@ -179,6 +179,12 @@ def test_application_bounds_symbols_and_date_ranges() -> None:
         )
 
 
+@pytest.mark.parametrize("periods", (True, 2.5, "10"))
+def test_demo_data_requires_an_integer_period_count(periods: object) -> None:
+    with pytest.raises(ResearchError, match="must contain 2 to 2000 periods"):
+        generate_demo_market_data(periods=periods)
+
+
 def test_yahoo_market_data_requires_explicit_server_permission() -> None:
     with pytest.raises(ResearchError, match="not available"):
         load_market_data(
