@@ -237,8 +237,11 @@ def load_market_data(
     data_dir: Path | str = "data/raw",
 ) -> dict[str, pd.DataFrame]:
     """Load deterministic demo bars or opt-in Yahoo Finance bars."""
-    start_date = pd.Timestamp(start)
-    end_date = pd.Timestamp(end)
+    try:
+        start_date = pd.Timestamp(start)
+        end_date = pd.Timestamp(end)
+    except (TypeError, ValueError) as error:
+        raise ResearchError("Start and end dates must be valid.") from error
     if pd.isna(start_date) or pd.isna(end_date) or end_date <= start_date:
         raise ResearchError("End date must be later than start date.")
 
