@@ -265,21 +265,21 @@ def build_strategy(
     values = dict(parameters or {})
     if strategy_name == MOVING_AVERAGE:
         return MovingAverageCrossoverStrategy(
-            short_window=int(values.get("short_window", 50)),
-            long_window=int(values.get("long_window", 200)),
+            short_window=values.get("short_window", 50),
+            long_window=values.get("long_window", 200),
         )
     if strategy_name == MEAN_REVERSION:
         return MeanReversionStrategy(
-            lookback_window=int(values.get("lookback_window", 20)),
-            entry_z_score=float(values.get("entry_z_score", -2.0)),
-            exit_z_score=float(values.get("exit_z_score", 0.0)),
+            lookback_window=values.get("lookback_window", 20),
+            entry_z_score=values.get("entry_z_score", -2.0),
+            exit_z_score=values.get("exit_z_score", 0.0),
         )
     if strategy_name == MOMENTUM:
         return MomentumStrategy(
-            lookback_window=int(values.get("lookback_window", 126)),
-            top_n=int(values.get("top_n", 1)),
-            rebalance_frequency=int(values.get("rebalance_frequency", 21)),
-            require_positive_returns=bool(values.get("require_positive_returns", True)),
+            lookback_window=values.get("lookback_window", 126),
+            top_n=values.get("top_n", 1),
+            rebalance_frequency=values.get("rebalance_frequency", 21),
+            require_positive_returns=values.get("require_positive_returns", True),
         )
     raise ResearchError(f"Unsupported strategy: {strategy_name}.")
 

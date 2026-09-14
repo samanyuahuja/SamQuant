@@ -6,9 +6,12 @@ import pandas as pd
 import pytest
 
 from samquant.application import (
+    MEAN_REVERSION,
+    MOMENTUM,
     MOVING_AVERAGE,
     BacktestConfig,
     ResearchError,
+    build_strategy,
     generate_demo_market_data,
     load_market_data,
     parse_symbols,
@@ -16,6 +19,7 @@ from samquant.application import (
     run_equal_weight_benchmark,
     run_strategy_study,
 )
+from samquant.strategies import StrategyError
 
 
 def test_research_run_exposes_causal_indicators_and_target_weights() -> None:
@@ -183,3 +187,19 @@ def test_yahoo_market_data_requires_explicit_server_permission() -> None:
             start="2024-01-02",
             end="2024-03-01",
         )
+
+
+@pytest.mark.parametrize(
+    ("strategy_name", "parameters"),
+    [
+        (MOVING_AVERAGE, {"short_window": True}),
+        (MEAN_REVERSION, {"entry_z_score": True}),
+        (MOMENTUM, {"require_positive_returns": 1}),
+    ],
+)
+def test_build_strategy_does_not_coerce_invalid_parameter_types(
+    strategy_name: str,
+    parameters: dict[str, int | float | bool],
+) -> None:
+    with pytest.raises(StrategyError):
+        build_strategy(strategy_name, parameters)
