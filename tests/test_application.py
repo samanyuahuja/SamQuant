@@ -185,6 +185,20 @@ def test_demo_data_requires_an_integer_period_count(periods: object) -> None:
         generate_demo_market_data(periods=periods)
 
 
+@pytest.mark.parametrize(
+    ("start", "end"),
+    (("not-a-date", "2024-02-01"), ("2024-01-02", "not-a-date")),
+)
+def test_market_data_rejects_malformed_dates(start: str, end: str) -> None:
+    with pytest.raises(ResearchError, match="dates must be valid"):
+        load_market_data(
+            source="demo",
+            symbols=("AAPL",),
+            start=start,
+            end=end,
+        )
+
+
 def test_yahoo_market_data_requires_explicit_server_permission() -> None:
     with pytest.raises(ResearchError, match="not available"):
         load_market_data(
