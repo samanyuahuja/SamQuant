@@ -185,6 +185,9 @@ def build_data_path(
 ) -> Path:
     """Build the deterministic CSV path for a cached OHLCV data request."""
     _validate_auto_adjust(auto_adjust)
+    for label, value in (("Start", start), ("End", end), ("Interval", interval)):
+        if not isinstance(value, str) or "/" in value or "\\" in value:
+            raise MarketDataError(f"{label} must be a path-safe text value.")
     safe_symbol = normalize_symbol(symbol).replace("/", "-")
     adjustment = "adjusted" if auto_adjust else "unadjusted"
     file_name = f"{safe_symbol}_{start}_{end}_{interval}_{adjustment}.csv"
