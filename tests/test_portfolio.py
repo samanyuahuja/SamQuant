@@ -62,6 +62,17 @@ def test_execute_rejects_non_order_input() -> None:
         )
 
 
+def test_execute_normalizes_invalid_timestamp_errors() -> None:
+    portfolio = Portfolio(initial_cash=1_000.0)
+
+    with pytest.raises(PortfolioError, match="timestamp must be valid"):
+        portfolio.execute(
+            Order("AAPL", OrderSide.BUY, 1),
+            price=100.0,
+            timestamp="not-a-date",  # type: ignore[arg-type]
+        )
+
+
 def test_positions_property_cannot_mutate_portfolio_state() -> None:
     portfolio = Portfolio(initial_cash=1_000.0)
     portfolio.execute(

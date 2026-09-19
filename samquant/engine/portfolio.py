@@ -85,7 +85,10 @@ class Portfolio:
         if not isinstance(order, Order):
             raise PortfolioError("Execution order must be an Order.")
         self._validate_positive_amount(price, "Execution price")
-        normalized_timestamp = pd.Timestamp(timestamp)
+        try:
+            normalized_timestamp = pd.Timestamp(timestamp)
+        except (TypeError, ValueError) as error:
+            raise PortfolioError("Execution timestamp must be valid.") from error
         if pd.isna(normalized_timestamp):
             raise PortfolioError("Execution timestamp must be valid.")
 
