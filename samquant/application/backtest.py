@@ -157,7 +157,10 @@ def generate_demo_market_data(
     if len(symbols) > MAX_SYMBOLS:
         raise ResearchError(f"Demo data supports at most {MAX_SYMBOLS} symbols.")
 
-    dates = pd.bdate_range(start, periods=periods, name="Date")
+    try:
+        dates = pd.bdate_range(start, periods=periods, name="Date")
+    except (TypeError, ValueError) as error:
+        raise ResearchError("Demo start date must be valid.") from error
     market_data: dict[str, pd.DataFrame] = {}
     for position, raw_symbol in enumerate(symbols):
         symbol = normalize_symbol(raw_symbol)

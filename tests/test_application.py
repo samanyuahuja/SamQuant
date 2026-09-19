@@ -185,6 +185,11 @@ def test_demo_data_requires_an_integer_period_count(periods: object) -> None:
         generate_demo_market_data(periods=periods)
 
 
+def test_demo_data_normalizes_invalid_start_date_errors() -> None:
+    with pytest.raises(ResearchError, match="start date must be valid"):
+        generate_demo_market_data(start="not-a-date")
+
+
 @pytest.mark.parametrize(
     ("start", "end"),
     (("not-a-date", "2024-02-01"), ("2024-01-02", "not-a-date")),
