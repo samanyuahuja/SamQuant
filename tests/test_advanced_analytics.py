@@ -172,6 +172,25 @@ def test_monte_carlo_rejects_non_numeric_weights(invalid_weight: object) -> None
         )
 
 
+@pytest.mark.parametrize("complex_source", ("returns", "weights"))
+def test_monte_carlo_rejects_complex_inputs(complex_source: str) -> None:
+    returns = pd.DataFrame({"AAPL": [0.01 + 0.01j, -0.01]})
+    weights = pd.Series({"AAPL": 1.0})
+    if complex_source == "weights":
+        returns = pd.DataFrame({"AAPL": [0.01, -0.01]})
+        weights = pd.Series({"AAPL": 1.0 + 0.01j})
+
+    with pytest.raises(MonteCarloError, match="must be real-valued"):
+        simulate_portfolio(
+            returns,
+            weights,
+            initial_value=10_000.0,
+            horizon=10,
+            simulations=10,
+            seed=1,
+        )
+
+
 @pytest.mark.parametrize("invalid_return", (float("nan"), float("inf"), "bad"))
 def test_monte_carlo_rejects_invalid_asset_returns(
     invalid_return: object,
