@@ -46,7 +46,11 @@ def simulate_portfolio(
         not pd.api.types.is_numeric_dtype(dtype)
         or pd.api.types.is_bool_dtype(dtype)
         for dtype in asset_returns.dtypes
-    ) or not np.isfinite(asset_returns.to_numpy(dtype=float)).all():
+    ):
+        raise MonteCarloError("Asset returns must contain finite numeric values.")
+    if np.iscomplexobj(asset_returns.to_numpy()):
+        raise MonteCarloError("Asset returns must be real-valued.")
+    if not np.isfinite(asset_returns.to_numpy(dtype=float)).all():
         raise MonteCarloError("Asset returns must contain finite numeric values.")
     if (
         isinstance(initial_value, bool)
@@ -77,6 +81,8 @@ def simulate_portfolio(
         or pd.api.types.is_bool_dtype(weights.dtype)
     ):
         raise MonteCarloError("Weights must contain numeric values.")
+    if np.iscomplexobj(weights.to_numpy()):
+        raise MonteCarloError("Weights must be real-valued.")
     normalized_weights = weights.reindex(asset_returns.columns).astype(float)
     if (
         not np.isfinite(normalized_weights).all()
