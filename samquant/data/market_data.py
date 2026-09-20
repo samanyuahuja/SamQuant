@@ -117,6 +117,8 @@ def validate_ohlcv(data: pd.DataFrame) -> None:
         if not pd.api.types.is_numeric_dtype(required[column]):
             raise MarketDataError(f"{column} must be numeric.")
 
+    if np.iscomplexobj(required.to_numpy()):
+        raise MarketDataError("OHLCV data must be real-valued.")
     if not np.isfinite(required.to_numpy(dtype=float)).all():
         raise MarketDataError("OHLCV data must contain only finite values.")
 

@@ -75,6 +75,13 @@ def test_validate_ohlcv_rejects_infinite_values(column: str) -> None:
         validate_ohlcv(data)
 
 
+def test_validate_ohlcv_rejects_complex_values() -> None:
+    data = _valid_ohlcv().astype(complex)
+
+    with pytest.raises(MarketDataError, match="must be real-valued"):
+        validate_ohlcv(data)
+
+
 def test_download_ohlcv_drops_incomplete_provider_rows(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
