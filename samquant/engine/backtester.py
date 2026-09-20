@@ -378,6 +378,8 @@ class Backtester:
         weights = weights.loc[:, list(symbols)]
         if not all(pd.api.types.is_numeric_dtype(weights[column]) for column in weights.columns):
             raise BacktestError("Target weights must be numeric.")
+        if np.iscomplexobj(weights.to_numpy()):
+            raise BacktestError("Target weights must be real-valued.")
         if weights.isnull().any().any():
             raise BacktestError("Target weights cannot contain missing values.")
 
