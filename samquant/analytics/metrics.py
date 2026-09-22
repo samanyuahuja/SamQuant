@@ -211,7 +211,11 @@ def _validated_equity_curve(equity_curve: pd.Series) -> pd.Series:
 
 def _periodic_returns(equity_curve: pd.Series) -> pd.Series:
     equity = _validated_equity_curve(equity_curve)
-    return equity.pct_change(fill_method=None).dropna()
+    with np.errstate(over="ignore", divide="ignore", invalid="ignore"):
+        returns = equity.pct_change(fill_method=None).dropna()
+    if not np.isfinite(returns.to_numpy(dtype=float)).all():
+        raise AnalyticsError("Periodic returns must be finite.")
+    return returns
 
 
 def _growth_ratio(equity_curve: pd.Series) -> float:
