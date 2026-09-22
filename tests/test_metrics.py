@@ -85,6 +85,14 @@ def test_annualized_volatility_uses_sample_standard_deviation() -> None:
     assert result == pytest.approx(returns.std(ddof=1) * sqrt(252))
 
 
+@pytest.mark.parametrize("metric", (annualized_volatility, sharpe_ratio))
+def test_risk_metrics_reject_overflowed_periodic_returns(metric) -> None:
+    equity = _equity([np.finfo(float).tiny, np.finfo(float).max, 100.0])
+
+    with pytest.raises(AnalyticsError, match="Periodic returns must be finite"):
+        metric(equity)
+
+
 def test_sharpe_ratio_annualizes_periodic_excess_returns() -> None:
     returns = pd.Series([0.01, -0.02, 0.03])
 
