@@ -69,6 +69,14 @@ def test_annualized_return_is_undefined_for_one_observation() -> None:
     assert isnan(annualized_return(_equity([100.0])))
 
 
+@pytest.mark.parametrize("metric", (total_return, annualized_return))
+def test_return_metrics_reject_overflowed_growth(metric) -> None:
+    equity = _equity([np.finfo(float).tiny, np.finfo(float).max])
+
+    with pytest.raises(AnalyticsError, match="growth must be finite"):
+        metric(equity)
+
+
 def test_annualized_volatility_uses_sample_standard_deviation() -> None:
     returns = pd.Series([0.01, -0.02, 0.03])
 
