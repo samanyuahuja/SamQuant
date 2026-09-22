@@ -44,7 +44,7 @@ class _OpenLot:
 def total_return(equity_curve: pd.Series) -> float:
     """Return the compounded portfolio gain from the first to final value."""
     equity = _validated_equity_curve(equity_curve)
-    return float(equity.iloc[-1] / equity.iloc[0] - 1.0)
+    return _growth_ratio(equity) - 1.0
 
 
 def annualized_return(
@@ -58,7 +58,7 @@ def annualized_return(
     if observed_periods == 0:
         return float("nan")
 
-    growth = float(equity.iloc[-1] / equity.iloc[0])
+    growth = _growth_ratio(equity)
     return growth ** (annualization / observed_periods) - 1.0
 
 
@@ -212,6 +212,14 @@ def _validated_equity_curve(equity_curve: pd.Series) -> pd.Series:
 def _periodic_returns(equity_curve: pd.Series) -> pd.Series:
     equity = _validated_equity_curve(equity_curve)
     return equity.pct_change(fill_method=None).dropna()
+
+
+def _growth_ratio(equity_curve: pd.Series) -> float:
+    with np.errstate(over="ignore", divide="ignore", invalid="ignore"):
+        growth = float(equity_curve.iloc[-1] / equity_curve.iloc[0])
+    if not isfinite(growth):
+        raise AnalyticsError("Equity growth must be finite.")
+    return growth
 
 
 def _validate_periods_per_year(periods_per_year: int) -> int:
