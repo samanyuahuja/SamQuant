@@ -104,7 +104,10 @@ def simulate_portfolio(
         "hsa,a->hs", simulated_assets, normalized_weights.to_numpy()
     )
     portfolio_returns = np.maximum(portfolio_returns, -0.999999)
-    values = initial_value * np.cumprod(1.0 + portfolio_returns, axis=0)
+    with np.errstate(over="ignore", invalid="ignore"):
+        values = initial_value * np.cumprod(1.0 + portfolio_returns, axis=0)
+    if not np.isfinite(values).all():
+        raise MonteCarloError("Simulated portfolio values must be finite.")
     values = np.vstack((np.full(simulations, initial_value), values))
     paths = pd.DataFrame(values, index=pd.RangeIndex(horizon + 1, name="Day"))
     ending_values = paths.iloc[-1].rename("Ending value")
