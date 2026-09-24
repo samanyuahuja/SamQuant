@@ -227,6 +227,21 @@ def test_monte_carlo_rejects_impossible_asset_losses(
         )
 
 
+def test_monte_carlo_rejects_overflowed_paths() -> None:
+    returns = pd.DataFrame({"AAPL": [10.0, 10.0]})
+    weights = pd.Series({"AAPL": 1.0})
+
+    with pytest.raises(MonteCarloError, match="portfolio values must be finite"):
+        simulate_portfolio(
+            returns,
+            weights,
+            initial_value=10_000.0,
+            horizon=400,
+            simulations=1,
+            seed=1,
+        )
+
+
 @pytest.mark.parametrize(
     "index, message",
     (([1, 1], "duplicate observations"), ([2, 1], "ordered by observation")),
