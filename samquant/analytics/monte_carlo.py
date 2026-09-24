@@ -52,6 +52,8 @@ def simulate_portfolio(
         raise MonteCarloError("Asset returns must be real-valued.")
     if not np.isfinite(asset_returns.to_numpy(dtype=float)).all():
         raise MonteCarloError("Asset returns must contain finite numeric values.")
+    if (asset_returns <= -1.0).any().any():
+        raise MonteCarloError("Asset returns must be greater than -1.")
     if (
         isinstance(initial_value, bool)
         or not isinstance(initial_value, Real)

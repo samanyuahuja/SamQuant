@@ -209,6 +209,24 @@ def test_monte_carlo_rejects_invalid_asset_returns(
         )
 
 
+@pytest.mark.parametrize("invalid_return", (-1.0, -1.01))
+def test_monte_carlo_rejects_impossible_asset_losses(
+    invalid_return: float,
+) -> None:
+    returns = pd.DataFrame({"AAPL": [0.01, invalid_return]})
+    weights = pd.Series({"AAPL": 1.0})
+
+    with pytest.raises(MonteCarloError, match="greater than -1"):
+        simulate_portfolio(
+            returns,
+            weights,
+            initial_value=10_000.0,
+            horizon=10,
+            simulations=10,
+            seed=1,
+        )
+
+
 @pytest.mark.parametrize(
     "index, message",
     (([1, 1], "duplicate observations"), ([2, 1], "ordered by observation")),
