@@ -115,6 +115,8 @@ class Portfolio:
         if any(not isinstance(symbol, str) for symbol in prices):
             raise PortfolioError("Price symbols must be strings.")
         normalized_symbols = [symbol.strip().upper() for symbol in prices]
+        if any(not symbol for symbol in normalized_symbols):
+            raise PortfolioError("Price symbols cannot be empty.")
         if len(normalized_symbols) != len(set(normalized_symbols)):
             raise PortfolioError("Price symbols must be unique after normalization.")
         normalized_prices = dict(zip(normalized_symbols, prices.values()))

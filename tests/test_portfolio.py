@@ -109,6 +109,13 @@ def test_valuation_rejects_non_text_price_symbols() -> None:
         portfolio.total_value({1: 100.0})  # type: ignore[dict-item]
 
 
+def test_valuation_rejects_empty_price_symbols() -> None:
+    portfolio = Portfolio(initial_cash=1_000.0)
+
+    with pytest.raises(PortfolioError, match="symbols cannot be empty"):
+        portfolio.total_value({"   ": 100.0})
+
+
 def test_valuation_rejects_duplicate_normalized_symbols() -> None:
     portfolio = Portfolio(initial_cash=1_000.0)
 
