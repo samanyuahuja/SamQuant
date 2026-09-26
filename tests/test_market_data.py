@@ -167,6 +167,15 @@ def test_build_data_path_rejects_path_separators(
         build_data_path("AAPL", data_dir=tmp_path, **arguments)
 
 
+@pytest.mark.parametrize("field", ("start", "end", "interval"))
+def test_build_data_path_rejects_blank_components(tmp_path: Path, field: str) -> None:
+    arguments = {"start": "2024-01-01", "end": "2024-02-01", "interval": "1d"}
+    arguments[field] = "   "
+
+    with pytest.raises(MarketDataError, match="non-empty path-safe"):
+        build_data_path("AAPL", data_dir=tmp_path, **arguments)
+
+
 def test_normalize_symbol_rejects_empty_symbol() -> None:
     with pytest.raises(MarketDataError, match="Symbol cannot be empty"):
         normalize_symbol("   ")
