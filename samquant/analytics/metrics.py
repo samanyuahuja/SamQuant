@@ -59,7 +59,13 @@ def annualized_return(
         return float("nan")
 
     growth = _growth_ratio(equity)
-    return growth ** (annualization / observed_periods) - 1.0
+    try:
+        result = growth ** (annualization / observed_periods) - 1.0
+    except OverflowError as error:
+        raise AnalyticsError("Annualized return must be finite.") from error
+    if not isfinite(result):
+        raise AnalyticsError("Annualized return must be finite.")
+    return result
 
 
 def annualized_volatility(
