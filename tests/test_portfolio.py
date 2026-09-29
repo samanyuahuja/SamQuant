@@ -40,6 +40,17 @@ def test_buy_rejects_insufficient_cash_including_fees() -> None:
         )
 
 
+def test_fee_calculation_rejects_overflow() -> None:
+    portfolio = Portfolio(
+        initial_cash=1e308,
+        commission_rate=1.0,
+        fixed_fee=1e308,
+    )
+
+    with pytest.raises(PortfolioError, match="Calculated fee must be finite"):
+        portfolio.calculate_fee(1e308)
+
+
 def test_sell_rejects_quantity_above_current_position() -> None:
     portfolio = Portfolio(initial_cash=1_000.0)
 

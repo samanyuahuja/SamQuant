@@ -78,7 +78,10 @@ class Portfolio:
     def calculate_fee(self, notional: float) -> float:
         """Calculate the commission and fixed fee for a trade value."""
         self._validate_positive_amount(notional, "Trade notional")
-        return notional * self._commission_rate + self._fixed_fee
+        fee = notional * self._commission_rate + self._fixed_fee
+        if not isfinite(fee):
+            raise PortfolioError("Calculated fee must be finite.")
+        return fee
 
     def execute(self, order: Order, price: float, timestamp: pd.Timestamp) -> Trade:
         """Fill an order completely and update portfolio accounting atomically."""
