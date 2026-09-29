@@ -69,6 +69,11 @@ def test_annualized_return_is_undefined_for_one_observation() -> None:
     assert isnan(annualized_return(_equity([100.0])))
 
 
+def test_annualized_return_rejects_overflowed_annualization() -> None:
+    with pytest.raises(AnalyticsError, match="Annualized return must be finite"):
+        annualized_return(_equity([1.0, 2.0]), periods_per_year=10_000)
+
+
 @pytest.mark.parametrize("metric", (total_return, annualized_return))
 def test_return_metrics_reject_overflowed_growth(metric) -> None:
     equity = _equity([np.finfo(float).tiny, np.finfo(float).max])
