@@ -67,8 +67,15 @@ def analyze_portfolio(
         raise PortfolioAnalysisError("Seed must be a non-negative integer.")
 
     closes: dict[str, pd.Series] = {}
+    reference_index: pd.DatetimeIndex | None = None
     for symbol, frame in market_data.items():
         validate_ohlcv(frame)
+        if reference_index is None:
+            reference_index = frame.index
+        elif not frame.index.equals(reference_index):
+            raise PortfolioAnalysisError(
+                "All market data must use the same timestamps."
+            )
         closes[symbol.strip().upper()] = frame["Close"].astype(float)
     returns = pd.DataFrame(closes).pct_change(fill_method=None).dropna()
     if len(returns) < 2:

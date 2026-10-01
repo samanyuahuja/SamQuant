@@ -95,6 +95,14 @@ def test_portfolio_analysis_rejects_flat_price_histories() -> None:
         analyze_portfolio(market_data)
 
 
+def test_portfolio_analysis_rejects_misaligned_timestamps() -> None:
+    market_data = _market_data()
+    market_data["MSFT"] = market_data["MSFT"].iloc[1:]
+
+    with pytest.raises(PortfolioAnalysisError, match="same timestamps"):
+        analyze_portfolio(market_data)
+
+
 def test_monte_carlo_is_reproducible_and_reports_tail_statistics() -> None:
     closes = pd.DataFrame(
         {symbol: frame["Close"] for symbol, frame in _market_data().items()}
