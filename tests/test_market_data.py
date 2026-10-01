@@ -176,6 +176,22 @@ def test_build_data_path_rejects_blank_components(tmp_path: Path, field: str) ->
         build_data_path("AAPL", data_dir=tmp_path, **arguments)
 
 
+@pytest.mark.parametrize(
+    ("field", "value"),
+    (("start", "2024-01-\n01"), ("interval", "1d\0")),
+)
+def test_build_data_path_rejects_control_characters(
+    tmp_path: Path,
+    field: str,
+    value: str,
+) -> None:
+    arguments = {"start": "2024-01-01", "end": "2024-02-01", "interval": "1d"}
+    arguments[field] = value
+
+    with pytest.raises(MarketDataError, match="path-safe text value"):
+        build_data_path("AAPL", data_dir=tmp_path, **arguments)
+
+
 def test_normalize_symbol_rejects_empty_symbol() -> None:
     with pytest.raises(MarketDataError, match="Symbol cannot be empty"):
         normalize_symbol("   ")

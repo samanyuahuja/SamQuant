@@ -193,6 +193,7 @@ def build_data_path(
             or not value.strip()
             or "/" in value
             or "\\" in value
+            or any(ord(character) < 32 or ord(character) == 127 for character in value)
         ):
             raise MarketDataError(f"{label} must be a non-empty path-safe text value.")
     safe_symbol = normalize_symbol(symbol).replace("/", "-")
