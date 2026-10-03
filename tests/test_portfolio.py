@@ -132,3 +132,25 @@ def test_valuation_rejects_duplicate_normalized_symbols() -> None:
 
     with pytest.raises(PortfolioError, match="unique after normalization"):
         portfolio.total_value({"AAPL": 100.0, " aapl ": 101.0})
+
+
+def test_valuation_rejects_overflowed_market_value() -> None:
+    portfolio = Portfolio(initial_cash=10.0)
+    timestamp = pd.Timestamp("2024-01-02")
+    portfolio.execute(Order("AAPL", OrderSide.BUY, 1), 1.0, timestamp)
+    portfolio.execute(Order("MSFT", OrderSide.BUY, 1), 1.0, timestamp)
+
+    with pytest.raises(PortfolioError, match="Market value must be finite"):
+        portfolio.market_value({"AAPL": 1e308, "MSFT": 1e308})
+
+
+def test_valuation_rejects_overflowed_total_value() -> None:
+    portfolio = Portfolio(initial_cash=1e308)
+    portfolio.execute(
+        Order("AAPL", OrderSide.BUY, 1),
+        price=1.0,
+        timestamp=pd.Timestamp("2024-01-02"),
+    )
+
+    with pytest.raises(PortfolioError, match="Total portfolio value must be finite"):
+        portfolio.total_value({"AAPL": 1e308})

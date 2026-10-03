@@ -131,12 +131,20 @@ class Portfolio:
         for symbol, quantity in self._positions.items():
             price = normalized_prices[symbol]
             self._validate_positive_amount(price, f"Price for {symbol}")
-            value += quantity * float(price)
+            position_value = quantity * float(price)
+            if not isfinite(position_value):
+                raise PortfolioError("Market value must be finite.")
+            value += position_value
+            if not isfinite(value):
+                raise PortfolioError("Market value must be finite.")
         return value
 
     def total_value(self, prices: Mapping[str, float]) -> float:
         """Return cash plus the marked-to-market value of all positions."""
-        return self._cash + self.market_value(prices)
+        value = self._cash + self.market_value(prices)
+        if not isfinite(value):
+            raise PortfolioError("Total portfolio value must be finite.")
+        return value
 
     def _execute_buy(self, order: Order, notional: float, fee: float) -> None:
         total_cost = notional + fee
