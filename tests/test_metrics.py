@@ -98,6 +98,18 @@ def test_risk_metrics_reject_overflowed_periodic_returns(metric) -> None:
         metric(equity)
 
 
+@pytest.mark.parametrize(
+    ("metric", "message"),
+    (
+        (annualized_volatility, "Annualized volatility must be finite"),
+        (sharpe_ratio, "Sharpe ratio must be finite"),
+    ),
+)
+def test_risk_metrics_reject_overflowed_annualization(metric, message: str) -> None:
+    with pytest.raises(AnalyticsError, match=message):
+        metric(_equity([100.0, 101.0, 99.0]), periods_per_year=10**1_000)
+
+
 def test_sharpe_ratio_annualizes_periodic_excess_returns() -> None:
     returns = pd.Series([0.01, -0.02, 0.03])
 

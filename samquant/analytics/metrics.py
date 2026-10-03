@@ -78,7 +78,13 @@ def annualized_volatility(
     if len(returns) < 2:
         return float("nan")
 
-    return float(returns.std(ddof=1) * sqrt(annualization))
+    try:
+        result = float(returns.std(ddof=1) * sqrt(annualization))
+    except OverflowError as error:
+        raise AnalyticsError("Annualized volatility must be finite.") from error
+    if not isfinite(result):
+        raise AnalyticsError("Annualized volatility must be finite.")
+    return result
 
 
 def sharpe_ratio(
@@ -97,11 +103,17 @@ def sharpe_ratio(
     if volatility <= _ZERO_TOLERANCE:
         return float("nan")
 
-    periodic_risk_free_rate = (
-        (1.0 + annual_risk_free_rate) ** (1.0 / annualization) - 1.0
-    )
-    excess_return = float(returns.mean()) - periodic_risk_free_rate
-    return excess_return / volatility * sqrt(annualization)
+    try:
+        periodic_risk_free_rate = (
+            (1.0 + annual_risk_free_rate) ** (1.0 / annualization) - 1.0
+        )
+        excess_return = float(returns.mean()) - periodic_risk_free_rate
+        result = excess_return / volatility * sqrt(annualization)
+    except OverflowError as error:
+        raise AnalyticsError("Sharpe ratio must be finite.") from error
+    if not isfinite(result):
+        raise AnalyticsError("Sharpe ratio must be finite.")
+    return result
 
 
 def maximum_drawdown(equity_curve: pd.Series) -> float:
