@@ -68,6 +68,8 @@ class Trade:
             raise OrderValidationError("Trade fee must be numeric.")
         if not isfinite(self.fee) or self.fee < 0:
             raise OrderValidationError("Trade fee must be finite and non-negative.")
+        if not isfinite(self.order.quantity * self.price):
+            raise OrderValidationError("Trade notional must be finite.")
 
     @property
     def notional(self) -> float:

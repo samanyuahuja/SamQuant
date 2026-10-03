@@ -46,3 +46,13 @@ def test_trade_rejects_non_order_input() -> None:
             price=100.0,
             fee=0.0,
         )
+
+
+def test_trade_rejects_overflowed_notional() -> None:
+    with pytest.raises(OrderValidationError, match="Trade notional must be finite"):
+        Trade(
+            order=Order("AAPL", OrderSide.BUY, 1e308),
+            timestamp=pd.Timestamp("2024-01-02"),
+            price=1e308,
+            fee=0.0,
+        )
