@@ -250,6 +250,21 @@ def test_monte_carlo_rejects_overflowed_paths() -> None:
         )
 
 
+def test_monte_carlo_rejects_overflowed_historical_statistics() -> None:
+    returns = pd.DataFrame({"AAPL": [1e308, 0.0]})
+    weights = pd.Series({"AAPL": 1.0})
+
+    with pytest.raises(MonteCarloError, match="statistics must be finite"):
+        simulate_portfolio(
+            returns,
+            weights,
+            initial_value=10_000.0,
+            horizon=10,
+            simulations=10,
+            seed=1,
+        )
+
+
 @pytest.mark.parametrize(
     "index, message",
     (([1, 1], "duplicate observations"), ([2, 1], "ordered by observation")),
