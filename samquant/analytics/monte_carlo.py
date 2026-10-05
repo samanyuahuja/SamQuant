@@ -93,10 +93,19 @@ def simulate_portfolio(
     ):
         raise MonteCarloError("Weights must be non-negative and sum to one.")
 
+    with np.errstate(over="ignore", invalid="ignore"):
+        historical_mean = asset_returns.mean().to_numpy()
+        historical_covariance = asset_returns.cov().to_numpy()
+    if not (
+        np.isfinite(historical_mean).all()
+        and np.isfinite(historical_covariance).all()
+    ):
+        raise MonteCarloError("Historical return statistics must be finite.")
+
     generator = np.random.default_rng(seed)
     simulated_assets = generator.multivariate_normal(
-        asset_returns.mean().to_numpy(),
-        asset_returns.cov().to_numpy(),
+        historical_mean,
+        historical_covariance,
         size=(horizon, simulations),
         check_valid="ignore",
     )
