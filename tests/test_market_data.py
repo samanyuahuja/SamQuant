@@ -82,6 +82,14 @@ def test_validate_ohlcv_rejects_complex_values() -> None:
         validate_ohlcv(data)
 
 
+def test_validate_ohlcv_rejects_boolean_values() -> None:
+    data = _valid_ohlcv()
+    data["Volume"] = True
+
+    with pytest.raises(MarketDataError, match="Volume must be numeric"):
+        validate_ohlcv(data)
+
+
 def test_download_ohlcv_drops_incomplete_provider_rows(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
