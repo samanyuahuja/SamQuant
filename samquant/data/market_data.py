@@ -114,7 +114,9 @@ def validate_ohlcv(data: pd.DataFrame) -> None:
         raise MarketDataError("OHLCV data contains missing values.")
 
     for column in OHLCV_COLUMNS:
-        if not pd.api.types.is_numeric_dtype(required[column]):
+        if pd.api.types.is_bool_dtype(required[column]) or not pd.api.types.is_numeric_dtype(
+            required[column]
+        ):
             raise MarketDataError(f"{column} must be numeric.")
 
     if np.iscomplexobj(required.to_numpy()):
