@@ -103,6 +103,19 @@ def test_portfolio_analysis_rejects_misaligned_timestamps() -> None:
         analyze_portfolio(market_data)
 
 
+def test_portfolio_analysis_rejects_overflowed_price_returns() -> None:
+    market_data = _market_data()
+    market_data["AAPL"].loc[:, ["Open", "High", "Low", "Close"]] = [
+        [1e-300] * 4,
+        [1e300] * 4,
+        [1e-300] * 4,
+        *market_data["AAPL"].iloc[3:][["Open", "High", "Low", "Close"]].to_numpy(),
+    ]
+
+    with pytest.raises(PortfolioAnalysisError, match="price returns must be finite"):
+        analyze_portfolio(market_data)
+
+
 def test_monte_carlo_is_reproducible_and_reports_tail_statistics() -> None:
     closes = pd.DataFrame(
         {symbol: frame["Close"] for symbol, frame in _market_data().items()}

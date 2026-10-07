@@ -77,9 +77,12 @@ def analyze_portfolio(
                 "All market data must use the same timestamps."
             )
         closes[symbol.strip().upper()] = frame["Close"].astype(float)
-    returns = pd.DataFrame(closes).pct_change(fill_method=None).dropna()
+    with np.errstate(over="ignore", divide="ignore", invalid="ignore"):
+        returns = pd.DataFrame(closes).pct_change(fill_method=None).dropna()
     if len(returns) < 2:
         raise PortfolioAnalysisError("Portfolio analysis needs at least three price bars.")
+    if not np.isfinite(returns.to_numpy(dtype=float)).all():
+        raise PortfolioAnalysisError("Portfolio price returns must be finite.")
 
     annual_returns = returns.mean() * periods_per_year
     covariance = returns.cov() * periods_per_year
