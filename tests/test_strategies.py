@@ -155,6 +155,17 @@ def test_momentum_holds_cash_when_all_returns_are_negative() -> None:
     assert (weights == 0.0).all().all()
 
 
+def test_momentum_rejects_overflowed_trailing_returns() -> None:
+    data = _ohlcv([1.0, 1.0])
+    data.loc[:, ["Open", "High", "Low", "Close"]] = [
+        [1e-300] * 4,
+        [1e300] * 4,
+    ]
+
+    with pytest.raises(StrategyError, match="Trailing returns must be finite"):
+        MomentumStrategy(lookback_window=1).generate_target_weights({"AAPL": data})
+
+
 def test_strategy_weights_integrate_with_delayed_backtester_execution() -> None:
     data = _ohlcv([10.0, 10.0, 10.0, 12.0, 14.0, 16.0])
     weights = MovingAverageCrossoverStrategy(2, 3).generate_target_weights(
