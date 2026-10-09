@@ -5,6 +5,7 @@ from __future__ import annotations
 from collections.abc import Mapping
 from dataclasses import dataclass
 
+import numpy as np
 import pandas as pd
 
 from samquant.strategies._common import (
@@ -59,7 +60,12 @@ class MomentumStrategy:
     ) -> StrategyEvaluation:
         """Return target weights and trailing-return ranking inputs."""
         close_prices = validated_close_prices(market_data)
-        trailing_returns = close_prices / close_prices.shift(self.lookback_window) - 1.0
+        with np.errstate(over="ignore", divide="ignore", invalid="ignore"):
+            trailing_returns = (
+                close_prices / close_prices.shift(self.lookback_window) - 1.0
+            )
+        if np.isinf(trailing_returns.to_numpy(dtype=float)).any():
+            raise StrategyError("Trailing returns must be finite.")
         weights = pd.DataFrame(
             0.0,
             index=close_prices.index,
