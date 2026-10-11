@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
-from math import isnan
+from math import isfinite
 
 import pandas as pd
 
@@ -138,9 +138,9 @@ def trades_frame(result: BacktestResult) -> pd.DataFrame:
 
 def format_percentage(value: float) -> str:
     """Format a ratio without turning undefined values into zero."""
-    return "N/A" if isnan(value) else f"{value:.1%}"
+    return "N/A" if not isfinite(value) else f"{value:.1%}"
 
 
 def format_number(value: float, digits: int = 2) -> str:
     """Format a number without hiding undefined values."""
-    return "N/A" if isnan(value) else f"{value:.{digits}f}"
+    return "N/A" if not isfinite(value) else f"{value:.{digits}f}"
