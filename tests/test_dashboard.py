@@ -152,7 +152,9 @@ def test_strategy_comparison_uses_same_scale_and_includes_benchmark() -> None:
 
 def test_metric_formatters_do_not_present_undefined_values_as_zero() -> None:
     assert format_percentage(float("nan")) == "N/A"
+    assert format_percentage(float("inf")) == "N/A"
     assert format_number(float("nan")) == "N/A"
+    assert format_number(float("-inf")) == "N/A"
     assert format_percentage(0.125) == "12.5%"
     assert format_number(1.234) == "1.23"
 
