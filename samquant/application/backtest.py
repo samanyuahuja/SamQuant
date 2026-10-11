@@ -146,6 +146,8 @@ def generate_demo_market_data(
     start: str = "2022-01-03",
 ) -> dict[str, pd.DataFrame]:
     """Create deterministic OHLCV bars for an offline research demonstration."""
+    if isinstance(symbols, (str, bytes)):
+        raise ResearchError("Demo symbols must be provided as a ticker collection.")
     if (
         isinstance(periods, bool)
         or not isinstance(periods, Integral)

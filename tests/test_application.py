@@ -185,6 +185,14 @@ def test_demo_data_requires_an_integer_period_count(periods: object) -> None:
         generate_demo_market_data(periods=periods)
 
 
+@pytest.mark.parametrize("symbols", ("AAPL", b"AAPL"))
+def test_demo_data_rejects_text_instead_of_a_symbol_collection(
+    symbols: object,
+) -> None:
+    with pytest.raises(ResearchError, match="ticker collection"):
+        generate_demo_market_data(symbols=symbols)  # type: ignore[arg-type]
+
+
 def test_demo_data_normalizes_invalid_start_date_errors() -> None:
     with pytest.raises(ResearchError, match="start date must be valid"):
         generate_demo_market_data(start="not-a-date")
