@@ -156,6 +156,14 @@ def test_backtester_rejects_complex_target_weights() -> None:
         Backtester().run({"AAPL": prices}, targets)
 
 
+def test_backtester_rejects_boolean_target_weights() -> None:
+    prices = _market_data()
+    targets = pd.DataFrame({"AAPL": [True] * 4}, index=prices.index)
+
+    with pytest.raises(BacktestError, match="cannot be boolean"):
+        Backtester().run({"AAPL": prices}, targets)
+
+
 @pytest.mark.parametrize(
     ("method", "size", "expected_quantity"),
     [

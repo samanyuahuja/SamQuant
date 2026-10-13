@@ -376,6 +376,8 @@ class Backtester:
         weights = target_weights.copy()
         weights.columns = normalized_columns
         weights = weights.loc[:, list(symbols)]
+        if any(pd.api.types.is_bool_dtype(weights[column]) for column in weights.columns):
+            raise BacktestError("Target weights cannot be boolean.")
         if not all(pd.api.types.is_numeric_dtype(weights[column]) for column in weights.columns):
             raise BacktestError("Target weights must be numeric.")
         if np.iscomplexobj(weights.to_numpy()):
