@@ -211,6 +211,8 @@ def normalize_symbol(symbol: str) -> str:
     cleaned = symbol.strip().upper()
     if not cleaned:
         raise MarketDataError("Symbol cannot be empty.")
+    if any(ord(character) < 32 or ord(character) == 127 for character in cleaned):
+        raise MarketDataError("Symbol cannot contain control characters.")
     return cleaned
 
 

@@ -205,6 +205,12 @@ def test_normalize_symbol_rejects_empty_symbol() -> None:
         normalize_symbol("   ")
 
 
+@pytest.mark.parametrize("symbol", ("AA\nPL", "MS\0FT", "BRK\x7fB"))
+def test_normalize_symbol_rejects_control_characters(symbol: str) -> None:
+    with pytest.raises(MarketDataError, match="control characters"):
+        normalize_symbol(symbol)
+
+
 @pytest.mark.parametrize("symbol", (None, 123))
 def test_normalize_symbol_rejects_non_text_values(symbol: object) -> None:
     with pytest.raises(MarketDataError, match="Symbol must be text"):
