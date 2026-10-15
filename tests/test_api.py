@@ -7,6 +7,7 @@ from datetime import datetime, timezone
 from uuid import UUID
 
 from fastapi.testclient import TestClient
+import pytest
 
 from samquant.api.app import create_app
 from samquant.api.models import Market, latest_completed_session_date
@@ -28,6 +29,11 @@ def test_health_and_catalog_expose_bounded_capabilities() -> None:
     catalog = client.get("/api/v1/catalog").json()
     assert catalog["dataSources"] == ["demo"]
     assert catalog["limits"] == {"symbols": 6, "periods": 2_000}
+
+
+def test_app_rejects_non_boolean_yahoo_policy_override() -> None:
+    with pytest.raises(TypeError, match="must be boolean"):
+        create_app(allow_yahoo=1)  # type: ignore[arg-type]
 
 
 def test_backtest_response_contains_real_domain_outputs() -> None:
