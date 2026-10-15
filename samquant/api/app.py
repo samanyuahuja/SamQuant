@@ -20,6 +20,8 @@ _REQUEST_ID_PATTERN = re.compile(r"^[A-Za-z0-9._-]{1,128}$")
 
 def create_app(*, allow_yahoo: bool | None = None) -> FastAPI:
     """Build the HTTP app with explicit data-source policy."""
+    if allow_yahoo is not None and not isinstance(allow_yahoo, bool):
+        raise TypeError("Yahoo policy override must be boolean.")
     yahoo_enabled = (
         _environment_flag("SAMQUANT_ENABLE_YAHOO")
         if allow_yahoo is None
