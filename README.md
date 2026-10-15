@@ -3,7 +3,7 @@
 [![CI](https://github.com/samanyuahuja/SamQuant/actions/workflows/ci.yml/badge.svg)](https://github.com/samanyuahuja/SamQuant/actions/workflows/ci.yml)
 ![Python](https://img.shields.io/badge/python-3.10%2B-3776AB?logo=python&logoColor=white)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
-[![Live App](https://img.shields.io/badge/live-samquant.org-111827?logo=vercel&logoColor=white)](https://samquant.vercel.app)
+[![Live App](https://img.shields.io/badge/live-samquant.org-111827?logo=vercel&logoColor=white)](https://samquant.org)
 [![Research Paper](https://img.shields.io/badge/read-SamQuantResearch-315760)](https://docs.google.com/document/d/1lSlu87iYgoT5s39RK3BOaDHfhelHS8txKvTm_hgPefM/view)
 
 **A transparent algorithmic-trading system with a tested Python engine and a
