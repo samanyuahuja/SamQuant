@@ -213,6 +213,15 @@ def normalize_symbol(symbol: str) -> str:
         raise MarketDataError("Symbol cannot be empty.")
     if any(ord(character) < 32 or ord(character) == 127 for character in cleaned):
         raise MarketDataError("Symbol cannot contain control characters.")
+    allowed_punctuation = frozenset(".^/=_-")
+    if any(
+        not (
+            character.isascii()
+            and (character.isalnum() or character in allowed_punctuation)
+        )
+        for character in cleaned
+    ):
+        raise MarketDataError("Symbol contains unsupported characters.")
     return cleaned
 
 
