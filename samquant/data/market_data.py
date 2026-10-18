@@ -227,6 +227,8 @@ def normalize_symbol(symbol: str) -> str:
         for character in cleaned
     ):
         raise MarketDataError("Symbol contains unsupported characters.")
+    if not any(character.isalnum() for character in cleaned):
+        raise MarketDataError("Symbol must include a letter or digit.")
     return cleaned
 
 
