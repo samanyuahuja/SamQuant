@@ -16,6 +16,7 @@ import yfinance as yf
 OHLCV_COLUMNS: Final[tuple[str, ...]] = ("Open", "High", "Low", "Close", "Volume")
 OPTIONAL_COLUMNS: Final[tuple[str, ...]] = ("Adj Close",)
 DEFAULT_DATA_DIR: Final[Path] = Path("data/raw")
+MAX_SYMBOL_LENGTH: Final[int] = 20
 
 
 class MarketDataError(ValueError):
@@ -211,6 +212,10 @@ def normalize_symbol(symbol: str) -> str:
     cleaned = symbol.strip().upper()
     if not cleaned:
         raise MarketDataError("Symbol cannot be empty.")
+    if len(cleaned) > MAX_SYMBOL_LENGTH:
+        raise MarketDataError(
+            f"Symbol must contain at most {MAX_SYMBOL_LENGTH} characters."
+        )
     if any(ord(character) < 32 or ord(character) == 127 for character in cleaned):
         raise MarketDataError("Symbol cannot contain control characters.")
     allowed_punctuation = frozenset(".^/=_-")
