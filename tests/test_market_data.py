@@ -205,6 +205,11 @@ def test_normalize_symbol_rejects_empty_symbol() -> None:
         normalize_symbol("   ")
 
 
+def test_normalize_symbol_rejects_oversized_symbol() -> None:
+    with pytest.raises(MarketDataError, match="at most 20 characters"):
+        normalize_symbol("A" * 21)
+
+
 @pytest.mark.parametrize("symbol", ("AA\nPL", "MS\0FT", "BRK\x7fB"))
 def test_normalize_symbol_rejects_control_characters(symbol: str) -> None:
     with pytest.raises(MarketDataError, match="control characters"):
