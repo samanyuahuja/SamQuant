@@ -222,6 +222,12 @@ def test_normalize_symbol_rejects_unsupported_characters(symbol: str) -> None:
         normalize_symbol(symbol)
 
 
+@pytest.mark.parametrize("symbol", ("^", "---", "._/="))
+def test_normalize_symbol_rejects_punctuation_only_values(symbol: str) -> None:
+    with pytest.raises(MarketDataError, match="letter or digit"):
+        normalize_symbol(symbol)
+
+
 @pytest.mark.parametrize("symbol", (None, 123))
 def test_normalize_symbol_rejects_non_text_values(symbol: object) -> None:
     with pytest.raises(MarketDataError, match="Symbol must be text"):
