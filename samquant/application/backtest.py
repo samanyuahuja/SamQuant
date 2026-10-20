@@ -122,8 +122,12 @@ def parse_symbols(
     if market_name not in MARKET_SUFFIXES:
         raise ResearchError(f"Unsupported market: {market_name}.")
 
+    raw_entries = raw_symbols.split(",")
+    if not any(raw_symbol.strip() for raw_symbol in raw_entries):
+        raise ResearchError("Enter at least one ticker symbol.")
+
     symbols: list[str] = []
-    for raw_symbol in raw_symbols.split(","):
+    for raw_symbol in raw_entries:
         if not raw_symbol.strip():
             raise ResearchError("Ticker symbols cannot be blank.")
         symbol = normalize_symbol(raw_symbol)
@@ -133,8 +137,6 @@ def parse_symbols(
         if symbol not in symbols:
             symbols.append(symbol)
 
-    if not symbols:
-        raise ResearchError("Enter at least one ticker symbol.")
     if len(symbols) > MAX_SYMBOLS:
         raise ResearchError(f"Enter no more than {MAX_SYMBOLS} ticker symbols.")
     return tuple(symbols)
