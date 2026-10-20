@@ -9,6 +9,8 @@ from zoneinfo import ZoneInfo
 
 from pydantic import BaseModel, Field, StrictInt, field_validator, model_validator
 
+from samquant.data.market_data import normalize_symbol
+
 
 class DataSource(str, Enum):
     """Market-data sources exposed by the API."""
@@ -113,12 +115,8 @@ class BacktestRequest(BaseModel):
     @field_validator("symbols")
     @classmethod
     def validate_symbols(cls, symbols: list[str]) -> list[str]:
-        """Reject blank or unusually long symbol input before provider access."""
-        cleaned = [symbol.strip() for symbol in symbols]
-        if any(not symbol for symbol in cleaned):
-            raise ValueError("Ticker symbols cannot be blank.")
-        if any(len(symbol) > 20 for symbol in cleaned):
-            raise ValueError("Ticker symbols must contain at most 20 characters.")
+        """Normalize and validate symbol input before provider access."""
+        cleaned = [normalize_symbol(symbol) for symbol in symbols]
         if len({symbol.upper() for symbol in cleaned}) != len(cleaned):
             raise ValueError("Ticker symbols must be unique.")
         return cleaned

@@ -129,6 +129,17 @@ def test_duplicate_symbols_return_a_validation_error() -> None:
     assert response.json()["error"]["code"] == "INVALID_REQUEST"
 
 
+@pytest.mark.parametrize("symbol", ("!!!", "AAPL?", "AAPL\nMSFT"))
+def test_invalid_symbol_characters_return_validation_errors(symbol: str) -> None:
+    response = _client().post(
+        "/api/v1/backtests",
+        json={"symbols": [symbol]},
+    )
+
+    assert response.status_code == 422
+    assert response.json()["error"]["code"] == "INVALID_REQUEST"
+
+
 def test_boolean_integer_settings_return_validation_errors() -> None:
     payloads = (
         {"parameters": {"short_window": True}},
