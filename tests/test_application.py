@@ -179,6 +179,12 @@ def test_application_bounds_symbols_and_date_ranges() -> None:
         )
 
 
+@pytest.mark.parametrize("raw_symbols", ("AAPL,,MSFT", ",AAPL", "AAPL,"))
+def test_parse_symbols_rejects_blank_entries(raw_symbols: str) -> None:
+    with pytest.raises(ResearchError, match="cannot be blank"):
+        parse_symbols(raw_symbols)
+
+
 @pytest.mark.parametrize("periods", (True, 2.5, "10"))
 def test_demo_data_requires_an_integer_period_count(periods: object) -> None:
     with pytest.raises(ResearchError, match="must contain 2 to 2000 periods"):

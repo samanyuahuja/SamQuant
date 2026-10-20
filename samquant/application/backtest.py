@@ -125,7 +125,7 @@ def parse_symbols(
     symbols: list[str] = []
     for raw_symbol in raw_symbols.split(","):
         if not raw_symbol.strip():
-            continue
+            raise ResearchError("Ticker symbols cannot be blank.")
         symbol = normalize_symbol(raw_symbol)
         suffix = MARKET_SUFFIXES[market_name]
         if suffix and "." not in symbol and not symbol.startswith("^"):
