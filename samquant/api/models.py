@@ -7,7 +7,14 @@ from enum import Enum
 from typing import Optional
 from zoneinfo import ZoneInfo
 
-from pydantic import BaseModel, Field, StrictInt, field_validator, model_validator
+from pydantic import (
+    BaseModel,
+    Field,
+    StrictBool,
+    StrictInt,
+    field_validator,
+    model_validator,
+)
 
 from samquant.data.market_data import normalize_symbol
 
@@ -53,7 +60,7 @@ class StrategyParameters(BaseModel):
     exit_z_score: float = Field(default=0.0, ge=-5.0, le=10.0)
     top_n: StrictInt = Field(default=1, ge=1, le=6)
     rebalance_frequency: StrictInt = Field(default=21, ge=1, le=252)
-    require_positive_returns: bool = True
+    require_positive_returns: StrictBool = True
 
     @field_validator("entry_z_score", "exit_z_score", mode="before")
     @classmethod

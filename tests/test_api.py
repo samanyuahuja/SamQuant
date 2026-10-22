@@ -154,6 +154,17 @@ def test_boolean_integer_settings_return_validation_errors() -> None:
         assert response.json()["error"]["code"] == "INVALID_REQUEST"
 
 
+@pytest.mark.parametrize("value", (0, 1, "true", "false"))
+def test_momentum_flag_requires_a_boolean(value: object) -> None:
+    response = _client().post(
+        "/api/v1/backtests",
+        json={"parameters": {"require_positive_returns": value}},
+    )
+
+    assert response.status_code == 422
+    assert response.json()["error"]["code"] == "INVALID_REQUEST"
+
+
 def test_boolean_decimal_settings_return_validation_errors() -> None:
     payloads = (
         {"initial_cash": True},
