@@ -12,7 +12,12 @@ import numpy as np
 import pandas as pd
 
 from samquant.analytics import PerformanceMetrics, calculate_metrics
-from samquant.data.market_data import get_ohlcv, normalize_symbol, validate_ohlcv
+from samquant.data.market_data import (
+    MarketDataError,
+    get_ohlcv,
+    normalize_symbol,
+    validate_ohlcv,
+)
 from samquant.engine import Backtester, BacktestResult, SizingMethod
 from samquant.strategies import (
     MeanReversionStrategy,
@@ -130,7 +135,10 @@ def parse_symbols(
     for raw_symbol in raw_entries:
         if not raw_symbol.strip():
             raise ResearchError("Ticker symbols cannot be blank.")
-        symbol = normalize_symbol(raw_symbol)
+        try:
+            symbol = normalize_symbol(raw_symbol)
+        except MarketDataError as error:
+            raise ResearchError(str(error)) from error
         suffix = MARKET_SUFFIXES[market_name]
         if suffix and "." not in symbol and not symbol.startswith("^"):
             symbol = f"{symbol}{suffix}"
