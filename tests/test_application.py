@@ -185,6 +185,11 @@ def test_parse_symbols_rejects_blank_entries(raw_symbols: str) -> None:
         parse_symbols(raw_symbols)
 
 
+def test_parse_symbols_normalizes_symbol_validation_errors() -> None:
+    with pytest.raises(ResearchError, match="unsupported characters"):
+        parse_symbols("AAPL?")
+
+
 @pytest.mark.parametrize("periods", (True, 2.5, "10"))
 def test_demo_data_requires_an_integer_period_count(periods: object) -> None:
     with pytest.raises(ResearchError, match="must contain 2 to 2000 periods"):
