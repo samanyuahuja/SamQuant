@@ -252,6 +252,8 @@ def load_market_data(
     data_dir: Path | str = "data/raw",
 ) -> dict[str, pd.DataFrame]:
     """Load deterministic demo bars or opt-in Yahoo Finance bars."""
+    if not isinstance(allow_yahoo, bool):
+        raise ResearchError("Yahoo data permission must be boolean.")
     try:
         start_date = pd.Timestamp(start)
         end_date = pd.Timestamp(end)
