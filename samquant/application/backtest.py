@@ -175,7 +175,10 @@ def generate_demo_market_data(
         raise ResearchError("Demo start date must be valid.") from error
     market_data: dict[str, pd.DataFrame] = {}
     for position, raw_symbol in enumerate(symbols):
-        symbol = normalize_symbol(raw_symbol)
+        try:
+            symbol = normalize_symbol(raw_symbol)
+        except MarketDataError as error:
+            raise ResearchError(str(error)) from error
         if symbol in market_data:
             raise ResearchError(f"Duplicate demo symbol: {symbol}.")
 

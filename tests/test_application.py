@@ -209,6 +209,11 @@ def test_demo_data_normalizes_invalid_start_date_errors() -> None:
         generate_demo_market_data(start="not-a-date")
 
 
+def test_demo_data_normalizes_invalid_symbol_errors() -> None:
+    with pytest.raises(ResearchError, match="unsupported characters"):
+        generate_demo_market_data(symbols=("AAPL?",))
+
+
 @pytest.mark.parametrize(
     ("start", "end"),
     (("not-a-date", "2024-02-01"), ("2024-01-02", "not-a-date")),
