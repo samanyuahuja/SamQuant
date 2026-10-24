@@ -233,6 +233,17 @@ def test_yahoo_market_data_requires_explicit_server_permission() -> None:
         )
 
 
+def test_market_data_requires_boolean_yahoo_permission() -> None:
+    with pytest.raises(ResearchError, match="permission must be boolean"):
+        load_market_data(
+            source="demo",
+            symbols=("AAPL",),
+            start="2024-01-02",
+            end="2024-03-01",
+            allow_yahoo=1,  # type: ignore[arg-type]
+        )
+
+
 @pytest.mark.parametrize(
     ("strategy_name", "parameters"),
     [
