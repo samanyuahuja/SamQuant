@@ -40,6 +40,8 @@ def analyze_portfolio(
     seed: int = 42,
 ) -> PortfolioAnalysis:
     """Estimate a reproducible long-only efficient frontier from historical returns."""
+    if not isinstance(market_data, Mapping):
+        raise PortfolioAnalysisError("Market data must be a symbol-to-frame mapping.")
     if not market_data:
         raise PortfolioAnalysisError("Portfolio analysis requires market data.")
     if any(not isinstance(symbol, str) or not symbol.strip() for symbol in market_data):
