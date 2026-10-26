@@ -47,7 +47,7 @@ def _trade(
 ) -> Trade:
     return Trade(
         Order("AAPL", side, quantity),
-        pd.Timestamp("2024-01-01") + pd.Timedelta(days=day),
+        pd.Timestamp("2024-01-01") + pd.Timedelta(day, unit="D"),
         price,
         fee,
     )
