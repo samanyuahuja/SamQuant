@@ -44,6 +44,11 @@ def test_portfolio_analysis_returns_valid_long_only_weights() -> None:
     assert analysis.volatility >= 0.0
 
 
+def test_portfolio_analysis_rejects_non_mapping_market_data() -> None:
+    with pytest.raises(PortfolioAnalysisError, match="symbol-to-frame mapping"):
+        analyze_portfolio([_market_data()["AAPL"]])  # type: ignore[arg-type]
+
+
 @pytest.mark.parametrize(
     "risk_free_rate", (float("nan"), True, "0.05", -1.0, -1.5)
 )
