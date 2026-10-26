@@ -36,6 +36,10 @@ def simulate_portfolio(
     seed: int,
 ) -> MonteCarloResult:
     """Simulate correlated daily returns using historical mean and covariance."""
+    if not isinstance(asset_returns, pd.DataFrame):
+        raise MonteCarloError("Asset returns must be a pandas DataFrame.")
+    if not isinstance(weights, pd.Series):
+        raise MonteCarloError("Weights must be a pandas Series.")
     if asset_returns.empty or len(asset_returns) < 2:
         raise MonteCarloError("Monte Carlo simulation needs historical returns.")
     if asset_returns.index.has_duplicates:
