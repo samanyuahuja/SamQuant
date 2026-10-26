@@ -167,6 +167,29 @@ def test_monte_carlo_rejects_invalid_initial_value(initial_value: object) -> Non
         )
 
 
+@pytest.mark.parametrize(
+    ("returns", "weights", "message"),
+    (
+        ([[0.01], [-0.01]], pd.Series({"AAPL": 1.0}), "pandas DataFrame"),
+        (pd.DataFrame({"AAPL": [0.01, -0.01]}), {"AAPL": 1.0}, "pandas Series"),
+    ),
+)
+def test_monte_carlo_rejects_invalid_input_containers(
+    returns: object,
+    weights: object,
+    message: str,
+) -> None:
+    with pytest.raises(MonteCarloError, match=message):
+        simulate_portfolio(
+            returns,  # type: ignore[arg-type]
+            weights,  # type: ignore[arg-type]
+            initial_value=10_000.0,
+            horizon=10,
+            simulations=10,
+            seed=1,
+        )
+
+
 def test_monte_carlo_rejects_non_finite_weights() -> None:
     returns = pd.DataFrame({"AAPL": [0.01, -0.01], "MSFT": [0.02, -0.02]})
     weights = pd.Series({"AAPL": float("nan"), "MSFT": 1.0})
