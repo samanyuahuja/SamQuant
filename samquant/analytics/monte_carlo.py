@@ -8,6 +8,9 @@ from numbers import Integral, Real
 import numpy as np
 import pandas as pd
 
+_MAX_HORIZON = 756
+_MAX_SIMULATIONS = 1_000
+
 
 class MonteCarloError(ValueError):
     """Raised when simulation inputs are invalid."""
@@ -75,6 +78,11 @@ def simulate_portfolio(
         )
     if isinstance(seed, bool) or not isinstance(seed, Integral) or seed < 0:
         raise MonteCarloError("Seed must be a non-negative integer.")
+    if horizon > _MAX_HORIZON or simulations > _MAX_SIMULATIONS:
+        raise MonteCarloError(
+            f"Horizon cannot exceed {_MAX_HORIZON} and simulations cannot exceed "
+            f"{_MAX_SIMULATIONS}."
+        )
     if asset_returns.columns.has_duplicates or weights.index.has_duplicates:
         raise MonteCarloError("Asset labels must be unique.")
     labels = (*asset_returns.columns, *weights.index)
