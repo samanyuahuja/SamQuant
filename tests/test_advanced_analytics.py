@@ -105,6 +105,16 @@ def test_portfolio_analysis_rejects_flat_price_histories() -> None:
         analyze_portfolio(market_data)
 
 
+def test_portfolio_analysis_rejects_one_flat_asset() -> None:
+    market_data = _market_data()
+    market_data["MSFT"].loc[:, ["Open", "Close"]] = 100.0
+    market_data["MSFT"].loc[:, "High"] = 101.0
+    market_data["MSFT"].loc[:, "Low"] = 99.0
+
+    with pytest.raises(PortfolioAnalysisError, match="variability in every asset"):
+        analyze_portfolio(market_data)
+
+
 def test_portfolio_analysis_rejects_misaligned_timestamps() -> None:
     market_data = _market_data()
     market_data["MSFT"] = market_data["MSFT"].iloc[1:]

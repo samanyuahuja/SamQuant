@@ -104,9 +104,9 @@ def analyze_portfolio(
     ):
         raise PortfolioAnalysisError("Annualized portfolio statistics must be finite.")
     correlation = returns.corr()
-    if not (np.diag(covariance.to_numpy()) > 0.0).any():
+    if not (np.diag(covariance.to_numpy()) > 0.0).all():
         raise PortfolioAnalysisError(
-            "Portfolio analysis needs price variability in at least one asset."
+            "Portfolio analysis needs price variability in every asset."
         )
     asset_count = len(annual_returns)
     generator = np.random.default_rng(seed)
