@@ -126,6 +126,11 @@ def test_portfolio_analysis_rejects_overflowed_price_returns() -> None:
         analyze_portfolio(market_data)
 
 
+def test_portfolio_analysis_rejects_overflowed_annualization() -> None:
+    with pytest.raises(PortfolioAnalysisError, match="statistics must be finite"):
+        analyze_portfolio(_market_data(), periods_per_year=10**1_000)
+
+
 def test_monte_carlo_is_reproducible_and_reports_tail_statistics() -> None:
     closes = pd.DataFrame(
         {symbol: frame["Close"] for symbol, frame in _market_data().items()}
