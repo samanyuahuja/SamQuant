@@ -90,8 +90,19 @@ def analyze_portfolio(
     if not np.isfinite(returns.to_numpy(dtype=float)).all():
         raise PortfolioAnalysisError("Portfolio price returns must be finite.")
 
-    annual_returns = returns.mean() * periods_per_year
-    covariance = returns.cov() * periods_per_year
+    try:
+        with np.errstate(over="ignore", invalid="ignore"):
+            annual_returns = returns.mean() * periods_per_year
+            covariance = returns.cov() * periods_per_year
+    except OverflowError as error:
+        raise PortfolioAnalysisError(
+            "Annualized portfolio statistics must be finite."
+        ) from error
+    if not (
+        np.isfinite(annual_returns.to_numpy(dtype=float)).all()
+        and np.isfinite(covariance.to_numpy(dtype=float)).all()
+    ):
+        raise PortfolioAnalysisError("Annualized portfolio statistics must be finite.")
     correlation = returns.corr()
     if not (np.diag(covariance.to_numpy()) > 0.0).any():
         raise PortfolioAnalysisError(
