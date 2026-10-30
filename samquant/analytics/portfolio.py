@@ -11,6 +11,8 @@ import pandas as pd
 
 from samquant.data.market_data import validate_ohlcv
 
+_MAX_SAMPLES = 10_000
+
 
 class PortfolioAnalysisError(ValueError):
     """Raised when market data cannot support portfolio analysis."""
@@ -55,9 +57,11 @@ def analyze_portfolio(
         or isinstance(samples, bool)
         or not isinstance(samples, Integral)
         or periods_per_year <= 0
-        or samples < 100
+        or not 100 <= samples <= _MAX_SAMPLES
     ):
-        raise PortfolioAnalysisError("Periods must be positive and samples at least 100.")
+        raise PortfolioAnalysisError(
+            f"Periods must be positive and samples between 100 and {_MAX_SAMPLES}."
+        )
     if (
         isinstance(risk_free_rate, bool)
         or not isinstance(risk_free_rate, Real)
