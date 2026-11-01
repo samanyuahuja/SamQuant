@@ -152,6 +152,13 @@ def test_trade_win_rate_rejects_sell_without_fifo_inventory() -> None:
         trade_win_rate(trades)
 
 
+def test_trade_win_rate_rejects_overflowed_purchase_cost() -> None:
+    trades = (_trade(OrderSide.BUY, 1.0, 1e308, 1e308, 1),)
+
+    with pytest.raises(AnalyticsError, match="FIFO purchase cost must be finite"):
+        trade_win_rate(trades)
+
+
 def test_trade_win_rate_rejects_out_of_order_trades() -> None:
     trades = (
         _trade(OrderSide.BUY, 1.0, 100.0, 0.0, 2),

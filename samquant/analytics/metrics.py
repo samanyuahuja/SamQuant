@@ -145,7 +145,10 @@ def trade_win_rate(trades: Sequence[Trade]) -> float:
 
         symbol_lots = open_lots.setdefault(trade.order.symbol, deque())
         if trade.order.side is OrderSide.BUY:
-            unit_cost = (trade.notional + trade.fee) / trade.order.quantity
+            adjusted_cost = trade.notional + trade.fee
+            if not isfinite(adjusted_cost):
+                raise AnalyticsError("FIFO purchase cost must be finite.")
+            unit_cost = adjusted_cost / trade.order.quantity
             symbol_lots.append(_OpenLot(trade.order.quantity, unit_cost))
             continue
 
