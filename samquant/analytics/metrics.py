@@ -158,6 +158,8 @@ def trade_win_rate(trades: Sequence[Trade]) -> float:
             lot = symbol_lots[0]
             matched_quantity = min(remaining_quantity, lot.quantity)
             cost_basis += matched_quantity * lot.unit_cost
+            if not isfinite(cost_basis):
+                raise AnalyticsError("FIFO sale cost basis must be finite.")
             lot.quantity -= matched_quantity
             remaining_quantity -= matched_quantity
             if lot.quantity <= _ZERO_TOLERANCE:

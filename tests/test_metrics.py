@@ -159,6 +159,17 @@ def test_trade_win_rate_rejects_overflowed_purchase_cost() -> None:
         trade_win_rate(trades)
 
 
+def test_trade_win_rate_rejects_overflowed_sale_cost_basis() -> None:
+    trades = (
+        _trade(OrderSide.BUY, 1.0, 1e308, 0.0, 1),
+        _trade(OrderSide.BUY, 1.0, 1e308, 0.0, 2),
+        _trade(OrderSide.SELL, 2.0, 5e307, 0.0, 3),
+    )
+
+    with pytest.raises(AnalyticsError, match="FIFO sale cost basis must be finite"):
+        trade_win_rate(trades)
+
+
 def test_trade_win_rate_rejects_out_of_order_trades() -> None:
     trades = (
         _trade(OrderSide.BUY, 1.0, 100.0, 0.0, 2),
