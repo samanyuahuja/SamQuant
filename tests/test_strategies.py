@@ -123,6 +123,15 @@ def test_mean_reversion_handles_zero_volatility_without_false_signal() -> None:
     assert (weights == 0.0).all().all()
 
 
+def test_mean_reversion_rejects_overflowed_rolling_statistics() -> None:
+    data = _ohlcv([1e308, 2.0, 1e308])
+
+    with pytest.raises(StrategyError, match="statistics must be finite"):
+        MeanReversionStrategy(lookback_window=2).generate_target_weights(
+            {"AAPL": data}
+        )
+
+
 def test_momentum_ranks_assets_and_holds_until_next_rebalance() -> None:
     aapl = _ohlcv([100.0, 110.0, 121.0, 120.0, 119.0])
     msft = _ohlcv([100.0, 100.0, 100.0, 110.0, 121.0])
