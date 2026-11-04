@@ -66,6 +66,12 @@ class MeanReversionStrategy:
             window=self.lookback_window,
             min_periods=self.lookback_window,
         ).std(ddof=0)
+        completed_statistics = pd.concat(
+            [rolling_mean, rolling_std],
+            axis=1,
+        ).iloc[self.lookback_window - 1 :]
+        if not np.isfinite(completed_statistics.to_numpy(dtype=float)).all():
+            raise StrategyError("Rolling mean-reversion statistics must be finite.")
         z_scores = (close_prices - rolling_mean) / rolling_std.replace(0.0, np.nan)
 
         active = pd.DataFrame(
