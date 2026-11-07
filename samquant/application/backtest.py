@@ -224,10 +224,13 @@ def align_market_data(
     normalized: dict[str, pd.DataFrame] = {}
     common_index: pd.DatetimeIndex | None = None
     for raw_symbol, frame in market_data.items():
-        symbol = normalize_symbol(raw_symbol)
+        try:
+            symbol = normalize_symbol(raw_symbol)
+            validate_ohlcv(frame)
+        except MarketDataError as error:
+            raise ResearchError(str(error)) from error
         if symbol in normalized:
             raise ResearchError(f"Duplicate market data symbol: {symbol}.")
-        validate_ohlcv(frame)
         normalized[symbol] = frame.copy()
         common_index = (
             frame.index

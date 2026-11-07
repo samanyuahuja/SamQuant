@@ -11,6 +11,7 @@ from samquant.application import (
     MOVING_AVERAGE,
     BacktestConfig,
     ResearchError,
+    align_market_data,
     build_strategy,
     generate_demo_market_data,
     load_market_data,
@@ -212,6 +213,13 @@ def test_demo_data_normalizes_invalid_start_date_errors() -> None:
 def test_demo_data_normalizes_invalid_symbol_errors() -> None:
     with pytest.raises(ResearchError, match="unsupported characters"):
         generate_demo_market_data(symbols=("AAPL?",))
+
+
+def test_align_market_data_normalizes_validation_errors() -> None:
+    frame = generate_demo_market_data(("AAPL",), periods=3)["AAPL"]
+
+    with pytest.raises(ResearchError, match="unsupported characters"):
+        align_market_data({"AAPL?": frame})
 
 
 @pytest.mark.parametrize(
