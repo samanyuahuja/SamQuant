@@ -236,6 +236,16 @@ def test_market_data_rejects_malformed_dates(start: str, end: str) -> None:
         )
 
 
+def test_market_data_rejects_mixed_timezone_dates() -> None:
+    with pytest.raises(ResearchError, match="matching timezone"):
+        load_market_data(
+            source="demo",
+            symbols=("AAPL",),
+            start="2024-01-02T00:00:00+00:00",
+            end="2024-02-01",
+        )
+
+
 def test_yahoo_market_data_requires_explicit_server_permission() -> None:
     with pytest.raises(ResearchError, match="not available"):
         load_market_data(
