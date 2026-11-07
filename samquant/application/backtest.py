@@ -265,6 +265,8 @@ def load_market_data(
         end_date = pd.Timestamp(end)
     except (TypeError, ValueError) as error:
         raise ResearchError("Start and end dates must be valid.") from error
+    if (start_date.tzinfo is None) != (end_date.tzinfo is None):
+        raise ResearchError("Start and end dates must use matching timezone information.")
     if pd.isna(start_date) or pd.isna(end_date) or end_date <= start_date:
         raise ResearchError("End date must be later than start date.")
 
