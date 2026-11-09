@@ -83,11 +83,16 @@ def simulate_portfolio(
             f"Horizon cannot exceed {_MAX_HORIZON} and simulations cannot exceed "
             f"{_MAX_SIMULATIONS}."
         )
-    if asset_returns.columns.has_duplicates or weights.index.has_duplicates:
-        raise MonteCarloError("Asset labels must be unique.")
     labels = (*asset_returns.columns, *weights.index)
     if any(not isinstance(label, str) or not label.strip() for label in labels):
         raise MonteCarloError("Asset labels must be non-empty strings.")
+    return_labels = [label.strip().upper() for label in asset_returns.columns]
+    weight_labels = [label.strip().upper() for label in weights.index]
+    if (
+        len(return_labels) != len(set(return_labels))
+        or len(weight_labels) != len(set(weight_labels))
+    ):
+        raise MonteCarloError("Asset labels must be unique.")
     if set(weights.index) != set(asset_returns.columns):
         raise MonteCarloError("Weights must match the asset-return columns.")
     if (
