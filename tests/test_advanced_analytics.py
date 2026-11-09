@@ -141,6 +141,11 @@ def test_portfolio_analysis_rejects_overflowed_annualization() -> None:
         analyze_portfolio(_market_data(), periods_per_year=10**1_000)
 
 
+def test_portfolio_analysis_requires_a_finite_sharpe_candidate() -> None:
+    with pytest.raises(PortfolioAnalysisError, match="finite Sharpe ratio"):
+        analyze_portfolio(_market_data(), risk_free_rate=1e308)
+
+
 def test_monte_carlo_is_reproducible_and_reports_tail_statistics() -> None:
     closes = pd.DataFrame(
         {symbol: frame["Close"] for symbol, frame in _market_data().items()}

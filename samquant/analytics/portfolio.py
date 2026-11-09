@@ -119,12 +119,17 @@ def analyze_portfolio(
         "ij,jk,ik->i", weights, covariance.to_numpy(), weights
     )
     portfolio_volatility = np.sqrt(np.maximum(portfolio_variances, 0.0))
-    sharpe = np.divide(
-        portfolio_returns - risk_free_rate,
-        portfolio_volatility,
-        out=np.full_like(portfolio_returns, -np.inf),
-        where=portfolio_volatility > 1e-12,
-    )
+    with np.errstate(over="ignore", invalid="ignore"):
+        sharpe = np.divide(
+            portfolio_returns - risk_free_rate,
+            portfolio_volatility,
+            out=np.full_like(portfolio_returns, -np.inf),
+            where=portfolio_volatility > 1e-12,
+        )
+    if not np.isfinite(sharpe).any():
+        raise PortfolioAnalysisError(
+            "Portfolio analysis could not produce a finite Sharpe ratio."
+        )
     winner = int(np.argmax(sharpe))
     frontier = _frontier_points(portfolio_volatility, portfolio_returns)
     winner_weights = pd.Series(
