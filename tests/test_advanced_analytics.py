@@ -377,6 +377,24 @@ def test_monte_carlo_rejects_duplicate_asset_labels(
         )
 
 
+def test_monte_carlo_rejects_normalized_duplicate_asset_labels() -> None:
+    returns = pd.DataFrame(
+        [[0.01, 0.02], [-0.01, -0.02]],
+        columns=["AAPL", " aapl "],
+    )
+    weights = pd.Series([0.5, 0.5], index=["AAPL", " aapl "])
+
+    with pytest.raises(MonteCarloError, match="labels must be unique"):
+        simulate_portfolio(
+            returns,
+            weights,
+            initial_value=10_000.0,
+            horizon=10,
+            simulations=10,
+            seed=1,
+        )
+
+
 @pytest.mark.parametrize("invalid_label", ("", "   ", 7))
 def test_monte_carlo_rejects_invalid_asset_labels(invalid_label: object) -> None:
     returns = pd.DataFrame([[0.01], [-0.01]], columns=[invalid_label])
