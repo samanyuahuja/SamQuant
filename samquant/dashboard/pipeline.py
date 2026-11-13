@@ -7,6 +7,7 @@ from math import isfinite
 
 import pandas as pd
 
+from samquant.analytics import maximum_drawdown
 from samquant.application import (
     DEFAULT_SYMBOLS,
     DEFAULT_SYMBOLS_BY_MARKET,
@@ -71,6 +72,7 @@ __all__ = [
 
 def drawdown_series(equity_curve: pd.Series) -> pd.Series:
     """Return percentage drawdown from each timestamp's previous equity peak."""
+    maximum_drawdown(equity_curve)
     running_peak = equity_curve.cummax()
     return (equity_curve / running_peak - 1.0).rename("Drawdown")
 
