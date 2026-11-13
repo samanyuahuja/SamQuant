@@ -133,6 +133,11 @@ def test_dashboard_tables_preserve_trade_and_risk_information() -> None:
     assert drawdown.iloc[0] == pytest.approx(0.0)
 
 
+def test_drawdown_series_rejects_nonpositive_equity() -> None:
+    with pytest.raises(ValueError, match="must be positive"):
+        drawdown_series(pd.Series([100.0, 0.0]))
+
+
 def test_strategy_comparison_uses_same_scale_and_includes_benchmark() -> None:
     market_data = generate_demo_market_data(("AAPL", "MSFT"), periods=260)
     runs = run_strategy_comparison(market_data, DashboardConfig())
