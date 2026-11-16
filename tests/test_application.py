@@ -222,6 +222,13 @@ def test_align_market_data_normalizes_validation_errors() -> None:
         align_market_data({"AAPL?": frame})
 
 
+def test_align_market_data_rejects_non_mapping_inputs() -> None:
+    frame = generate_demo_market_data(("AAPL",), periods=3)["AAPL"]
+
+    with pytest.raises(ResearchError, match="symbol-to-frame mapping"):
+        align_market_data([frame])  # type: ignore[arg-type]
+
+
 @pytest.mark.parametrize(
     ("start", "end"),
     (("not-a-date", "2024-02-01"), ("2024-01-02", "not-a-date")),
