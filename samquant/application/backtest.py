@@ -222,6 +222,8 @@ def align_market_data(
         raise ResearchError("Market data must be a symbol-to-frame mapping.")
     if not market_data:
         raise ResearchError("Market data must contain at least one symbol.")
+    if len(market_data) > MAX_SYMBOLS:
+        raise ResearchError(f"Market data supports at most {MAX_SYMBOLS} symbols.")
 
     normalized: dict[str, pd.DataFrame] = {}
     common_index: pd.DatetimeIndex | None = None
