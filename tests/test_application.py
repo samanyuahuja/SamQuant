@@ -229,6 +229,14 @@ def test_align_market_data_rejects_non_mapping_inputs() -> None:
         align_market_data([frame])  # type: ignore[arg-type]
 
 
+def test_align_market_data_bounds_asset_count() -> None:
+    frame = generate_demo_market_data(("AAPL",), periods=3)["AAPL"]
+    market_data = {f"ASSET{index}": frame for index in range(7)}
+
+    with pytest.raises(ResearchError, match="at most 6 symbols"):
+        align_market_data(market_data)
+
+
 @pytest.mark.parametrize(
     ("start", "end"),
     (("not-a-date", "2024-02-01"), ("2024-01-02", "not-a-date")),
