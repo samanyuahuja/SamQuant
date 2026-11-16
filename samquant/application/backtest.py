@@ -218,6 +218,8 @@ def align_market_data(
     market_data: Mapping[str, pd.DataFrame],
 ) -> dict[str, pd.DataFrame]:
     """Validate assets and align them to their shared timestamps."""
+    if not isinstance(market_data, Mapping):
+        raise ResearchError("Market data must be a symbol-to-frame mapping.")
     if not market_data:
         raise ResearchError("Market data must contain at least one symbol.")
 
