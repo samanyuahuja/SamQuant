@@ -118,8 +118,10 @@ class BacktestRequest(BaseModel):
     )
     @classmethod
     def reject_boolean_numbers(cls, value: object) -> object:
-        if isinstance(value, bool):
-            raise ValueError("Numeric settings cannot be boolean.")
+        if value is not None and (
+            isinstance(value, bool) or not isinstance(value, Real)
+        ):
+            raise ValueError("Numeric settings must be numbers.")
         return value
 
     @field_validator("symbols")
