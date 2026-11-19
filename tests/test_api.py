@@ -179,6 +179,19 @@ def test_boolean_decimal_settings_return_validation_errors() -> None:
         assert response.json()["error"]["code"] == "INVALID_REQUEST"
 
 
+def test_text_strategy_numbers_return_validation_errors() -> None:
+    payloads = (
+        {"parameters": {"entry_z_score": "-1.5"}},
+        {"parameters": {"exit_z_score": "0.5"}},
+    )
+
+    for payload in payloads:
+        response = _client().post("/api/v1/backtests", json=payload)
+
+        assert response.status_code == 422
+        assert response.json()["error"]["code"] == "INVALID_REQUEST"
+
+
 def test_disabled_yahoo_source_returns_a_natural_error() -> None:
     response = _client().post(
         "/api/v1/backtests",
