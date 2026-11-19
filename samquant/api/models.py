@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from datetime import date, datetime, time, timedelta, timezone
 from enum import Enum
+from numbers import Real
 from typing import Optional
 from zoneinfo import ZoneInfo
 
@@ -65,8 +66,10 @@ class StrategyParameters(BaseModel):
     @field_validator("entry_z_score", "exit_z_score", mode="before")
     @classmethod
     def reject_boolean_numbers(cls, value: object) -> object:
-        if isinstance(value, bool):
-            raise ValueError("Numeric settings cannot be boolean.")
+        if value is not None and (
+            isinstance(value, bool) or not isinstance(value, Real)
+        ):
+            raise ValueError("Numeric settings must be numbers.")
         return value
 
 
