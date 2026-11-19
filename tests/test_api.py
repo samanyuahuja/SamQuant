@@ -192,6 +192,20 @@ def test_text_strategy_numbers_return_validation_errors() -> None:
         assert response.json()["error"]["code"] == "INVALID_REQUEST"
 
 
+def test_text_request_numbers_return_validation_errors() -> None:
+    payloads = (
+        {"initial_cash": "100000"},
+        {"risk_free_rate": "0.05"},
+        {"stop_loss": "0.1"},
+    )
+
+    for payload in payloads:
+        response = _client().post("/api/v1/backtests", json=payload)
+
+        assert response.status_code == 422
+        assert response.json()["error"]["code"] == "INVALID_REQUEST"
+
+
 def test_disabled_yahoo_source_returns_a_natural_error() -> None:
     response = _client().post(
         "/api/v1/backtests",
