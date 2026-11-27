@@ -461,7 +461,9 @@ def _strategy_study_candidates(
     exit_z_score = float(values.get("exit_z_score", 0.0))
     top_n = min(int(values.get("top_n", 1)), symbol_count)
     rebalance_frequency = int(values.get("rebalance_frequency", 21))
-    require_positive_returns = bool(values.get("require_positive_returns", True))
+    require_positive_returns = values.get("require_positive_returns", True)
+    if not isinstance(require_positive_returns, bool):
+        raise ResearchError("Require-positive-returns setting must be boolean.")
 
     candidates: list[tuple[str, dict[str, int | float | bool]]] = [
         (MOVING_AVERAGE, {"short_window": 5, "long_window": 20}),
