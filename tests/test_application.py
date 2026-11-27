@@ -135,6 +135,17 @@ def test_strategy_study_ranks_fixed_trials_on_the_earlier_period() -> None:
     }
 
 
+def test_strategy_study_rejects_non_boolean_momentum_flag() -> None:
+    market_data = generate_demo_market_data(("AAPL",), periods=80)
+
+    with pytest.raises(ResearchError, match="must be boolean"):
+        run_strategy_study(
+            market_data,
+            BacktestConfig(),
+            study_parameters={"require_positive_returns": 1},
+        )
+
+
 def test_strategy_study_training_choices_ignore_later_price_changes() -> None:
     original = generate_demo_market_data(("AAPL", "MSFT"), periods=260)
     changed = {symbol: frame.copy() for symbol, frame in original.items()}
